@@ -60,6 +60,10 @@
 		    <artifactId>commons-dbcp</artifactId>
 		    <version>1.4</version>
 		</dependency>
+		<dependency>
+			<groupId>io.trino</groupId>
+			<artifactId>trino-jdbc</artifactId>
+		</dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

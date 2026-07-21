@@ -226,6 +226,13 @@
 			<xsd:enumeration value="COLLECTION" />
 		</xsd:restriction>
 	</xsd:simpleType>
+
+	<xsd:simpleType name="HpcAutoTieringSearchSource">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ORACLE" />
+			<xsd:enumeration value="TRINO" />
+		</xsd:restriction>
+	</xsd:simpleType>
 	
 	<xsd:complexType name="HpcListObjectsEntry">
 		<xsd:sequence>
