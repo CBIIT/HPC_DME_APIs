@@ -95,7 +95,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			+ "S3_ACCOUNT_SECRET_KEY = ?, S3_ACCOUNT_REGION = ?, S3_ACCOUNT_URL = ?, S3_ACCOUNT_PATH_STYLE_ACCESS_ENABLED = ?, GOOGLE_ACCESS_TOKEN = ?, "
 			+ "ASPERA_ACCOUNT_USER = ?, ASPERA_ACCOUNT_PASSWORD = ?, ASPERA_ACCOUNT_HOST = ?, BOX_ACCESS_TOKEN = ?, BOX_REFRESH_TOKEN = ?, "
 			+ "COMPLETION_EVENT = ?, COLLECTION_DOWNLOAD_TASK_ID = ?, PERCENT_COMPLETE = ?, STAGING_PERCENT_COMPLETE = ?, DATA_SIZE = ?, CREATED = ?, PROCESSED = ?, IN_PROCESS = ?, "
-			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ? where ID = ?";
+			+ "RESTORE_REQUESTED = ?, S3_DOWNLOAD_TASK_SERVER_ID = ?, FIRST_HOP_RETRIED = ?, RETRY_TASK_ID = ?, RETRY_USER_ID = ?, EXTERNAL_ARCHIVE_FLAG = ? where ID = ?";
 
 	private static final String DELETE_DATA_OBJECT_DOWNLOAD_TASK_SQL = "delete from HPC_DATA_OBJECT_DOWNLOAD_TASK where ID = ?";
 
@@ -879,7 +879,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 					Optional.ofNullable(dataObjectDownloadTask.getRestoreRequested()).orElse(false),
 					dataObjectDownloadTask.getS3DownloadTaskServerId(), dataObjectDownloadTask.getFirstHopRetried(),
 					dataObjectDownloadTask.getRetryTaskId(), dataObjectDownloadTask.getRetryUserId(),
-					dataObjectDownloadTask.getId()) > 0;
+					dataObjectDownloadTask.getExternalArchiveFlag(), dataObjectDownloadTask.getId()) > 0;
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to create a data object download task: " + e.getMessage(),
