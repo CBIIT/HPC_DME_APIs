@@ -4648,6 +4648,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 			this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 			this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
+			this.downloadTask.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 			dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 		}
