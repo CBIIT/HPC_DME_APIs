@@ -881,10 +881,19 @@ size_metadata as (
     from irods.hpc_data_meta_main_mv
     where meta_attr_name = 'source_file_size'
 ),
+s3_config as (
+    select
+           object_id,
+           object_path,
+           meta_attr_value as s3_archive_configuration_id
+    from irods.hpc_data_meta_main_mv
+    where meta_attr_name = 's3_archive_configuration_id'
+),
 configuration_events as (
     select
            m.object_id,
            c.id as configuration_id,
+           c.s3_default_download_archive_configuration_id as s3_archive_configuration_id,
            c.base_path,
            c.doc
     from irods.hpc_data_meta_main_mv m
@@ -982,6 +991,7 @@ select
        substr(eo.object_path,length('/'||(select ZONE_NAME from R_ZONE_MAIN where rownum=1)||'/home')+1) as path,
        eo.coll_id,
        ce.configuration_id,
+       nvl(s3.s3_archive_configuration_id, ce.s3_archive_configuration_id) as s3_archive_configuration_id,
        ce.base_path,
        am.bucket,
        ue.uploaded_date,
@@ -1016,6 +1026,8 @@ left join archive_metadata am
        on am.object_id = eo.object_id
 left join size_metadata sm
        on sm.object_id = eo.object_id
+left join s3_config s3
+       on s3.object_id = eo.object_id
 left join configuration_events ce
        on ce.object_id = eo.object_id
 left join download_events de
@@ -1032,6 +1044,8 @@ comment on column irods.hpc_data_object_last_access_mv.coll_id is
 'Collection ID for the collection containing the data object.';
 comment on column irods.hpc_data_object_last_access_mv.configuration_id is
 'Data management configuration ID associated with the data object, derived from metadata attribute configuration_id and matched to HPC_DATA_MANAGEMENT_CONFIGURATION.ID.';
+comment on column irods.hpc_data_object_last_access_mv.s3_archive_configuration_id is
+'S3 archive configuration ID for the data object, derived from metadata attribute s3_archive_configuration_id.';
 comment on column irods.hpc_data_object_last_access_mv.base_path is
 'Base archive path from HPC_DATA_MANAGEMENT_CONFIGURATION for the data object configuration.';
 comment on column irods.hpc_data_object_last_access_mv.bucket is
@@ -1091,8 +1105,11 @@ create index irods.hpc_dobj_last_access_mv_doc_date_ix
 create index irods.hpc_dobj_last_access_mv_config_ix
     on irods.hpc_data_object_last_access_mv (configuration_id) PARALLEL 4
     nologging;
+    
+create index irods.hpc_dobj_last_access_mv_s3_config_ix
+    on irods.hpc_data_object_last_access_mv (s3_archive_configuration_id) PARALLEL 4
+    nologging;
 
 create index irods.hpc_dobj_last_access_mv_bucket_ix
     on irods.hpc_data_object_last_access_mv (bucket)  PARALLEL 4
     nologging;
-    
