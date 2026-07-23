@@ -120,6 +120,7 @@ import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
 import gov.nih.nci.hpc.util.HpcUtil;
 
 
@@ -1172,6 +1173,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
+		String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(path, s3ConfigurationId);
+
+		synchronized (HpcExternalArchiveLinkLockManager.getPathLock(temporaryArchiveLinkPath)) {
 		/*
 		 * For external archive downloads, the data object must be deleted after
 		 * the download completes (whether successful or failed). However, we must
@@ -1186,7 +1190,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 		if (numberOfActiveExternalDownloadTasksForPath == 0) {
 			try {
-				String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(path, s3ConfigurationId);
 				logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
 				HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
 				temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
@@ -1201,6 +1204,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				throw new HpcException("Failed to delete data object after download from external archive for path: "
 						+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
 			}
+		}
 		}
 
 		return temporaryArchiveLinkDeleted;
