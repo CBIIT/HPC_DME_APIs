@@ -178,6 +178,7 @@ import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -815,30 +816,61 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Build temporary archive link path for external download
 		downloadArchiveLinkPath = downloadArchiveLinkBasePath + filePath;
 
-		// Registration Step
+		// Serialize registration, task creation and failure cleanup per temporaryArchivelinkPath.
 		try {
-			boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
-			if(temporaryArchiveLinkDoesNotExist) {
-				registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
+			synchronized (HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath)) {
+				int numberOfActiveExternalDownloadTasksForPath = dataTransferService.getDownloadTasksCountForExternalArchiveByPath(downloadArchiveLinkPath);
+				if(numberOfActiveExternalDownloadTasksForPath > 0) {
+					try{
+						// check if the temporary archive link exists for this path
+						boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
+						if(temporaryArchiveLinkDoesNotExist){
+							registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
+						} else {
+							logger.info("Reuse existing temporary archive link for path: " + downloadArchiveLinkPath);
+						}
+					} catch (HpcException e) {
+						logger.error("Failed to register temporary archive link for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+						throw new HpcException("Failed to register temporary archive link for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+					}
+				} else {
+					try {
+						// Check if the temporary archive link exists for this path, if so delete it and create a new one
+						boolean temporaryArchiveLinkExists = dataManagementService.getDataObject(downloadArchiveLinkPath) != null;
+						if(temporaryArchiveLinkExists) {
+							boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
+							if (archiveLinkDeleted) {
+								registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
+							} else {
+								logger.info("Unable to create Registration as there is an exisiting archive link for path " + downloadArchiveLinkPath);
+							}
+						} else {
+							registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
+						}
+					} catch (HpcException e) {
+						logger.error("Failed to register temporary archive link for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+						throw new HpcException("Failed to register temporary archive link for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+					}
+				}
+
+				// Download Step
+				try {
+					boolean externalArchiveFlag = true;
+					downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
+				} catch (HpcException e) {
+					logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+					boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
+					if (archiveLinkDeleted) {
+						logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
+					} else {
+						logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
+					}
+					throw new HpcException("Failed to create download task for external download for path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
 			}
 		} catch (HpcException e) {
-			logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
-			throw new HpcException("Failed the Registration step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Download Step
-		try {
-			boolean externalArchiveFlag = true;
-			downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
-		} catch (HpcException e) {
-			logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
-				boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
-				if (archiveLinkDeleted) {
-					logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
-				} else {
-					logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
-				}
-			throw new HpcException("Failed to create download task for external download for path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+			logger.error("Failed external download coordination for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Failed the Registration/Download step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		return downloadResponse;
