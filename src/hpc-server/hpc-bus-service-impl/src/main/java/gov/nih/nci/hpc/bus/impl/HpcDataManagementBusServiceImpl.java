@@ -817,8 +817,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		downloadArchiveLinkPath = downloadArchiveLinkBasePath + filePath;
 
 		// Serialize registration, task creation and failure cleanup per temporaryArchivelinkPath.
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath);
 		try {
-			synchronized (HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath)) {
+			synchronized (externalArchivePathLock) {
 				try {
 					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
 					if(temporaryArchiveLinkDoesNotExist) {
@@ -847,6 +848,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} catch (HpcException e) {
 			logger.error("Failed external download coordination for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Failed the Registration/Download step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		} finally {
+			HpcExternalArchiveLinkLockManager.deletePathLock(downloadArchiveLinkPath);
 		}
 
 		return downloadResponse;
