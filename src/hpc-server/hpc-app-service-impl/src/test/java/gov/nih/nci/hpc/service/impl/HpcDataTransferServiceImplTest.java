@@ -353,6 +353,9 @@ public class HpcDataTransferServiceImplTest {
 		String path = "/temp/project/file1";
 
 		when(dataDownloadDAOMock.getDownloadTasksCountForExternalArchiveByPath(path)).thenReturn(2);
+		HpcDataTransferConfiguration s3ArchiveConfiguration = new HpcDataTransferConfiguration();
+		s3ArchiveConfiguration.setPosixPath("/temp/project");
+		when(dataManagementServiceMock.getS3ArchiveConfiguration("s3-config-1")).thenReturn(s3ArchiveConfiguration);
 
 		boolean deleted = ((HpcDataTransferServiceImpl) dataTransferService)
 				.deleteTemporaryArchiveLink(path, "config-1", "s3-config-1");
