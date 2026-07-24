@@ -819,38 +819,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Serialize registration, task creation and failure cleanup per temporaryArchivelinkPath.
 		try {
 			synchronized (HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath)) {
-				int numberOfActiveExternalDownloadTasksForPath = dataTransferService.getDownloadTasksCountForExternalArchiveByPath(downloadArchiveLinkPath);
-				if(numberOfActiveExternalDownloadTasksForPath > 0) {
-					try{
-						// check if the temporary archive link exists for this path
-						boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
-						if(temporaryArchiveLinkDoesNotExist){
-							registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
-						} else {
-							logger.info("Reuse existing temporary archive link for path: " + downloadArchiveLinkPath);
-						}
-					} catch (HpcException e) {
-						logger.error("Failed to register temporary archive link for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
-						throw new HpcException("Failed to register temporary archive link for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				try {
+					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
+					if(temporaryArchiveLinkDoesNotExist) {
+						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
 					}
-				} else {
-					try {
-						// Check if the temporary archive link exists for this path, if so delete it and create a new one
-						boolean temporaryArchiveLinkExists = dataManagementService.getDataObject(downloadArchiveLinkPath) != null;
-						if(temporaryArchiveLinkExists) {
-							boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
-							if (archiveLinkDeleted) {
-								registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
-							} else {
-								logger.info("Unable to create Registration as there is an exisiting archive link for path " + downloadArchiveLinkPath);
-							}
-						} else {
-							registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
-						}
-					} catch (HpcException e) {
-						logger.error("Failed to register temporary archive link for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
-						throw new HpcException("Failed to register temporary archive link for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-					}
+				} catch (HpcException e) {
+					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
+					throw new HpcException("Failed the Registration step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 
 				// Download Step
@@ -5263,6 +5239,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Get the metadata for this data object.
 			HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(downloadArchiveLinkPath,
 					false);
+			if (metadataEntries == null || metadataEntries.getSelfMetadataEntries() == null) {
+				throw new HpcException("No metadata found for data object. Unable to delete temporary Archive Link. : " + downloadArchiveLinkPath,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 

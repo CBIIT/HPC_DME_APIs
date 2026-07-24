@@ -23,4 +23,14 @@ public final class HpcExternalArchiveLinkLockManager {
 			return lock;
 		}
 	}
+
+	public static void deletePathLock(String path) {
+		if (path == null || path.isEmpty()) {
+			return;
+		}
+
+		synchronized (PATH_LOCKS) {
+			PATH_LOCKS.remove(path);
+		}
+	}
 }
