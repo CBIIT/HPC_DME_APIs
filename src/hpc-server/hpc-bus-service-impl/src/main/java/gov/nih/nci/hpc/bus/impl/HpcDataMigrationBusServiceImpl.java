@@ -626,7 +626,8 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
                         dataManagementConfiguration.getId());
                 dataMigrationService.createBulkAutoTieringTask(dataManagementConfiguration.getId(),
                         dataManagementConfiguration.getS3UploadConfigurationId(),
-                        dataManagementConfiguration.getS3AutoTieringConfigurationId(), null);
+                        dataManagementConfiguration.getS3AutoTieringConfigurationId(),
+                        securityService.getRequestInvoker().getDataManagementAccount().getUsername());
 
             } catch (HpcException e) {
                 logger.error("Failed to process auto-tiering for data management configuration: {}",
