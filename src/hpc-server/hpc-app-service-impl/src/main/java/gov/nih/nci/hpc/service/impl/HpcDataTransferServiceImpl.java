@@ -1174,37 +1174,41 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
 		String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(path, s3ConfigurationId);
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(temporaryArchiveLinkPath);
 
-		synchronized (HpcExternalArchiveLinkLockManager.getPathLock(temporaryArchiveLinkPath)) {
-		/*
-		 * For external archive downloads, the data object must be deleted after
-		 * the download completes (whether successful or failed). However, we must
-		 * ensure no other active external archive download tasks exist for the same path
-		 * before performing the deletion.
-		 *
-		 * If multiple download tasks are active for the same path, deletion is deferred
-		 * until the final task completes to prevent data corruption.
-		 */
-			int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
-			logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
+		try {
+			synchronized (externalArchivePathLock) {
+				/*
+				 * For external archive downloads, the data object must be deleted after
+				 * the download completes (whether successful or failed). However, we must
+				 * ensure no other active external archive download tasks exist for the same path
+				 * before performing the deletion.
+				 *
+				 * If multiple download tasks are active for the same path, deletion is deferred
+				 * until the final task completes to prevent data corruption.
+				 */
+				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
+				logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
 
-			if (numberOfActiveExternalDownloadTasksForPath == 0) {
-				try {
-					logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
-					HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
-					temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
-							configurationId, s3ConfigurationId);
-				} catch (HpcException e) {
-					logger.error("Failed to delete data object after download from external archive for path: "
-							+ path + ". Error: " + e.getMessage(), e);
-					notificationService.sendNotification(new HpcException(
-							"Failure to delete data object after download from external archive for path "
-									+ path + ". Error: " + e.getMessage(),
-							HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
-					throw new HpcException("Failed to delete data object after download from external archive for path: "
-							+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+				if (numberOfActiveExternalDownloadTasksForPath == 0) {
+					try {
+						logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
+						HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
+						temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
+								configurationId, s3ConfigurationId);
+					} catch (HpcException e) {
+						logger.error("Failed to delete data object after download from external archive for path: "
+								+ path + ". Error: " + e.getMessage(), e);
+						notificationService.sendNotification(new HpcException(
+								"Failure to delete data object after download from external archive for path "
+										+ path + ". Error: " + e.getMessage(),
+								HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+						throw new HpcException("Failed to delete data object after download from external archive for path: "
+								+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+					}
 				}
 			}
+		} finally {
 			HpcExternalArchiveLinkLockManager.deletePathLock(temporaryArchiveLinkPath);
 		}
 
