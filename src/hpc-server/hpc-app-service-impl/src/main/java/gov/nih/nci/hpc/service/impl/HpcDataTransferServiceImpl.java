@@ -1185,26 +1185,27 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		 * If multiple download tasks are active for the same path, deletion is deferred
 		 * until the final task completes to prevent data corruption.
 		 */
-		int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
-		logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
+			int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
+			logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
 
-		if (numberOfActiveExternalDownloadTasksForPath == 0) {
-			try {
-				logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
-				HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
-				temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
-						configurationId, s3ConfigurationId);
-			} catch (HpcException e) {
-				logger.error("Failed to delete data object after download from external archive for path: "
-						+ path + ". Error: " + e.getMessage(), e);
-				notificationService.sendNotification(new HpcException(
-						"Failure to delete data object after download from external archive for path "
-								+ path + ". Error: " + e.getMessage(),
-						HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
-				throw new HpcException("Failed to delete data object after download from external archive for path: "
-						+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+			if (numberOfActiveExternalDownloadTasksForPath == 0) {
+				try {
+					logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
+					HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
+					temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
+							configurationId, s3ConfigurationId);
+				} catch (HpcException e) {
+					logger.error("Failed to delete data object after download from external archive for path: "
+							+ path + ". Error: " + e.getMessage(), e);
+					notificationService.sendNotification(new HpcException(
+							"Failure to delete data object after download from external archive for path "
+									+ path + ". Error: " + e.getMessage(),
+							HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+					throw new HpcException("Failed to delete data object after download from external archive for path: "
+							+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+				}
 			}
-		}
+			HpcExternalArchiveLinkLockManager.deletePathLock(temporaryArchiveLinkPath);
 		}
 
 		return temporaryArchiveLinkDeleted;
