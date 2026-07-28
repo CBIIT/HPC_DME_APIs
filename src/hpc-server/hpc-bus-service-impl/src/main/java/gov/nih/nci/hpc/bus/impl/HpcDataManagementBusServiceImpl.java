@@ -824,7 +824,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				try {
 					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
 					if(temporaryArchiveLinkDoesNotExist) {
-						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
+						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), bucket);
 					}
 				} catch (HpcException e) {
 					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
@@ -5210,10 +5210,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return uploadResponse;
 	}
 	
-	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String dmePath, String bucket) throws HpcException {
+	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String bucket) throws HpcException {
 		HpcFileLocation sourceLocation = new HpcFileLocation();
 		sourceLocation.setFileContainerId(bucket);
-		sourceLocation.setFileId(dmePath.substring(1));
+		sourceLocation.setFileId(downloadArchiveLinkPath.replaceFirst(downloadArchiveLinkBasePath, "").substring(1));
 		HpcUploadSource uploadSource = new HpcUploadSource();
 		uploadSource.setSourceLocation(sourceLocation);
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
