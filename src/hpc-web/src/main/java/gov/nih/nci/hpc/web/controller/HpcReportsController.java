@@ -118,6 +118,10 @@ public class HpcReportsController extends AbstractHpcController {
 	public String home(@RequestBody(required = false) String q, Model model, BindingResult bindingResult,
 			HttpSession session, HttpServletRequest request) {
 		model.addAttribute("reportRequest", new HpcReportRequest());
+		String reportType = request.getParameter("reportType");
+		if (reportType != null && !reportType.trim().isEmpty()) {
+			model.addAttribute("selectedReportType", reportType.trim());
+		}
 		return init(model, bindingResult, session);
 	}
 
