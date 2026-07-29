@@ -327,12 +327,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return response;
 
 		} catch (AmazonServiceException ase) {
+			logger.info("Failed ASE for file location: " + fileLocation.getFileContainerId() + ":" + fileLocation.getFileId());
+			logger.info("Failed ASE error code: " + ase.getStatusCode() + " error message: " + ase.getMessage());
 			throw new HpcException("[S3] Failed to copy file: ["
 					+ fileLocation.getFileContainerId() + ":" + fileLocation.getFileId() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ase);
 
 		} catch (AmazonClientException ace) {
+			logger.info("Failed ACE for file location: " + fileLocation.getFileContainerId() + ":" + fileLocation.getFileId());
+			logger.info("Failed ACE error message: " + ace.getMessage());
 			throw new HpcException("[S3] Failed to copy file: ["
 					+ fileLocation.getFileContainerId() + ":" + fileLocation.getFileId() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR,
