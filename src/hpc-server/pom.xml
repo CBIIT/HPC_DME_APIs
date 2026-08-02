@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc</artifactId>
-		<version>3.28.0</version>
+		<version>3.29.0</version>
 	</parent>
 	<artifactId>hpc-server</artifactId>
 	<packaging>pom</packaging>
@@ -41,7 +41,7 @@
 		<amazon-aws.version>1.12.420</amazon-aws.version>
 		<amazon-aws-v2.version>2.32.31</amazon-aws-v2.version>
 		<amazon-aws-crt.version>0.38.11</amazon-aws-crt.version>
-		<jackson.version>2.18.8</jackson.version>
+		<jackson.version>2.18.9</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
 		<jjwt.version>0.12.5</jjwt.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
@@ -55,6 +55,7 @@
 		<poi.version>5.4.0</poi.version>
 		<box.version>4.8.0</box.version>
 		<bucket4j.version>8.14.0</bucket4j.version>
+		<trino.version>476</trino.version>
 	</properties>
 
 	<modules>
@@ -539,6 +540,11 @@
 			  <groupId>com.bucket4j</groupId>
 			  <artifactId>bucket4j_jdk17-core</artifactId>
 			  <version>${bucket4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.trino</groupId>
+				<artifactId>trino-jdbc</artifactId>
+				<version>${trino.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
