@@ -202,15 +202,15 @@ body.loading .overlay{
 							<select name="reportType" id="reportType" class="form-control"
 								onchange="show(this.value)">
 								<option value="-1">---Select Report Type---</option>
-								<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
-								<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
-								<option value="LAST_ACCESS_COLLECTION_REPORT" th:selected="${reportRequest.getReportType() == 'LAST_ACCESS_COLLECTION_REPORT'}">Collection Access Distribution Report</option>
-								<option value="LAST_ACCESS_DATA_OBJECT_REPORT" th:selected="${reportRequest.getReportType() == 'LAST_ACCESS_DATA_OBJECT_REPORT'}">Last Accessed Data Object Report</option>
-								<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
-								<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
+								<option value="USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE" th:selected="${selectedReportType == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE' or reportRequest.getReportType() == 'USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE'}">Base Path Report</option>
+								<option value="USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE" th:selected="${selectedReportType == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE' or reportRequest.getReportType() == 'USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE'}">Collection Path Report</option>
+								<option value="LAST_ACCESS_COLLECTION_REPORT" th:selected="${selectedReportType == 'LAST_ACCESS_COLLECTION_REPORT' or reportRequest.getReportType() == 'LAST_ACCESS_COLLECTION_REPORT'}">Collection Access Distribution Report</option>
+								<option value="LAST_ACCESS_DATA_OBJECT_REPORT" th:selected="${selectedReportType == 'LAST_ACCESS_DATA_OBJECT_REPORT' or reportRequest.getReportType() == 'LAST_ACCESS_DATA_OBJECT_REPORT'}">Last Accessed Data Object Report</option>
+								<option value="USAGE_SUMMARY_BY_DATA_OWNER" th:selected="${selectedReportType == 'USAGE_SUMMARY_BY_DATA_OWNER' or reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATA_OWNER'}">Data Owner Report</option>
+								<option value="USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE" th:selected="${selectedReportType == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE' or reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DOC_BY_DATE_RANGE'}">DOC Report</option>
 								<option value="USAGE_SUMMARY_BY_DATE_RANGE"
-									th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
-								<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>								
+									th:if="${userRole == 'SYSTEM_ADMIN'}" th:selected="${selectedReportType == 'USAGE_SUMMARY_BY_DATE_RANGE' or reportRequest.getReportType() == 'USAGE_SUMMARY_BY_DATE_RANGE'}">Summary Report</option>
+								<option value="USAGE_SUMMARY_BY_USER_BY_DATE_RANGE" th:selected="${selectedReportType == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE' or reportRequest.getReportType() == 'USAGE_SUMMARY_BY_USER_BY_DATE_RANGE'}">User Report</option>								
 							</select>
 							<div class="col-sm-2"></div>
 						</div>
@@ -874,6 +874,12 @@ body.loading .overlay{
 			placeholder: '-----------------Select Base Path-----------------'
 		});
 
+		// Apply UI visibility from the actual dropdown value after rendering/select2 init.
+		var initialReportType = $('#reportType').val();
+		if (initialReportType && initialReportType !== '-1') {
+			selected = initialReportType;
+			show(initialReportType);
+		}
 	});
 		
   $('#fromDate').datepicker({
