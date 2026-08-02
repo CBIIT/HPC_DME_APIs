@@ -487,9 +487,11 @@ class HpcDataManagementBusServiceImplTest {
         setPrivateField("downloadArchiveLinkBasePath", "/temp/external");
 
         String externalPath = "/external-root/project/file.txt";
+        String archiveObjectPrefix = "archive-root";
         String relativePath = "/project/file.txt";
-        String permanentPath = "/base" + relativePath;
-        String temporaryPath = "/temp/external" + relativePath;
+        String derivedPath = "/" + archiveObjectPrefix + relativePath;
+        String permanentPath = "/base" + derivedPath;
+        String temporaryPath = "/temp/external" + derivedPath;
 
         HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
 
@@ -507,6 +509,7 @@ class HpcDataManagementBusServiceImplTest {
         when(s3Configuration.getBaseArchiveDestination()).thenReturn(archive);
         when(archive.getFileLocation()).thenReturn(archiveLocation);
         when(archiveLocation.getFileContainerId()).thenReturn("bucket-a");
+        when(archiveLocation.getFileId()).thenReturn(archiveObjectPrefix);
         when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(dataManagementConfiguration);
         when(dataManagementConfiguration.getBasePath()).thenReturn("/base");
 
@@ -539,7 +542,7 @@ class HpcDataManagementBusServiceImplTest {
         assertTrue(registrationRequest.getCreateParentCollections());
         assertEquals("bucket-a",
             registrationRequest.getArchiveLinkSource().getSourceLocation().getFileContainerId());
-        assertEquals("project/file.txt",
+        assertEquals("archive-root/project/file.txt",
             registrationRequest.getArchiveLinkSource().getSourceLocation().getFileId());
 
         verify(service).downloadDataObject(temporaryPath, downloadRequest, true);
@@ -550,8 +553,10 @@ class HpcDataManagementBusServiceImplTest {
         setPrivateField("downloadArchiveLinkBasePath", "/temp/external");
 
         String externalPath = "/external-root/project/file.txt";
+        String archiveObjectPrefix = "archive-root";
         String relativePath = "/project/file.txt";
-        String permanentPath = "/base" + relativePath;
+        String derivedPath = "/" + archiveObjectPrefix + relativePath;
+        String permanentPath = "/base" + derivedPath;
 
         HpcDataTransferConfiguration s3Configuration = mock(HpcDataTransferConfiguration.class);
         HpcDataManagementConfiguration dataManagementConfiguration = mock(HpcDataManagementConfiguration.class);
@@ -566,6 +571,7 @@ class HpcDataManagementBusServiceImplTest {
         when(s3Configuration.getBaseArchiveDestination()).thenReturn(archive);
         when(archive.getFileLocation()).thenReturn(archiveLocation);
         when(archiveLocation.getFileContainerId()).thenReturn("bucket-a");
+        when(archiveLocation.getFileId()).thenReturn(archiveObjectPrefix);
         when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(dataManagementConfiguration);
         when(dataManagementConfiguration.getBasePath()).thenReturn("/base");
 
@@ -583,9 +589,11 @@ class HpcDataManagementBusServiceImplTest {
         setPrivateField("downloadArchiveLinkBasePath", "/temp/external");
 
         String externalPath = "/external-root/project/file.txt";
+        String archiveObjectPrefix = "archive-root";
         String relativePath = "/project/file.txt";
-        String permanentPath = "/base" + relativePath;
-        String temporaryPath = "/temp/external" + relativePath;
+        String derivedPath = "/" + archiveObjectPrefix + relativePath;
+        String permanentPath = "/base" + derivedPath;
+        String temporaryPath = "/temp/external" + derivedPath;
 
         HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
         HpcDataTransferConfiguration s3Configuration = mock(HpcDataTransferConfiguration.class);
@@ -601,6 +609,7 @@ class HpcDataManagementBusServiceImplTest {
         when(s3Configuration.getBaseArchiveDestination()).thenReturn(archive);
         when(archive.getFileLocation()).thenReturn(archiveLocation);
         when(archiveLocation.getFileContainerId()).thenReturn("bucket-a");
+        when(archiveLocation.getFileId()).thenReturn(archiveObjectPrefix);
         when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(dataManagementConfiguration);
         when(dataManagementConfiguration.getBasePath()).thenReturn("/base");
         when(dataManagementService.getDataObject(permanentPath)).thenReturn(null);
@@ -623,9 +632,11 @@ class HpcDataManagementBusServiceImplTest {
         setPrivateField("downloadArchiveLinkBasePath", "/temp/external");
 
         String externalPath = "/external-root/project/file.txt";
+        String archiveObjectPrefix = "archive-root";
         String relativePath = "/project/file.txt";
-        String permanentPath = "/base" + relativePath;
-        String temporaryPath = "/temp/external" + relativePath;
+        String derivedPath = "/" + archiveObjectPrefix + relativePath;
+        String permanentPath = "/base" + derivedPath;
+        String temporaryPath = "/temp/external" + derivedPath;
 
         HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
 
@@ -645,6 +656,7 @@ class HpcDataManagementBusServiceImplTest {
         when(s3Configuration.getBaseArchiveDestination()).thenReturn(archive);
         when(archive.getFileLocation()).thenReturn(archiveLocation);
         when(archiveLocation.getFileContainerId()).thenReturn("bucket-a");
+        when(archiveLocation.getFileId()).thenReturn(archiveObjectPrefix);
         when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(dataManagementConfiguration);
         when(dataManagementConfiguration.getBasePath()).thenReturn("/base");
         when(dataManagementService.getDataObject(permanentPath)).thenReturn(null);
