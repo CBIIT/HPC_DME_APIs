@@ -63,6 +63,8 @@
 		<value>notificationDeliveryReceipts</value>
 		<value>eventPayloadEntries</value>
 		<value>notificationDeliveryMethods</value>
+		<value>pieChartEntries</value>
+		<value>barChartEntries</value>
 		<value>reports</value>
 		<value>reportEntries</value>
 		<value>notificationTriggers</value>
@@ -123,6 +125,7 @@
 		<entry key="http://hpc.nci.nih.gov/domain/user" value="gov.nih.nci.hpc.domain.user" />
 		<entry key="http://hpc.nci.nih.gov/domain/datatransfer" value="gov.nih.nci.hpc.domain.datatransfer" />
 		<entry key="http://hpc.nci.nih.gov/domain/notification" value="gov.nih.nci.hpc.domain.notification" />
+		<entry key="http://hpc.nci.nih.gov/domain/lastaccess" value="gov.nih.nci.hpc.domain.lastaccess" />
 		<entry key="http://hpc.nci.nih.gov/domain/report" value="gov.nih.nci.hpc.domain.report" />
 		<entry key="http://hpc.nci.nih.gov/domain/datamanagement" value="gov.nih.nci.hpc.domain.datamanagement" />
 		<entry key="http://hpc.nci.nih.gov/domain/catalog" value="gov.nih.nci.hpc.domain.catalog" />
@@ -299,6 +302,8 @@
 
 				<!-- Report Service Authorizations -->
 				<entry key="generateReport" value="${hpc.ws.rs.auth.report.generate-report}" />
+				<entry key="getLastAccessPieChartData" value="${hpc.ws.rs.auth.report.get-pie-chart-data}" />
+				<entry key="getLastAccessBarChartData" value="${hpc.ws.rs.auth.report.get-bar-chart-data}" />
 				
 				<!-- Review Service Authorizations -->
 				<entry key="queryReview" value="${hpc.ws.rs.auth.review.query-review}" />

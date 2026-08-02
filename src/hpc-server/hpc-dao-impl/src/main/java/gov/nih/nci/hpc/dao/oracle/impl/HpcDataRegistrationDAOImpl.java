@@ -25,6 +25,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -131,8 +132,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 	HpcEncryptor encryptor = null;
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+        @Autowired
+        @Qualifier("hpcOracleJdbcTemplate")
+        private JdbcTemplate jdbcTemplate = null;
 
 	// Lob handler
 	private LobHandler lobHandler = new DefaultLobHandler();
