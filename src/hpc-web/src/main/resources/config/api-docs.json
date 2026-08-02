@@ -2795,12 +2795,7 @@
     "HpcReportRequestDTO": {
       "type": "object",
       "required": [
-        "doc",
-        "fromDate",
-        "path",
-        "toDate",
-        "type",
-        "user"
+        "type"
       ],
       "properties": {
         "type": {
@@ -2816,7 +2811,8 @@
             "USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE",
             "USAGE_SUMMARY_BY_PATH",
             "USAGE_SUMMARY_BY_PATH_BY_DATE_RANGE",
-            "USAGE_SUMMARY_BY_DATA_OWNER"
+            "USAGE_SUMMARY_BY_DATA_OWNER",
+            "LAST_ACCESS_DATA_OBJECT_REPORT"
           ]
         },
         "doc": {
@@ -2840,6 +2836,21 @@
         "path": {
           "type": "string"
         },
+        "basePath": {
+          "type": "string"
+        },
+        "collectionPath": {
+          "type": "string"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "sortBy": {
+          "type": "string"
+        },
+        "sortOrder": {
+          "type": "string"
+        },
         "reportColumns": {
           "type": "array",
           "items": {
@@ -2850,6 +2861,13 @@
               "TO_DATE",
               "TYPE",
               "DOC",
+              "PATH",
+              "LAST_ACCESSED_DATE",
+              "LAST_DOWNLOADED_BY",
+              "DOWNLOAD_COUNT",
+              "BASE_PATH",
+              "BUCKET",
+              "DATA_SIZE",
               "USER_ID",
               "TOTAL_DATA_SIZE",
               "TOTAL_NUM_OF_REGISTERED_USERS",
