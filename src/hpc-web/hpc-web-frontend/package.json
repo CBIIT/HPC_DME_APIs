@@ -16,20 +16,21 @@
     "@popperjs/core": "^2.11.8",
     "ag-grid-react": "^33.3.1",
     "bootstrap": "^5.3.6",
-    "next": "15.5.18",
+    "next": "15.5.22",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "tar": "7.5.22"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
-    "eslint-config-next": "15.5.18",
+    "eslint-config-next": "15.5.22",
     "tailwindcss": "^4"
   },
   "overrides": {
     "flatted": "^3.4.2",
-    "minimatch": "^10.2.3",
+    "minimatch": "^10.2.5",
     "@eslint/eslintrc": {
       "minimatch": "^3.1.5"
     },
@@ -38,6 +39,8 @@
     },
     "picomatch": "^4.0.4",
     "postcss": "^8.5.10",
-    "@modelcontextprotocol/sdk": "^1.26.0"
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "brace-expansion": "^5.0.7",
+    "sharp": "^0.35.3"
   }
 }

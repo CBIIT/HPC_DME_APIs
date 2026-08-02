@@ -267,11 +267,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return response;
 
 		} catch (AmazonServiceException ase) {
-			throw new HpcException("[S3] Failed to copy file and clear metadata: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+			throw new HpcException("[S3] Failed to copy file and clear metadata: ["
+					+ fileLocation.getFileContainerId() + ":" + fileLocation.getFileId() + "]",
+					HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ase);
 
 		} catch (AmazonClientException ace) {
-			throw new HpcException("[S3] Failed to copy file and clear metadata: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+			throw new HpcException("[S3] Failed to copy file and clear metadata: ["
+					+ fileLocation.getFileContainerId() + ":" + fileLocation.getFileId() + "]",
+					HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ace);
 		}
 	}
@@ -323,11 +327,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return response;
 
 		} catch (AmazonServiceException ase) {
-			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+			throw new HpcException("[S3] Failed to copy file: ["
+					+ fileLocation.getFileContainerId() + ":" + fileLocation.getFileId() + "]",
+					HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ase);
 
 		} catch (AmazonClientException ace) {
-			throw new HpcException("[S3] Failed to copy file: " + copyRequest, HpcErrorType.DATA_TRANSFER_ERROR,
+			throw new HpcException("[S3] Failed to copy file: ["
+					+ fileLocation.getFileContainerId() + ":" + fileLocation.getFileId() + "]",
+					HpcErrorType.DATA_TRANSFER_ERROR,
 					s3Connection.getS3Provider(authenticatedToken), ace);
 		}
 	}
