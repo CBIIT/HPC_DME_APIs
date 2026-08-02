@@ -5181,11 +5181,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 
 		// Validate the file exists in the archive.
+		String archivePrefix = dataManagementConfiguration.getArchiveDataTransferType().equals(HpcDataTransferType.S_3)
+				? "[S3] "
+				: "[POSIX] ";
 		String archiveSource = dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileContainerId()
 				+ ":" + dataObjectRegistration.getArchiveLinkSource().getSourceLocation().getFileId();
 		if (!archivePathAttributes.getExists() || !archivePathAttributes.getIsFile()) {
 			throw new HpcException(
-					"Archive file [" + archiveSource + "] was not found in registration request: " + path,
+					archivePrefix + "Archive file [" + archiveSource + "] was not found in registration request: " + path,
 					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 

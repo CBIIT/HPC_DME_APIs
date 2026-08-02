@@ -1,0 +1,6 @@
+name: Dev2
+values:
+  - key: baseUrl
+    value: 'https://fsdsgl-dmeap01d.ncifcrf.gov:7738'
+  - key: basePath
+    value: /hpc-server
