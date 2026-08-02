@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,14 +46,19 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
+import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
 import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
+import gov.nih.nci.hpc.service.HpcMetadataService;
+import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
 /**
@@ -84,6 +90,10 @@ public class HpcDataTransferServiceImplTest {
 	private HpcDataDownloadDAO dataDownloadDAOMock = null;
 	@Mock
 	private HpcGlobusTransferTaskDAO globusTransferDAOMock = null;
+	@Mock
+	private HpcMetadataService metadataServiceMock = null;
+	@Mock
+	private HpcNotificationService notificationServiceMock = null;
     
 	// ---------------------------------------------------------------------//
 	// Unit Tests
@@ -334,6 +344,129 @@ public class HpcDataTransferServiceImplTest {
 		assertEquals(downloadResponse.getDestinationLocation().getFileId(), destinationLocation.getFileId());
 	}
 
+	/**
+	 * deleteTemporaryArchiveLink should not delete the link while other active
+	 * external archive downloads still exist for the same path.
+	 */
+	@Test
+	public void testDeleteTemporaryArchiveLinkWhenOtherTasksExist() throws HpcException {
+		String path = "/temp/project/file1";
+
+		when(dataDownloadDAOMock.getDownloadTasksCountForExternalArchiveByPath(path)).thenReturn(2);
+		HpcDataTransferConfiguration s3ArchiveConfiguration = new HpcDataTransferConfiguration();
+		s3ArchiveConfiguration.setPosixPath("/temp/project");
+		when(dataManagementServiceMock.getS3ArchiveConfiguration("s3-config-1")).thenReturn(s3ArchiveConfiguration);
+
+		boolean deleted = ((HpcDataTransferServiceImpl) dataTransferService)
+				.deleteTemporaryArchiveLink(path, "config-1", "s3-config-1");
+
+		assertFalse(deleted);
+		verify(dataDownloadDAOMock).getDownloadTasksCountForExternalArchiveByPath(path);
+		verify(metadataServiceMock, never()).getDataObjectSystemGeneratedMetadata(any());
+		verify(dataManagementServiceMock, never()).delete(any(), eq(false));
+		verify(dataTransferProxyMock, never()).clearDataObjectMetadata(any(), any(), any());
+	}
+
+	/**
+	 * deleteTemporaryArchiveLink should clear archive metadata and delete the iRODS
+	 * temporary link when this is the last active external archive download.
+	 */
+	@Test
+	public void testDeleteTemporaryArchiveLinkSuccess() throws HpcException {
+		String path = "/archive/source/path/file1";
+		String configId = "config-1";
+		String s3ConfigId = "s3-config-1";
+		String temporaryArchiveLinkPath = "/download/archive/file1";
+
+		when(dataDownloadDAOMock.getDownloadTasksCountForExternalArchiveByPath(path)).thenReturn(0);
+
+		HpcDataTransferConfiguration s3ArchiveConfiguration = new HpcDataTransferConfiguration();
+		s3ArchiveConfiguration.setPosixPath("/archive/source/path");
+		when(dataManagementServiceMock.getS3ArchiveConfiguration(s3ConfigId)).thenReturn(s3ArchiveConfiguration);
+
+		HpcFileLocation archiveLocation = new HpcFileLocation();
+		archiveLocation.setFileContainerId("archive-container");
+		archiveLocation.setFileId("archive-file");
+
+		HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
+		metadata.setArchiveLocation(archiveLocation);
+		metadata.setLinkSourcePath("");
+		when(metadataServiceMock.getDataObjectSystemGeneratedMetadata(temporaryArchiveLinkPath)).thenReturn(metadata);
+
+		HpcDataTransferConfiguration transferConfiguration = new HpcDataTransferConfiguration();
+		transferConfiguration.setStorageClass("STANDARD");
+		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(configId, s3ConfigId,
+				HpcDataTransferType.S_3)).thenReturn(transferConfiguration);
+
+		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+		account.setUsername("s3-system-account");
+		when(systemAccountLocatorMock.getSystemAccount(any())).thenReturn(account);
+		when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("token");
+
+		HpcSetArchiveObjectMetadataResponse clearMetadataResponse = new HpcSetArchiveObjectMetadataResponse();
+		clearMetadataResponse.setMetadataClearStatus(true);
+		when(dataTransferProxyMock.clearDataObjectMetadata(any(), eq(archiveLocation), eq("STANDARD")))
+				.thenReturn(clearMetadataResponse);
+
+		boolean deleted = ((HpcDataTransferServiceImpl) dataTransferService)
+				.deleteTemporaryArchiveLink(path, configId, s3ConfigId);
+
+		assertTrue(deleted);
+		verify(dataDownloadDAOMock).getDownloadTasksCountForExternalArchiveByPath(path);
+		verify(metadataServiceMock).getDataObjectSystemGeneratedMetadata(temporaryArchiveLinkPath);
+		verify(dataTransferProxyMock).clearDataObjectMetadata(any(), eq(archiveLocation), eq("STANDARD"));
+		verify(dataManagementServiceMock).delete(temporaryArchiveLinkPath, false);
+		verify(notificationServiceMock, never()).sendNotification(any());
+	}
+
+	/**
+	 * deleteTemporaryArchiveLink should notify and rethrow when metadata clearing
+	 * fails.
+	 */
+	@Test
+	public void testDeleteTemporaryArchiveLinkFailureSendsNotification() throws HpcException {
+		String path = "/archive/source/path/file1";
+		String configId = "config-1";
+		String s3ConfigId = "s3-config-1";
+		String temporaryArchiveLinkPath = "/download/archive/file1";
+
+		when(dataDownloadDAOMock.getDownloadTasksCountForExternalArchiveByPath(path)).thenReturn(0);
+
+		HpcDataTransferConfiguration s3ArchiveConfiguration = new HpcDataTransferConfiguration();
+		s3ArchiveConfiguration.setPosixPath("/archive/source/path");
+		when(dataManagementServiceMock.getS3ArchiveConfiguration(s3ConfigId)).thenReturn(s3ArchiveConfiguration);
+
+		HpcFileLocation archiveLocation = new HpcFileLocation();
+		archiveLocation.setFileContainerId("archive-container");
+		archiveLocation.setFileId("archive-file");
+
+		HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
+		metadata.setArchiveLocation(archiveLocation);
+		metadata.setLinkSourcePath("");
+		when(metadataServiceMock.getDataObjectSystemGeneratedMetadata(temporaryArchiveLinkPath)).thenReturn(metadata);
+
+		HpcDataTransferConfiguration transferConfiguration = new HpcDataTransferConfiguration();
+		transferConfiguration.setStorageClass("STANDARD");
+		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(configId, s3ConfigId,
+				HpcDataTransferType.S_3)).thenReturn(transferConfiguration);
+
+		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
+		account.setUsername("s3-system-account");
+
+		HpcSetArchiveObjectMetadataResponse clearMetadataResponse = new HpcSetArchiveObjectMetadataResponse();
+		clearMetadataResponse.setMetadataClearStatus(false);
+		when(dataTransferProxyMock.clearDataObjectMetadata(any(), eq(archiveLocation), eq("STANDARD")))
+				.thenReturn(clearMetadataResponse);
+
+		HpcException ex = assertThrows(HpcException.class, () ->
+				((HpcDataTransferServiceImpl) dataTransferService)
+						.deleteTemporaryArchiveLink(path, configId, s3ConfigId));
+
+		assertTrue(ex.getMessage().contains("Failed to delete data object after download from external archive"));
+		verify(notificationServiceMock).sendNotification(any(HpcException.class));
+		verify(dataManagementServiceMock, never()).delete(any(), eq(false));
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -351,8 +484,21 @@ public class HpcDataTransferServiceImplTest {
 		dataTransferServiceImpl.setDataDownloadDAO(dataDownloadDAOMock);
 		dataTransferServiceImpl.setDataManagementService(dataManagementServiceMock);
 		dataTransferServiceImpl.setGlobusTransferDAO(globusTransferDAOMock);
+		setPrivateField(dataTransferServiceImpl, "metadataService", metadataServiceMock);
+		setPrivateField(dataTransferServiceImpl, "notificationService", notificationServiceMock);
+		setPrivateField(dataTransferServiceImpl, "downloadArchiveLinkBasePath", "/download/archive");
 
 		dataTransferService = dataTransferServiceImpl;
+	}
+
+	private void setPrivateField(Object target, String fieldName, Object value) {
+		try {
+			Field field = HpcDataTransferServiceImpl.class.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.set(target, value);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException("Failed to set field: " + fieldName, e);
+		}
 	}
 
 	// ---------------------------------------------------------------------//
