@@ -18,8 +18,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -265,6 +270,12 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 
 	private static final String REFRESH_VIEWS_SQL = "call REFRESH_DAILY_MATERIALIZED_VIEW()";
 
+	private static final String LAST_ACCESS_DATA_OBJECT_REPORT_BASE_SQL = "SELECT PATH, UPLOADED_DATE, EFFECTIVE_ACCESSED_DATE, LAST_DOWNLOADED_BY, DOWNLOAD_COUNT, DOC, BASE_PATH, BUCKET, DATA_SIZE "
+			+ "FROM HPC_DATA_OBJECT_LAST_ACCESS_MV";
+
+	private static final Set<String> LAST_ACCESS_DATA_OBJECT_SORT_COLUMNS = new HashSet<>(Arrays.asList("EFFECTIVE_ACCESSED_DATE",
+			"PATH", "DOC", "BASE_PATH", "BUCKET", "DOWNLOAD_COUNT", "DATA_SIZE"));
+
 	/////////////////////////// RETRIEVE ALL BASE PATHS FOR GRID DATA
 	private static final String BASE_PATHS_SQL = "select BASE_PATH from HPC_DATA_MANAGEMENT_CONFIGURATION";
 	private static final String ALL_DOCS_SQL = "select distinct DOC from HPC_DATA_MANAGEMENT_CONFIGURATION";
@@ -412,8 +423,9 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+ @Autowired
+ @Qualifier("hpcOracleJdbcTemplate")
+ private JdbcTemplate jdbcTemplate = null;
 
 	private String iRodsBasePath = "";
 
@@ -757,8 +769,14 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		return results;
 	}
 
+	@Override
 	public List<HpcReport> generatReport(HpcReportCriteria criteria) {
 		List<HpcReport> reports = new ArrayList<HpcReport>();
+
+		if (criteria.getType().equals(HpcReportType.LAST_ACCESS_DATA_OBJECT_REPORT)) {
+			reports = generateLastAccessDataObjectReport(criteria);
+			return reports;
+		}
 
 		if ((criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH_BY_DATE_RANGE)
 			|| criteria.getType().equals(HpcReportType.USAGE_SUMMARY_BY_BASEPATH))
@@ -817,6 +835,138 @@ public class HpcReportsDAOImpl implements HpcReportsDAO {
 		}
 
 		return reports;
+	}
+
+	@Override
+	public List<HpcReport> generateLastAccessDataObjectReport(HpcReportCriteria criteria) {
+		List<HpcReport> reports = new ArrayList<HpcReport>();
+		StringBuilder sql = new StringBuilder(LAST_ACCESS_DATA_OBJECT_REPORT_BASE_SQL);
+		List<Object> args = new ArrayList<>();
+		List<String> predicates = new ArrayList<>();
+		SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		if (criteria.getFromDate() != null) {
+			Calendar fromDate = (Calendar) criteria.getFromDate().clone();
+			fromDate.set(Calendar.HOUR_OF_DAY, 0);
+			fromDate.set(Calendar.MINUTE, 0);
+			fromDate.set(Calendar.SECOND, 0);
+			fromDate.set(Calendar.MILLISECOND, 0);
+			predicates.add("EFFECTIVE_ACCESSED_DATE >= ?");
+			args.add(fromDate.getTime());
+		}
+
+		if (criteria.getToDate() != null) {
+			Calendar toDate = (Calendar) criteria.getToDate().clone();
+			toDate.set(Calendar.HOUR_OF_DAY, 23);
+			toDate.set(Calendar.MINUTE, 59);
+			toDate.set(Calendar.SECOND, 59);
+			toDate.set(Calendar.MILLISECOND, 999);
+			predicates.add("EFFECTIVE_ACCESSED_DATE <= ?");
+			args.add(toDate.getTime());
+		}
+
+		if (criteria.getDocs() != null && !criteria.getDocs().isEmpty()
+				&& criteria.getDocs().get(0) != null
+				&& !criteria.getDocs().get(0).trim().isEmpty()
+				&& !criteria.getDocs().get(0).equalsIgnoreCase("All")) {
+			predicates.add("DOC = ?");
+			args.add(criteria.getDocs().get(0).trim());
+		}
+
+		if (criteria.getBasePath() != null && !criteria.getBasePath().trim().isEmpty()
+				&& !criteria.getBasePath().equalsIgnoreCase("All")) {
+			predicates.add("BASE_PATH = ?");
+			args.add(criteria.getBasePath().trim());
+		}
+
+		String collectionPath = criteria.getCollectionPath();
+		if (collectionPath == null || collectionPath.trim().isEmpty()) {
+			collectionPath = criteria.getPath();
+		}
+		if (collectionPath != null && !collectionPath.trim().isEmpty()) {
+			String normalizedPath = normalizeFilterPath(collectionPath);
+			predicates.add("(PATH = ? OR PATH LIKE ?)");
+			args.add(normalizedPath);
+			args.add(normalizedPath + "/%");
+		}
+
+		if (criteria.getIncludeAWSBucket() != null && !criteria.getIncludeAWSBucket()) {
+			predicates.add("BUCKET NOT LIKE ?");
+			args.add("%aws%");
+		}
+
+		if (!predicates.isEmpty()) {
+			sql.append(" WHERE ").append(String.join(" AND ", predicates));
+		}
+
+		String sortBy = "EFFECTIVE_ACCESSED_DATE";
+		String sortOrder = "DESC";
+		if (criteria.getSortBy() != null) {
+			String requestedSortBy = criteria.getSortBy().trim().toUpperCase();
+			if (LAST_ACCESS_DATA_OBJECT_SORT_COLUMNS.contains(requestedSortBy)) {
+				sortBy = requestedSortBy;
+			}
+		}
+		if (criteria.getSortOrder() != null && criteria.getSortOrder().trim().equalsIgnoreCase("ASC")) {
+			sortOrder = "ASC";
+		}
+		sql.append(" ORDER BY ").append(sortBy).append(" ").append(sortOrder);
+
+		List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql.toString(), args.toArray());
+		for (Map<String, Object> row : rows) {
+			HpcReport report = new HpcReport();
+			report.setType(HpcReportType.LAST_ACCESS_DATA_OBJECT_REPORT);
+			report.setGeneratedOn(Calendar.getInstance());
+			report.setPath(row.get("PATH") != null ? row.get("PATH").toString() : null);
+			report.setDoc(row.get("DOC") != null ? row.get("DOC").toString() : null);
+
+			String uploadedDate = "";
+            Object uploadedDateValue = row.get("UPLOADED_DATE");
+            if (uploadedDateValue instanceof Date) {
+              uploadedDate = timestampFormat.format((Date) uploadedDateValue);
+            }
+            addLastAccessEntry(report, HpcReportEntryAttribute.UPLOADED_DATE, uploadedDate);
+            
+			String lastAccessedDate = "";
+			Object lastAccessedDateValue = row.get("EFFECTIVE_ACCESSED_DATE");
+			if (lastAccessedDateValue instanceof Date) {
+				lastAccessedDate = timestampFormat.format((Date) lastAccessedDateValue);
+			}
+			addLastAccessEntry(report, HpcReportEntryAttribute.LAST_ACCESSED_DATE, lastAccessedDate);
+			addLastAccessEntry(report, HpcReportEntryAttribute.LAST_DOWNLOADED_BY,
+					row.get("LAST_DOWNLOADED_BY") != null ? row.get("LAST_DOWNLOADED_BY").toString() : "");
+			addLastAccessEntry(report, HpcReportEntryAttribute.DOWNLOAD_COUNT,
+					row.get("DOWNLOAD_COUNT") != null ? row.get("DOWNLOAD_COUNT").toString() : "0");
+			addLastAccessEntry(report, HpcReportEntryAttribute.DOC,
+					row.get("DOC") != null ? row.get("DOC").toString() : "");
+			addLastAccessEntry(report, HpcReportEntryAttribute.BASE_PATH,
+					row.get("BASE_PATH") != null ? row.get("BASE_PATH").toString() : "");
+			addLastAccessEntry(report, HpcReportEntryAttribute.BUCKET,
+					row.get("BUCKET") != null ? row.get("BUCKET").toString() : "");
+			addLastAccessEntry(report, HpcReportEntryAttribute.DATA_SIZE,
+					row.get("DATA_SIZE") != null ? row.get("DATA_SIZE").toString() : "0");
+			reports.add(report);
+		}
+
+		return reports;
+	}
+
+	private void addLastAccessEntry(HpcReport report, HpcReportEntryAttribute attribute, String value) {
+		HpcReportEntry entry = new HpcReportEntry();
+		entry.setAttribute(attribute);
+		entry.setValue(value);
+		report.getReportEntries().add(entry);
+	}
+
+	private String normalizeFilterPath(String path) {
+		String normalizedPath = path.trim();
+		if (!normalizedPath.startsWith("/")) {
+			normalizedPath = "/" + normalizedPath;
+		}
+		if (normalizedPath.endsWith("/") && normalizedPath.length() > 1) {
+			normalizedPath = normalizedPath.substring(0, normalizedPath.length() - 1);
+		}
+		return normalizedPath;
 	}
 
 	public List<HpcReport> generateGridReport(HpcReportCriteria criteria) {
