@@ -13,6 +13,7 @@ package gov.nih.nci.hpc.dao.oracle.impl;
 import java.util.Calendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -44,8 +45,9 @@ public class HpcApiCallsAuditDAOImpl implements HpcApiCallsAuditDAO {
 	// ---------------------------------------------------------------------//
 
 	// The Spring JDBC Template instance.
-	@Autowired
-	private JdbcTemplate jdbcTemplate = null;
+    @Autowired
+    @Qualifier("hpcOracleJdbcTemplate")
+    private JdbcTemplate jdbcTemplate = null;
 
 	// ---------------------------------------------------------------------//
 	// Constructors
