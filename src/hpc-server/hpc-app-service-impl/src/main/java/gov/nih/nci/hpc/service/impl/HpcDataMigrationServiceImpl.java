@@ -747,8 +747,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
 
         // Set the external archive file location for any data objects that are in the external archive (Trino search source).
         // For data objects in the internal archive (Oracle search source), the file location will be null.
-        autoTieringDataObjects.forEach(autoTieringDataObject -> {
-            if (HpcAutoTieringSearchSource.TRINO.equals(s3Configuration.getAutoTieringSearchSource())) {
+        if (HpcAutoTieringSearchSource.TRINO.equals(s3Configuration.getAutoTieringSearchSource())) {
+            autoTieringDataObjects.forEach(autoTieringDataObject -> {
                 // Construct HpcFileLocation of the data object in the external archive to be auto-tiered.
                 HpcFileLocation externalArchiveFileLocation = new HpcFileLocation();
                 externalArchiveFileLocation.setFileContainerId(s3Configuration.getBaseArchiveDestination().getFileLocation().getFileContainerId());
@@ -759,8 +759,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
                 // Set the DME path to register the file and the external archive file location for the data object to be auto-tiered.
                 autoTieringDataObject.setPath(dataManagementConfiguration.getBasePath() + relativePath);
                 autoTieringDataObject.setExternalArchiveFileLocation(externalArchiveFileLocation);
-            }
-        });
+            });
+        }
 
         logger.info("Found {} files for auto-tiering [configurationId={}, searchSource={}, searchPath={}, inactivityMonths={}, archivedMonths={}]",
                 autoTieringDataObjects.size(), configurationId, s3Configuration.getAutoTieringSearchSource(),
