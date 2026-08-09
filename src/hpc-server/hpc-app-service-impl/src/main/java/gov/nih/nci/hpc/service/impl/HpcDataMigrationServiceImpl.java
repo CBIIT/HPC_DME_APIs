@@ -693,9 +693,9 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
     }
 
     @Override
-    public Map<String, HpcFileLocation> getDataObjectsForAutoTiering(String configurationId,
+    public List<HpcAutoTieringDataObject> getAutoTieringDataObjects(String configurationId,
                                                                      String s3ArchiveConfigurationId) throws HpcException {
-        logger.info("getDataObjectsForAutoTiering called with configurationId: {}, s3ArchiveConfigurationId: {}",
+        logger.info("getAutoTieringDataObjects called with configurationId: {}, s3ArchiveConfigurationId: {}",
                 configurationId, s3ArchiveConfigurationId);
 
         // Get the data management configuration.
@@ -738,33 +738,27 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
                     HpcErrorType.UNEXPECTED_ERROR);
         }
 
-        // Build the map of file paths to HpcFileLocation - these are the data objects to be auto-tiered.
-        String basePath = dataManagementConfiguration.getBasePath();
-        String bucket = s3Configuration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
-        String objectIdPrefix = s3Configuration.getBaseArchiveDestination().getFileLocation().getFileId();
-
-        Map<String, HpcFileLocation> autoTieringDataObjects = new HashMap<>();
-
-        // Query for files not accessed within the specified period and create the map of data obejcts to return.
-        autoTieringDAO.getFilesForAutoTiering(
+        // Query for files to be auto-tiered based on the search path, inactivity months, archived months, and S3 archive configuration ID.
+        List<HpcAutoTieringDataObject> autoTieringDataObjects = autoTieringDAO.getAutoTieringDataObjects(
                 s3Configuration.getAutoTieringSearchPath(),
                 s3Configuration.getAutoTieringInactivityMonths(),
                 s3Configuration.getAutoTieringArchivedMonths(),
-                dataManagementConfiguration.getS3AutoTieringConfigurationId()).forEach(path -> {
+                dataManagementConfiguration.getS3AutoTieringConfigurationId());
+
+        // Set the external archive file location for any data objects that are in the external archive (Trino search source).
+        // For data objects in the internal archive (Oracle search source), the file location will be null.
+        autoTieringDataObjects.forEach(autoTieringDataObject -> {
             if (HpcAutoTieringSearchSource.TRINO.equals(s3Configuration.getAutoTieringSearchSource())) {
                 // Construct HpcFileLocation of the data object in the external archive to be auto-tiered.
-                HpcFileLocation fileLocation = new HpcFileLocation();
-                fileLocation.setFileContainerId(bucket);
+                HpcFileLocation externalArchiveFileLocation = new HpcFileLocation();
+                externalArchiveFileLocation.setFileContainerId(s3Configuration.getBaseArchiveDestination().getFileLocation().getFileContainerId());
                 String searchPath = s3Configuration.getAutoTieringSearchPath();
-                String relativePath = path.startsWith(searchPath) ? path.substring(searchPath.length()) : path;
-                fileLocation.setFileId(objectIdPrefix + relativePath);
+                String relativePath = autoTieringDataObject.getPath().startsWith(searchPath) ? autoTieringDataObject.getPath().substring(searchPath.length()) : autoTieringDataObject.getPath();
+                externalArchiveFileLocation.setFileId(s3Configuration.getBaseArchiveDestination().getFileLocation().getFileId() + relativePath);
 
-                // Calculate the DME path (to be registered) for this data object in the external archive.
-                autoTieringDataObjects.put(basePath + relativePath, fileLocation);
-
-            } else if (HpcAutoTieringSearchSource.ORACLE.equals(s3Configuration.getAutoTieringSearchSource())) {
-                // This is auto-tiering of a data object in DME internal archive - just return the DME path
-                autoTieringDataObjects.put(path, null);
+                // Set the DME path to register the file and the external archive file location for the data object to be auto-tiered.
+                autoTieringDataObject.setPath(dataManagementConfiguration.getBasePath() + relativePath);
+                autoTieringDataObject.setExternalArchiveFileLocation(externalArchiveFileLocation);
             }
         });
 
