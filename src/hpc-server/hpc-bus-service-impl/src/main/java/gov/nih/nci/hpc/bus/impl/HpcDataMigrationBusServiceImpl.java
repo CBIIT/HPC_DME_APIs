@@ -27,10 +27,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
 import gov.nih.nci.hpc.domain.metadata.*;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
-import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.model.*;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectListDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamigration.HpcBulkMigrationRequestDTO;
@@ -1444,19 +1441,17 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
      */
     private void processBulkAutoTieringMigration(HpcDataMigrationTask bulkAutoTieringTask) throws HpcException {
 
-        for(Map.Entry<String, HpcFileLocation> autoTieringEntry :
-                dataMigrationService.getDataObjectsForAutoTiering(bulkAutoTieringTask.getConfigurationId(),
-                                                                  bulkAutoTieringTask.getFromS3ArchiveConfigurationId()).
-                                                                  entrySet()) {
-
-            HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(autoTieringEntry.getKey(),
+        for(HpcAutoTieringDataObject autoTieringDataObject :
+                dataMigrationService.getAutoTieringDataObjects(bulkAutoTieringTask.getConfigurationId(),
+                                                                  bulkAutoTieringTask.getFromS3ArchiveConfigurationId())) {
+            HpcDataMigrationTask dataObjectMigrationTask = dataMigrationService.createDataObjectMigrationTask(autoTieringDataObject.getPath(),
                     bulkAutoTieringTask.getUserId(), bulkAutoTieringTask.getConfigurationId(),
                     bulkAutoTieringTask.getFromS3ArchiveConfigurationId(),
                     bulkAutoTieringTask.getToS3ArchiveConfigurationId(),
                     bulkAutoTieringTask.getId(), bulkAutoTieringTask.getAlignArchivePath(),
-                    null, null, bulkAutoTieringTask.getRetryUserId(),
+                    autoTieringDataObject.getSize(), null, bulkAutoTieringTask.getRetryUserId(),
                     false, null, null,
-                    autoTieringEntry.getValue() != null, autoTieringEntry.getValue());
+                    autoTieringDataObject.getExternalArchiveFileLocation() != null, autoTieringDataObject.getExternalArchiveFileLocation());
 
             logger.info("Data object auto-tiering task - {}: created", dataObjectMigrationTask.getId());
         }
