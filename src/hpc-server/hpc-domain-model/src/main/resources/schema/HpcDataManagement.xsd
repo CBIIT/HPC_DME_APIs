@@ -161,6 +161,7 @@
 				minOccurs="0" maxOccurs="unbounded" />
 			<xsd:element name="uploadMethod" 
 				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
