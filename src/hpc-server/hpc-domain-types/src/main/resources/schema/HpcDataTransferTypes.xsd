@@ -511,6 +511,7 @@
 			<xsd:element name="priority" type="xsd:int" />
 			<xsd:element name="dataSize" type="xsd:long" minOccurs="0"/>
 			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
+			<xsd:element name="archiveLinkRegistrationTaskId" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 
