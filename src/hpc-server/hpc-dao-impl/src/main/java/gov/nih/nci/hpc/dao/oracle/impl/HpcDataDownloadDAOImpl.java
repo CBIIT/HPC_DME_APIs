@@ -168,6 +168,8 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set PRIORITY = ? where ID = ?";
 
+	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_ARCHIVE_LINK_REGISTRATION_TASK_ID_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ARCHIVE_LINK_REGISTRATION_TASK_ID = ? where ID = ?";
+
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
 
 	private static final String DELETE_COLLECTION_DOWNLOAD_TASK_SQL = "delete from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
@@ -1318,6 +1320,17 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to update a collection download task priority with ID: " + id + " " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String id, String archiveLinkRegistrationTaskId) throws HpcException {
+		try {
+			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_ARCHIVE_LINK_REGISTRATION_TASK_ID_SQL, archiveLinkRegistrationTaskId, id);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to update a collection download task archive link registration task ID with ID: " + id + " " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
