@@ -875,7 +875,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
 				throw new HpcException("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			//HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerCollectionFromExternal(path);
+			//HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerCollectionFromExternalSource(path);
 
 
 		} catch (HpcException e) {
@@ -897,6 +897,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				Boolean.TRUE.equals(downloadRequest.getAppendPathToDownloadDestination()),
 				Boolean.TRUE.equals(downloadRequest.getAppendCollectionNameToDownloadDestination()), HpcDownloadTaskType.COLLECTION);
 
+		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerCollectionFromExternalSource(collectionDownloadTask);
 		// Create and return a DTO with the request receipt.
 		responseDTO = new HpcCollectionDownloadResponseDTO();
 		responseDTO.setTaskId(collectionDownloadTask.getId());
@@ -914,6 +915,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		String path = downloadTask.getPath();
 		String userId = downloadTask.getUserId();
+
 		// Find the matching S3 data transfer configuration for the external path
 		try {
 			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
@@ -930,31 +932,34 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String basePath = dataManagementConfiguration.getBasePath();
 		String posixPath = s3ArchiveConfiguration.getPosixPath();
 		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+		String archiveObjectId = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId();
 
 		String collectionPath = path.substring(posixPath.length());
 		if(StringUtils.isEmpty(collectionPath)) {
 			logger.warn("Path after POSIX prefix is empty for path: " + path);
 			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		collectionPath = basePath + collectionPath;
+		//collectionPath = basePath + collectionPath;
+		collectionPath = posixPath + "/" + archiveObjectId + collectionPath;
 		downloadTask.setPath(collectionPath);
 		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
 		// Build the DirectoryScanRegistrationItem
-		buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, path, basePath, posixPath, bucket, s3ArchiveConfiguration.getId());
+		buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, collectionPath, basePath, posixPath, bucket, s3ArchiveConfiguration.getId());
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
 		boolean externalArchiveFlag = true;
 		try{
 			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, externalArchiveFlag, userId);
-			 if(registrationResponseDTO != null && !CollectionUtils.isEmpty(registrationResponseDTO.getDataObjectRegistrationItems())) {
-				 logger.info("Successfully completed the Registration step for external collection download for path: " + path);
-			 } else {
-				 logger.info("All Archive links are being reused. No data objects were registered in the Registration step for external collection download for path: " + path);
-			 }
 		} catch (HpcException e) {
 			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		dataTransferService.updateCollectionDownloadTask(downloadTask);
+		dataTransferService.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTask.getId(), registrationResponseDTO.getTaskId());
+		if(registrationResponseDTO != null && !CollectionUtils.isEmpty(registrationResponseDTO.getDataObjectRegistrationItems())) {
+			logger.info("Successfully completed the Registration step for external collection download for path: " + path);
+			// Set the download task status to RECEIVED since the Registration step was successful and data objects were registered.
+		} else {
+			logger.info("All Archive links are being reused. No data objects were registered in the Registration step for external collection download for path: " + path);
+		}
 		return registrationResponseDTO;
 	}
 
@@ -1600,7 +1605,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
 			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException {
-		return registerDataObjects(bulkDataObjectRegistrationRequest, false, null);
+		return registerDataObjects(bulkDataObjectRegistrationRequest, false, securityService.getRequestInvoker().getNciAccount().getUserId());
 	}
 
 	@Override
@@ -1694,15 +1699,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		}
 
-		// TODO change,temporary fix
-		if(userId==null) {
-			HpcNciAccount invokerNciAccount = securityService.getRequestInvoker().getNciAccount();
-			userId = invokerNciAccount.getUserId();
-		}
-
 		// Submit a data objects registration task and return a response DTO.
 		responseDTO.setTaskId(dataManagementService.registerDataObjects(userId,
-				bulkDataObjectRegistrationRequest.getUiURL(), dataObjectRegistrationRequests));
+				bulkDataObjectRegistrationRequest.getUiURL(), dataObjectRegistrationRequests, externalArchiveFlag));
 
 		return responseDTO;
 	}

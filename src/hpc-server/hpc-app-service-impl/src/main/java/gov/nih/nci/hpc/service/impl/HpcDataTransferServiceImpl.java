@@ -2430,6 +2430,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
+	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String downloadTaskId, String archiveLinkRegistrationTaskId) throws HpcException {
+
+		dataDownloadDAO.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTaskId, archiveLinkRegistrationTaskId);
+	}
+
+	@Override
 	public void removeGoogleAccessTokens() throws HpcException {
 		dataDownloadDAO.removeGoogleAccessTokens(googleAccessTokenRetentionPeriod);
 	}
