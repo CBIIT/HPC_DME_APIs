@@ -10,6 +10,7 @@
  */
 package gov.nih.nci.hpc.dao;
 
+import gov.nih.nci.hpc.domain.model.HpcAutoTieringDataObject;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -35,8 +36,8 @@ public interface HpcAutoTieringDAO {
 	 *                       Only files archived at least this long ago will be returned.
 	 * @param s3ArchiveConfigurationId The S3 archive configuration ID to exclude. Only files
 	 *                                  NOT already in this S3 archive configuration are returned.
-	 * @return A list of file paths that are candidates for auto-tiering.
+	 * @return A list of data objects that are candidates for auto-tiering.
 	 * @throws HpcException on service failure.
 	 */
-	List<String> getFilesForAutoTiering(String searchPath, Integer inactivityMonths, Integer archivedMonths, String s3ArchiveConfigurationId) throws HpcException;
+	List<HpcAutoTieringDataObject> getAutoTieringDataObjects(String searchPath, Integer inactivityMonths, Integer archivedMonths, String s3ArchiveConfigurationId) throws HpcException;
 }
