@@ -740,6 +740,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					try {
 						logger.info("External collection download task: [taskId={}] - started processing [{}]",
 								downloadTask.getId(), downloadTask.getType());
+						dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
 						HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
 								.registerCollectionFromExternalSource(downloadTask);
 						logger.info("2172 registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
