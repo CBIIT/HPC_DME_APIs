@@ -12,10 +12,7 @@ import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationResult;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationStatus;
 import gov.nih.nci.hpc.domain.datamigration.HpcDataMigrationType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTask;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskResult;
-import gov.nih.nci.hpc.domain.model.HpcDataMigrationTaskStatus;
-import gov.nih.nci.hpc.domain.model.HpcStagedMetadataAttribute;
+import gov.nih.nci.hpc.domain.model.*;
 import gov.nih.nci.hpc.exception.HpcException;
 
 import java.util.List;
@@ -310,16 +307,15 @@ public interface HpcDataMigrationService {
                                                    String toS3ArchiveConfigurationId, String userId) throws HpcException;
 
     /**
-     * Search for files in the external archive that are candidates for auto-tiering migration.
-     * Files that have not been accessed within the configured time period will be identified,
-     * and their DME path and external archive locations returned
+     * Search for files in external or internal archive that are candidates for auto-tiering migration.
+     * The search criteria is based on S3 archive configuration.
      *
      * @param configurationId        The data management configuration ID.
      * @param s3ArchiveConfigurationId The S3 archive configuration ID.
-     * @return A map of data object paths to their corresponding file locations in the external archive.
+     * @return A list of data objects that are candidates for auto-tiering migration to S3 Glacier Deep Archive.
      * @throws HpcException on service failure.
      */
-    Map<String, HpcFileLocation> getDataObjectsForAutoTiering(String configurationId, String s3ArchiveConfigurationId)
+    List<HpcAutoTieringDataObject> getAutoTieringDataObjects(String configurationId, String s3ArchiveConfigurationId)
             throws HpcException;
 
 	/**

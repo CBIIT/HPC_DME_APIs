@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.dao.trino.impl;
 
 import gov.nih.nci.hpc.dao.HpcAutoTieringDAO;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
+import gov.nih.nci.hpc.domain.model.HpcAutoTieringDataObject;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import java.util.List;
 
@@ -40,7 +42,7 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 
 	// SQL Queries.
 	private static final String GET_FILES_FOR_AUTO_TIERING_SQL =
-			"select parent_path || name as path " +
+			"select parent_path || name as path, size " +
 			"from \"vast-big-catalog-bucket/vast_big_catalog_schema\".\"vast_big_catalog_table\" " +
 			"where element_type = 'FILE' " +
 			"and parent_path LIKE ? " +
@@ -63,6 +65,15 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// The logger instance.
 	private static final Logger logger = LoggerFactory.getLogger(HpcAutoTieringDAOImpl.class.getName());
 
+	// HpcAutoTieringDataObject table to object mapper.
+	private final RowMapper<HpcAutoTieringDataObject> rowMapper = (rs, rowNum) -> {
+		HpcAutoTieringDataObject dataObject = new HpcAutoTieringDataObject();
+		dataObject.setPath(rs.getString("path"));
+		dataObject.setSize(rs.getLong("size"));
+		// externalArchiveFileLocation is left unset.
+		return dataObject;
+	};
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -79,12 +90,12 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// ---------------------------------------------------------------------//
 
 	@Override
-	public List<String> getFilesForAutoTiering(String searchPath, Integer inactivityMonths, Integer archivedMonths, String s3ArchiveConfigurationId) throws HpcException {
+	public List<HpcAutoTieringDataObject> getAutoTieringDataObjects(String searchPath, Integer inactivityMonths, Integer archivedMonths, String s3ArchiveConfigurationId) throws HpcException {
 		try {
-			return jdbcTemplate.queryForList(
+			return jdbcTemplate.query(
 					GET_FILES_FOR_AUTO_TIERING_SQL.replace("{inactivityMonths}", inactivityMonths.toString())
 							.replace("{archivedMonths}", archivedMonths.toString()),
-					String.class, searchPath + "%");
+					rowMapper, searchPath + "%");
 
 		} catch (DataAccessException e) {
 			throw new HpcException(
