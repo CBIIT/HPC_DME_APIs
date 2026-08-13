@@ -260,6 +260,24 @@ public interface HpcDataDownloadDAO {
 	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String id, String archiveLinkRegistrationTaskId) throws HpcException;
 
 	/**
+	 * Update a collection download task status.
+	 *
+	 * @param id The collection download task ID.
+	 * @param status The status of the task.
+	 * @throws HpcException on database error.
+	 */
+	public void updateCollectionDownloadTaskStatus(String id, String status) throws HpcException;
+
+	/**
+	 * Get a collection download task by registration ID external.
+	 *
+	 * @param registrationTaskId The registration task ID.
+	 * @return The collection download task ID, or null if not found.
+	 * @throws HpcException on database error.
+	 */
+	public String getCollectionDownloadTaskByRegistrationIdExternal(String registrationTaskId) throws HpcException;
+
+	/**
 	 * Get collection download requests in process.
 	 *
 	 * @return A list of collection download requests.
