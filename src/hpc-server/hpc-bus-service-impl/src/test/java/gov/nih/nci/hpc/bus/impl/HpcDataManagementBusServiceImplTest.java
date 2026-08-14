@@ -10,12 +10,10 @@ import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
@@ -33,7 +31,9 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 
 class HpcDataManagementBusServiceImplTest {
 
@@ -59,6 +59,12 @@ class HpcDataManagementBusServiceImplTest {
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
+        setPrivateField("downloadArchiveLinkBasePath", "/download/archive");
+        var invoker = mock(HpcRequestInvoker.class);
+        var nciAccount = mock(HpcNciAccount.class);
+        when(nciAccount.getUserId()).thenReturn("test-user");
+        when(invoker.getNciAccount()).thenReturn(nciAccount);
+        when(securityService.getRequestInvoker()).thenReturn(invoker);
     }
     
     @AfterEach
@@ -482,208 +488,154 @@ class HpcDataManagementBusServiceImplTest {
         assertTrue(resp.getMessage().contains("Delete failed"));
     }
 
-        @Test
-        void testDownloadDataObjectFromExternalSource_RegistersAndDelegatesWithExternalFlag() throws Exception {
-        setPrivateField("downloadArchiveLinkBasePath", "/temp/external");
+    @Test
+    void testDownloadDataObjectFromExternalSource_NullRequest() throws Exception {
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource("/external/path", null);
+        });
 
-        String externalPath = "/external-root/project/file.txt";
-        String archiveObjectPrefix = "archive-root";
-        String relativePath = "/project/file.txt";
-        String derivedPath = "/" + archiveObjectPrefix + relativePath;
-        String permanentPath = "/base" + derivedPath;
-        String temporaryPath = "/temp/external" + derivedPath;
+        assertEquals("Null download request", exception.getMessage());
+    }
 
+    @Test
+    void testDownloadDataObjectFromExternalSource_MissingBasePath() throws Exception {
+        setPrivateField("downloadArchiveLinkBasePath", "");
+
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource("/external/path", new HpcDownloadRequestDTO());
+        });
+
+        assertTrue(exception.getMessage().contains(
+                "Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath"));
+    }
+
+    @Test
+    void testDownloadDataObjectFromExternalSource_NoMatchingS3Configuration() throws Exception {
+        String path = "/external/project/file.txt";
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(null);
+
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource(path, new HpcDownloadRequestDTO());
+        });
+
+        assertTrue(exception.getMessage().contains(
+                "No matching S3 archive configuration found for external download path: " + path));
+    }
+
+    @Test
+    void testDownloadDataObjectFromExternalSource_PermanentArchiveLinkExists() throws Exception {
+        String path = "/external/project/file.txt";
+        String permanentArchiveLinkPath = "/base/project/file.txt";
+        var s3ArchiveConfiguration = buildExternalDownloadConfiguration("dm-config", "s3-config", "/external",
+                "/base", "bucket-a", "archive-object-");
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(s3ArchiveConfiguration);
+        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(buildDataManagementConfiguration("/base"));
+        when(dataManagementService.getDataObject(permanentArchiveLinkPath)).thenReturn(mock(gov.nih.nci.hpc.domain.datamanagement.HpcDataObject.class));
+
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource(path, new HpcDownloadRequestDTO());
+        });
+
+        assertTrue(exception.getMessage().contains(
+                "Permanent or default Archive Link for /project/file.txt already exists. The Archive Link could have been created for a Migration."));
+    }
+
+    @Test
+    void testDownloadDataObjectFromExternalSource_Success() throws Exception {
+        String path = "/external/project/file.txt";
+        String permanentArchiveLinkPath = "/base/project/file.txt";
+        String temporaryArchiveLinkPath = "/download/archive/external/project/file.txt";
         HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
 
-        HpcDataTransferConfiguration s3Configuration = mock(HpcDataTransferConfiguration.class);
-        HpcDataManagementConfiguration dataManagementConfiguration = mock(HpcDataManagementConfiguration.class);
-        gov.nih.nci.hpc.domain.datatransfer.HpcArchive archive =
-            mock(gov.nih.nci.hpc.domain.datatransfer.HpcArchive.class);
-        gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation archiveLocation =
-            mock(gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation.class);
+        var s3ArchiveConfiguration = buildExternalDownloadConfiguration("dm-config", "s3-config", "/external",
+                "/base", "bucket-a", "archive-object-");
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(s3ArchiveConfiguration);
+        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(buildDataManagementConfiguration("/base"));
+        when(dataManagementService.getDataObject(permanentArchiveLinkPath)).thenReturn(null);
+        when(dataManagementService.getDataObject(temporaryArchiveLinkPath)).thenReturn(null);
 
-        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath)).thenReturn(s3Configuration);
-        when(s3Configuration.getDataManagementConfigurationId()).thenReturn("dm-config");
-        when(s3Configuration.getPosixPath()).thenReturn("/external-root");
-        when(s3Configuration.getId()).thenReturn("s3-config");
-        when(s3Configuration.getBaseArchiveDestination()).thenReturn(archive);
-        when(archive.getFileLocation()).thenReturn(archiveLocation);
-        when(archiveLocation.getFileContainerId()).thenReturn("bucket-a");
-        when(archiveLocation.getFileId()).thenReturn(archiveObjectPrefix);
-        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(dataManagementConfiguration);
-        when(dataManagementConfiguration.getBasePath()).thenReturn("/base");
-
-        when(dataManagementService.getDataObject(permanentPath)).thenReturn(null);
-        when(dataManagementService.getDataObject(temporaryPath)).thenReturn(null);
-
-        HpcDataObjectRegistrationResponseDTO registrationResponse = new HpcDataObjectRegistrationResponseDTO();
+        var registrationResponse = new HpcDataObjectRegistrationResponseDTO();
         registrationResponse.setRegistered(true);
-        doReturn(registrationResponse)
-            .when(service)
-            .registerDataObject(eq(temporaryPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
+        doReturn(registrationResponse).when(service).registerDataObject(eq(temporaryArchiveLinkPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
 
-        HpcDataObjectDownloadResponseDTO delegatedResponse = new HpcDataObjectDownloadResponseDTO();
-        delegatedResponse.setTaskId("task-123");
-        doReturn(delegatedResponse).when(service).downloadDataObject(temporaryPath, downloadRequest, true);
+        var downloadResponse = new HpcDataObjectDownloadResponseDTO();
+        downloadResponse.setTaskId("task-1");
+        doReturn(downloadResponse).when(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
 
-        HpcDataObjectDownloadResponseDTO response =
-            service.downloadDataObjectFromExternalSource(externalPath, downloadRequest);
+        HpcDataObjectDownloadResponseDTO response = service.downloadDataObjectFromExternalSource(path, downloadRequest);
 
-        assertEquals("task-123", response.getTaskId());
-        verify(dataManagementService).getS3ArchiveConfigurationForExternalPath(externalPath);
-        verify(dataManagementService).getDataObject(permanentPath);
-        verify(dataManagementService).getDataObject(temporaryPath);
+        assertEquals("task-1", response.getTaskId());
+        verify(service).registerDataObject(eq(temporaryArchiveLinkPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
+        verify(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
+    }
 
-        ArgumentCaptor<HpcDataObjectRegistrationRequestDTO> requestCaptor =
-            ArgumentCaptor.forClass(HpcDataObjectRegistrationRequestDTO.class);
-        verify(service).registerDataObject(eq(temporaryPath), requestCaptor.capture(), isNull());
-        HpcDataObjectRegistrationRequestDTO registrationRequest = requestCaptor.getValue();
-        assertEquals("s3-config", registrationRequest.getS3ArchiveConfigurationId());
-        assertTrue(registrationRequest.getCreateParentCollections());
-        assertEquals("bucket-a",
-            registrationRequest.getArchiveLinkSource().getSourceLocation().getFileContainerId());
-        assertEquals("archive-root/project/file.txt",
-            registrationRequest.getArchiveLinkSource().getSourceLocation().getFileId());
-
-        verify(service).downloadDataObject(temporaryPath, downloadRequest, true);
-        }
-
-        @Test
-        void testDownloadDataObjectFromExternalSource_ExistingPermanentLinkRejected() throws Exception {
-        setPrivateField("downloadArchiveLinkBasePath", "/temp/external");
-
-        String externalPath = "/external-root/project/file.txt";
-        String archiveObjectPrefix = "archive-root";
-        String relativePath = "/project/file.txt";
-        String derivedPath = "/" + archiveObjectPrefix + relativePath;
-        String permanentPath = "/base" + derivedPath;
-
-        HpcDataTransferConfiguration s3Configuration = mock(HpcDataTransferConfiguration.class);
-        HpcDataManagementConfiguration dataManagementConfiguration = mock(HpcDataManagementConfiguration.class);
-        gov.nih.nci.hpc.domain.datatransfer.HpcArchive archive =
-            mock(gov.nih.nci.hpc.domain.datatransfer.HpcArchive.class);
-        gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation archiveLocation =
-            mock(gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation.class);
-
-        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath)).thenReturn(s3Configuration);
-        when(s3Configuration.getDataManagementConfigurationId()).thenReturn("dm-config");
-        when(s3Configuration.getPosixPath()).thenReturn("/external-root");
-        when(s3Configuration.getBaseArchiveDestination()).thenReturn(archive);
-        when(archive.getFileLocation()).thenReturn(archiveLocation);
-        when(archiveLocation.getFileContainerId()).thenReturn("bucket-a");
-        when(archiveLocation.getFileId()).thenReturn(archiveObjectPrefix);
-        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(dataManagementConfiguration);
-        when(dataManagementConfiguration.getBasePath()).thenReturn("/base");
-
-        when(dataManagementService.getDataObject(permanentPath)).thenReturn(mock(HpcDataObject.class));
-
-        HpcException exception = assertThrows(HpcException.class,
-            () -> service.downloadDataObjectFromExternalSource(externalPath, new HpcDownloadRequestDTO()));
-
-        assertTrue(exception.getMessage().contains("Permanent or default Archive Link"));
-        verify(service, never()).downloadDataObject(anyString(), any(HpcDownloadRequestDTO.class), anyBoolean());
-        }
-
-        @Test
-        void testDownloadDataObjectFromExternalSource_SkipsRegistrationWhenTemporaryLinkExists() throws Exception {
-        setPrivateField("downloadArchiveLinkBasePath", "/temp/external");
-
-        String externalPath = "/external-root/project/file.txt";
-        String archiveObjectPrefix = "archive-root";
-        String relativePath = "/project/file.txt";
-        String derivedPath = "/" + archiveObjectPrefix + relativePath;
-        String permanentPath = "/base" + derivedPath;
-        String temporaryPath = "/temp/external" + derivedPath;
-
-        HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
-        HpcDataTransferConfiguration s3Configuration = mock(HpcDataTransferConfiguration.class);
-        HpcDataManagementConfiguration dataManagementConfiguration = mock(HpcDataManagementConfiguration.class);
-        gov.nih.nci.hpc.domain.datatransfer.HpcArchive archive =
-            mock(gov.nih.nci.hpc.domain.datatransfer.HpcArchive.class);
-        gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation archiveLocation =
-            mock(gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation.class);
-
-        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath)).thenReturn(s3Configuration);
-        when(s3Configuration.getDataManagementConfigurationId()).thenReturn("dm-config");
-        when(s3Configuration.getPosixPath()).thenReturn("/external-root");
-        when(s3Configuration.getBaseArchiveDestination()).thenReturn(archive);
-        when(archive.getFileLocation()).thenReturn(archiveLocation);
-        when(archiveLocation.getFileContainerId()).thenReturn("bucket-a");
-        when(archiveLocation.getFileId()).thenReturn(archiveObjectPrefix);
-        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(dataManagementConfiguration);
-        when(dataManagementConfiguration.getBasePath()).thenReturn("/base");
-        when(dataManagementService.getDataObject(permanentPath)).thenReturn(null);
-        when(dataManagementService.getDataObject(temporaryPath)).thenReturn(mock(HpcDataObject.class));
-
-        HpcDataObjectDownloadResponseDTO delegatedResponse = new HpcDataObjectDownloadResponseDTO();
-        delegatedResponse.setTaskId("task-456");
-        doReturn(delegatedResponse).when(service).downloadDataObject(temporaryPath, downloadRequest, true);
-
-        HpcDataObjectDownloadResponseDTO response =
-            service.downloadDataObjectFromExternalSource(externalPath, downloadRequest);
-
-        assertEquals("task-456", response.getTaskId());
-        verify(service, never()).registerDataObject(anyString(), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
-        verify(service).downloadDataObject(temporaryPath, downloadRequest, true);
-        }
-
-        @Test
-        void testDownloadDataObjectFromExternalSource_CleansUpTemporaryLinkOnDownloadFailure() throws Exception {
-        setPrivateField("downloadArchiveLinkBasePath", "/temp/external");
-
-        String externalPath = "/external-root/project/file.txt";
-        String archiveObjectPrefix = "archive-root";
-        String relativePath = "/project/file.txt";
-        String derivedPath = "/" + archiveObjectPrefix + relativePath;
-        String permanentPath = "/base" + derivedPath;
-        String temporaryPath = "/temp/external" + derivedPath;
-
+    @Test
+    void testDownloadDataObjectFromExternalSource_DownloadFailureCleansUpTemporaryLink() throws Exception {
+        String path = "/external/project/file.txt";
+        String permanentArchiveLinkPath = "/base/project/file.txt";
+        String temporaryArchiveLinkPath = "/download/archive/external/project/file.txt";
         HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
 
-        HpcDataTransferConfiguration s3Configuration = mock(HpcDataTransferConfiguration.class);
-        HpcDataManagementConfiguration dataManagementConfiguration = mock(HpcDataManagementConfiguration.class);
-        gov.nih.nci.hpc.domain.datatransfer.HpcArchive archive =
-            mock(gov.nih.nci.hpc.domain.datatransfer.HpcArchive.class);
-        gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation archiveLocation =
-            mock(gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation.class);
-        HpcMetadataEntries metadataEntries = mock(HpcMetadataEntries.class);
-        HpcSystemGeneratedMetadata systemMetadata = mock(HpcSystemGeneratedMetadata.class);
+        var s3ArchiveConfiguration = buildExternalDownloadConfiguration("dm-config", "s3-config", "/external",
+                "/base", "bucket-a", "archive-object-");
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(s3ArchiveConfiguration);
+        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(buildDataManagementConfiguration("/base"));
+        when(dataManagementService.getDataObject(permanentArchiveLinkPath)).thenReturn(null);
+        when(dataManagementService.getDataObject(temporaryArchiveLinkPath)).thenReturn(mock(gov.nih.nci.hpc.domain.datamanagement.HpcDataObject.class));
 
-        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath)).thenReturn(s3Configuration);
-        when(s3Configuration.getDataManagementConfigurationId()).thenReturn("dm-config");
-        when(s3Configuration.getPosixPath()).thenReturn("/external-root");
-        when(s3Configuration.getId()).thenReturn("s3-config");
-        when(s3Configuration.getBaseArchiveDestination()).thenReturn(archive);
-        when(archive.getFileLocation()).thenReturn(archiveLocation);
-        when(archiveLocation.getFileContainerId()).thenReturn("bucket-a");
-        when(archiveLocation.getFileId()).thenReturn(archiveObjectPrefix);
-        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(dataManagementConfiguration);
-        when(dataManagementConfiguration.getBasePath()).thenReturn("/base");
-        when(dataManagementService.getDataObject(permanentPath)).thenReturn(null);
-        when(dataManagementService.getDataObject(temporaryPath)).thenReturn(mock(HpcDataObject.class));
-
-        when(metadataService.getDataObjectMetadataEntries(temporaryPath, false)).thenReturn(metadataEntries);
+        var metadataEntries = mock(HpcMetadataEntries.class);
+        var tempMetadata = mock(HpcSystemGeneratedMetadata.class);
+        when(metadataService.getDataObjectMetadataEntries(temporaryArchiveLinkPath, false)).thenReturn(metadataEntries);
         when(metadataEntries.getSelfMetadataEntries()).thenReturn(Collections.emptyList());
-        when(metadataService.toSystemGeneratedMetadata(Collections.emptyList())).thenReturn(systemMetadata);
-        when(systemMetadata.getConfigurationId()).thenReturn("dm-config");
-        when(systemMetadata.getS3ArchiveConfigurationId()).thenReturn("s3-config");
-        when(dataTransferService.deleteTemporaryArchiveLink(temporaryPath, "dm-config", "s3-config")).thenReturn(true);
+        when(metadataService.toSystemGeneratedMetadata(Collections.emptyList())).thenReturn(tempMetadata);
+        when(tempMetadata.getConfigurationId()).thenReturn("dm-config");
+        when(tempMetadata.getS3ArchiveConfigurationId()).thenReturn("s3-config");
+        when(dataTransferService.deleteTemporaryArchiveLink(temporaryArchiveLinkPath, "dm-config", "s3-config")).thenReturn(true);
 
+        var registrationResponse = new HpcDataObjectRegistrationResponseDTO();
+        registrationResponse.setRegistered(true);
+        doReturn(registrationResponse).when(service).registerDataObject(eq(temporaryArchiveLinkPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
         doThrow(new HpcException("delegated download failed", HpcErrorType.INVALID_REQUEST_INPUT))
-            .when(service)
-            .downloadDataObject(temporaryPath, downloadRequest, true);
+                .when(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
 
-        HpcException exception = assertThrows(HpcException.class,
-            () -> service.downloadDataObjectFromExternalSource(externalPath, downloadRequest));
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource(path, downloadRequest);
+        });
 
-        assertTrue(exception.getMessage().contains("Failed to create download task for external download"));
-        verify(dataTransferService).deleteTemporaryArchiveLink(temporaryPath, "dm-config", "s3-config");
+        assertTrue(exception.getMessage().contains("Failed the Registration/Download step for external download"));
+        verify(dataTransferService).deleteTemporaryArchiveLink(temporaryArchiveLinkPath, "dm-config", "s3-config");
+    }
+
+    private HpcDataTransferConfiguration buildExternalDownloadConfiguration(String configurationId,
+            String s3ArchiveConfigurationId, String posixPath, String basePath, String bucket, String archiveObjectId) {
+        var baseArchiveDestination = mock(gov.nih.nci.hpc.domain.datatransfer.HpcArchive.class);
+        var fileLocation = new gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation();
+        fileLocation.setFileContainerId(bucket);
+        fileLocation.setFileId(archiveObjectId);
+        when(baseArchiveDestination.getFileLocation()).thenReturn(fileLocation);
+
+        var s3ArchiveConfiguration = new HpcDataTransferConfiguration();
+        s3ArchiveConfiguration.setId(s3ArchiveConfigurationId);
+        s3ArchiveConfiguration.setDataManagementConfigurationId(configurationId);
+        s3ArchiveConfiguration.setPosixPath(posixPath);
+        s3ArchiveConfiguration.setBaseArchiveDestination(baseArchiveDestination);
+        return s3ArchiveConfiguration;
+    }
+
+    private HpcDataManagementConfiguration buildDataManagementConfiguration(String basePath) {
+        var configuration = new HpcDataManagementConfiguration();
+        configuration.setBasePath(basePath);
+        return configuration;
+    }
+
+    private void setPrivateField(String fieldName, Object value) {
+        try {
+            Field field = HpcDataManagementBusServiceImpl.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(service, value);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to set field: " + fieldName, e);
         }
-
-        private void setPrivateField(String fieldName, Object value) throws Exception {
-        Field field = HpcDataManagementBusServiceImpl.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(service, value);
-        }
+    }
 
 }
