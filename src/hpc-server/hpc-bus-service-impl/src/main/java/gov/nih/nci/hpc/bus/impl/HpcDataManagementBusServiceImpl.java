@@ -181,6 +181,7 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
+import com.google.gson.Gson;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -249,6 +250,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -912,6 +914,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
+		logger.info("2172: Registering collection from external source for download task: " + downloadTask.getId());
+		logger.info("2172: Download Task = " + gson.toJson(downloadTask));
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		String path = downloadTask.getPath();
 		String userId = downloadTask.getUserId();
@@ -942,13 +946,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		//collectionPath = basePath + collectionPath;
 		collectionPath = posixPath + "/" + archiveObjectId + collectionPath;
 		downloadTask.setPath(collectionPath);
-		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
 		// Build the DirectoryScanRegistrationItem
-		buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, collectionPath, basePath, posixPath, bucket, s3ArchiveConfiguration.getId());
+		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(collectionPath, basePath, posixPath, bucket, s3ArchiveConfiguration.getId());
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
 		boolean externalArchiveFlag = true;
 		try{
 			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, externalArchiveFlag, userId);
+			logger.info("registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
 		} catch (HpcException e) {
 			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -961,6 +965,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.info("All Archive links are being reused. No data objects were registered in the Registration step for external collection download for path: " + path);
 		}*/
 
+		// TEST CODE
+
+		//HpcBulkDataObjectRegistrationTaskDTO taskStatusDTO = dataManagementService.getBulkDataObjectRegistrationTask(registrationResponseDTO.getTaskId());
+
+		// END TEST CODE
 		return registrationResponseDTO;
 	}
 
@@ -5389,8 +5398,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 
-    private void buildDirectoryScanRegistrationItem(HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO, String path, String basePath, String posixPath, String bucket, String s3ArchiveConfigurationId) throws HpcException {
-        String dmeFolderPath = path.substring(posixPath.length());
+    private HpcBulkDataObjectRegistrationRequestDTO buildDirectoryScanRegistrationItem( String path, String basePath, String posixPath, String bucket, String s3ArchiveConfigurationId) throws HpcException {
+	HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
+		String dmeFolderPath = path.substring(posixPath.length());
         if(StringUtils.isEmpty(dmeFolderPath)) {
             logger.warn("Path after POSIX prefix is empty for path: " + path);
             throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
@@ -5405,6 +5415,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
         directoryScanRegistrationItem.setS3ArchiveScanDirectory(s3ArchiveScanDirectory);
         directoryScanRegistrationItem.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
         registrationBulkRequestDTO.getDirectoryScanRegistrationItems().add(directoryScanRegistrationItem);
+		return registrationBulkRequestDTO;
     }
 
 	private boolean deleteExternalArchiveLink(String downloadArchiveLinkPath) {
