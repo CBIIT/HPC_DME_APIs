@@ -156,6 +156,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		String uploadMethodStr = rs.getString("UPLOAD_METHOD");
 		bulkDataObjectRegistrationTask.setUploadMethod(
 				!StringUtils.isEmpty(uploadMethodStr) ? HpcDataTransferUploadMethod.fromValue(uploadMethodStr) : null);
+		bulkDataObjectRegistrationTask.setExternalArchiveFlag(rs.getBoolean("EXTERNAL_ARCHIVE_FLAG"));
 
 		return bulkDataObjectRegistrationTask;
 	};
