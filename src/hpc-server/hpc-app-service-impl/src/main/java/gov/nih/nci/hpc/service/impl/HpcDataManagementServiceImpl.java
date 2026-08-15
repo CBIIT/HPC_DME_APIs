@@ -985,6 +985,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public String registerDataObjects(String userId, String uiURL,
 			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests, boolean externalArchiveFlag) throws HpcException {
+		logger.info("2172 externalArchiveFlag="+externalArchiveFlag);
 		// Input validation
 		if (StringUtils.isEmpty(userId)) {
 			throw new HpcException("Null / Empty userId in registration list request",
