@@ -761,6 +761,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			logger.info("collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
 					downloadTask.getType());
 
+			Gson gson = new Gson();
+			logger.info("collection download task:" + gson.toJson(downloadTask));
+
 			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
 				// User requested to cancel this collection download task.
 				logger.info("Processing User requested cancellation of task for collection path {}",
@@ -833,7 +836,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								// Get the System generated metadata.
 								HpcSystemGeneratedMetadata metadata = metadataService
 										.getCollectionSystemGeneratedMetadata(downloadTask.getPath());
-
+								if(metadata != null) {
+									logger.info(" 2172 metadata for collection: " + gson.toJson(metadata));
+								}
+								else {
+									logger.info(" 2172 metadata for collection: ");
+								}
 								// Get the collection to be downloaded.
 								HpcCollection collection = dataManagementService
 										.getFullCollection(downloadTask.getPath(), metadata.getLinkSourcePath());
