@@ -1055,6 +1055,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			logger.info("2172: Collection download task ID retrieved by registration ID: " + collectionDownloadTaskId + " registration ID: " + registrationTask.getId());
 			if (collectionDownloadTaskId != null && !collectionDownloadTaskId.isBlank()) {
 				dataDownloadDAO.updateCollectionDownloadTaskStatus(collectionDownloadTaskId, HpcCollectionDownloadTaskStatus.RECEIVED.toString());
+				dataDownloadDAO.setCollectionDownloadTaskInProcess(collectionDownloadTaskId, false);
 			} else {
 				logger.info("2172: No collection download task found for registration ID: " + registrationTask.getId());
 				return;
