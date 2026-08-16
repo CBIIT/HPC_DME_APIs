@@ -784,7 +784,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		String downloadArchiveLinkPath = null;
-		String filePath = null;
+		String relativeFilePath = null;
 
 		// Find the matching S3 data transfer configuration for the external path
 		try {
@@ -804,34 +804,35 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String archiveObjectId = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId();
 
 		try {
-			filePath = path.substring(posixPath.length());
-			if(StringUtils.isEmpty(filePath)) {
+			relativeFilePath = path.substring(posixPath.length());
+			if(StringUtils.isEmpty(relativeFilePath)) {
 				logger.warn("Path after POSIX prefix is empty for path: " + path);
 				throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-			filePath = "/" + archiveObjectId + filePath;
 		} catch (HpcException e) {
 			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
 			throw new HpcException("Failed path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Check if a permanent or default archive link already exists for this file path
-		boolean permanentArchiveLinkExists = dataManagementService.getDataObject(basePath + filePath) != null;
+		// Check if a permanent archive link already exists for this file path in irods
+		String permanentArchiveLinkPath = basePath + relativeFilePath;
+		boolean permanentArchiveLinkExists = dataManagementService.getDataObject(permanentArchiveLinkPath) != null;
 		if(permanentArchiveLinkExists) {
-			throw new HpcException("Permanent or default Archive Link for " + filePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
+			throw new HpcException("Permanent or default Archive Link for " + relativeFilePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Build temporary archive link path for external download
-		downloadArchiveLinkPath = downloadArchiveLinkBasePath + filePath;
+		downloadArchiveLinkPath = downloadArchiveLinkBasePath + path;
 
 		// Serialize registration, task creation and failure cleanup per temporaryArchivelinkPath.
 		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath);
 		try {
 			synchronized (externalArchivePathLock) {
+				// Registration Step
 				try {
 					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
 					if(temporaryArchiveLinkDoesNotExist) {
-						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
+						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), archiveObjectId + relativeFilePath, bucket);
 					}
 				} catch (HpcException e) {
 					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
@@ -1950,11 +1951,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						|| downloadRequest.getBoxDownloadDestination() != null,
 				false);
 
-		if (externalArchiveFlag) {
-			// Construct the user inputed path by replacing the downloadArchiveLinkBasePath with the S3 archive posix path.
-			HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(metadata.getS3ArchiveConfigurationId());
-			path = path.replaceFirst(downloadArchiveLinkBasePath, s3Config.getPosixPath());
-		}
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
@@ -5379,10 +5375,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return uploadResponse;
 	}
 	
-	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String filePath, String bucket) throws HpcException {
+	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String s3FilePath, String bucket) throws HpcException {
 		HpcFileLocation sourceLocation = new HpcFileLocation();
 		sourceLocation.setFileContainerId(bucket);
-		sourceLocation.setFileId(filePath.substring(1));
+		sourceLocation.setFileId(s3FilePath);
 		HpcUploadSource uploadSource = new HpcUploadSource();
 		uploadSource.setSourceLocation(sourceLocation);
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
