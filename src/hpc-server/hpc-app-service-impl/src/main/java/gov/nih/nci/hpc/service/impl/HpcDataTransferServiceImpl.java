@@ -1173,8 +1173,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
-		String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(path, s3ConfigurationId);
-		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(temporaryArchiveLinkPath);
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(path);
 
 		try {
 			synchronized (externalArchivePathLock) {
@@ -1192,9 +1191,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 				if (numberOfActiveExternalDownloadTasksForPath == 0) {
 					try {
-						logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
-						HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
-						temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
+						logger.info("Temporary Archive Link: {} being deleted", path);
+						HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
+						temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
 								configurationId, s3ConfigurationId);
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: "
@@ -1209,7 +1208,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			}
 		} finally {
-			HpcExternalArchiveLinkLockManager.deletePathLock(temporaryArchiveLinkPath);
+			HpcExternalArchiveLinkLockManager.deletePathLock(path);
 		}
 
 		return temporaryArchiveLinkDeleted;
@@ -1501,12 +1500,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
-			if (downloadTask.getExternalArchiveFlag()){
-				String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(downloadRequest.getPath(), downloadTask.getS3ArchiveConfigurationId());
-				downloadRequest.setArchiveLocation(getArchiveLocation(temporaryArchiveLinkPath));
-			} else {
-				downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
-			}
+			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
@@ -4738,16 +4732,4 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 	}
-
-	private String getTemporaryArchiveLinkPath(String userInputtedPath, String s3ArchiveConfigurationId) throws HpcException {
-		String temporaryArchiveLinkPath = null;
-		try {
-			HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
-			temporaryArchiveLinkPath = userInputtedPath.replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
-		} catch (HpcException e) {
-			logger.error("Failed to determine temporary archive link path", e);
-		}
-		return temporaryArchiveLinkPath;
-	}
-	
 }
