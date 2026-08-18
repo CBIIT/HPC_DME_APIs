@@ -302,6 +302,9 @@ public class HpcBrowseController extends AbstractHpcController {
     }
     Set<String> userBasePaths = (Set<String>)session.getAttribute("userBasePaths");
     model.addAttribute("userBasePaths", userBasePaths);
+    
+    Set<String> userExternalArchives = (Set<String>) session.getAttribute("userExternalArchives");
+    model.addAttribute("externalArchives", userExternalArchives);
 
     String partial = request.getParameter("partial");
     String refresh = request.getParameter("refresh");
@@ -647,6 +650,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setId(listEntry.getPath());
 					listChildEntry.setName(listEntry.getPath());
 					listChildEntry.setFileSize(Long.toString(listEntry.getDataSize()));
+					listChildEntry.setHumanReadableFileSize(MiscUtil.addHumanReadableSize(Long.valueOf(listEntry.getDataSize()).toString(), true));
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     if(listEntry.getCreatedAt() != null)
                       listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));
@@ -671,6 +675,7 @@ public class HpcBrowseController extends AbstractHpcController {
 					listChildEntry.setId(listEntry.getPath());
 					listChildEntry.setName(listEntry.getPath());
 					listChildEntry.setFileSize(Long.toString(listEntry.getDataSize()));
+					listChildEntry.setHumanReadableFileSize(MiscUtil.addHumanReadableSize(Long.valueOf(listEntry.getDataSize()).toString(), true));
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 					if(listEntry.getCreatedAt() != null)
 					  listChildEntry.setLastUpdated(sdf.format(listEntry.getCreatedAt().getTime()));
