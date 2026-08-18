@@ -1950,6 +1950,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						|| downloadRequest.getBoxDownloadDestination() != null,
 				false);
 
+		if (externalArchiveFlag) {
+			// Construct the user inputed path by replacing the downloadArchiveLinkBasePath with empty string
+			path = path.replaceFirst(downloadArchiveLinkBasePath, "");
+		}
+
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
 				metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
