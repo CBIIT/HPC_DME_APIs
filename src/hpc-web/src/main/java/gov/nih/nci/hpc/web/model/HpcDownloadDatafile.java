@@ -29,6 +29,7 @@ public class HpcDownloadDatafile {
 	private String globalMetadataSearchText;
 	private String boxContainerName;
 	private String boxPath;	
+	private String external;
 
 	public String getGlobalMetadataSearchText() {
 		return globalMetadataSearchText;
@@ -222,6 +223,14 @@ public class HpcDownloadDatafile {
 
 	public void setBoxPath(String boxPath) {
 		this.boxPath = boxPath;
+	}
+	
+	public String getExternal() {
+		return external;
+	}
+
+	public void setExternal(String external) {
+		this.external = external;
 	}
 	
 }

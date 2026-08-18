@@ -41,7 +41,15 @@ public interface HpcReportsDAO
      * @throws HpcException on database error.
      */
     public void refreshViews() throws HpcException;
-
+    
+    /**
+     * Generate last access data object report based on given criteria
+     * @param criteria
+     * @return <code>List&lt;HpcReport&gt;</code>
+     * @throws HpcException on database error.
+     */
+    public List<HpcReport> generateLastAccessDataObjectReport(HpcReportCriteria criteria);
+    
 }
 
  
