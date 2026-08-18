@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.bus.HpcDataMigrationBusService;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
@@ -29,9 +30,7 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
 import gov.nih.nci.hpc.service.HpcVectorIngestionService;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
-import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionRegistrationDTO;
 
@@ -62,6 +61,7 @@ class HpcDataManagementBusServiceImplTest {
     private HpcVectorIngestionService vectorIngestionService;
 
     // The bus service under test.
+    @Spy
     @InjectMocks
     private HpcDataManagementBusServiceImpl service;
     

@@ -39,6 +39,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadRetryRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDownloadTaskUpdateRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcEntityPermissionsDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
 
 /**
  * HPC Data Management REST Service Interface.
@@ -566,6 +567,22 @@ public interface HpcDataManagementRestService {
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest, @Context MessageContext mc);
 
 	/**
+	 * Download a data object from an External Source
+	 *
+	 * @param path            The data object path.
+	 * @param downloadRequest The download request.
+	 * @param mc              The message context.
+	 * @return The REST service response w/ either a file attached or
+	 *         HpcDataObjectDownloadResponseDTO entity.
+	 */
+	@POST
+	@Path("/ext/dataObject/{path:.*}/download")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8, application/octet-stream")
+	public Response downloadDataObjectFromExternalSource(@PathParam("path") String path,
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO downloadRequest, @Context MessageContext mc);
+
+	/**
 	 * Get Data object download task status.
 	 *
 	 * @param taskId The data object download task ID.
@@ -844,4 +861,28 @@ public interface HpcDataManagementRestService {
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response updateMetadata(HpcBulkMetadataUpdateRequestDTO bulkMetadataUpdateRequest);
 
+	/**
+	 * List objects directly under path. Non-recursive listing.
+	 *
+	 * @param path      The path.
+	 * @return The REST service response w/ HpcListObjectResponseDTO entity.
+	 */
+	@GET
+	@Path("/ext/listObjects/{path:.*}")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response listObjects(@PathParam("path") String path);
+	
+	/**
+	 * Calculate Total size of each path requested in the request.
+	 *
+	 * @param calculateTotalSizeRequest The request containing the paths to 
+	 * calculate the total size.
+	 * @return The REST service response w/ HpcCalculateTotalSizeResponseDTO
+	 *         entity.
+	 */
+	@POST
+	@Path("/ext/calculateTotalSize")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response calculateTotalSize(HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequest);
 }
