@@ -1173,7 +1173,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
-		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(path);
+		String temporaryArchiveLinkPath = downloadArchiveLinkBasePath + path;
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(temporaryArchiveLinkPath);
 
 		try {
 			synchronized (externalArchivePathLock) {
@@ -1192,8 +1193,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				if (numberOfActiveExternalDownloadTasksForPath == 0) {
 					try {
 						logger.info("Temporary Archive Link: {} being deleted", path);
-						HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
-						temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
+						HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
+						temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
 								configurationId, s3ConfigurationId);
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: "
@@ -1208,7 +1209,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			}
 		} finally {
-			HpcExternalArchiveLinkLockManager.deletePathLock(path);
+			HpcExternalArchiveLinkLockManager.deletePathLock(temporaryArchiveLinkPath);
 		}
 
 		return temporaryArchiveLinkDeleted;
@@ -1500,7 +1501,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
-			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
+			if (downloadTask.getExternalArchiveFlag()){
+				downloadRequest.setArchiveLocation(getArchiveLocation(downloadArchiveLinkBasePath + downloadRequest.getPath()));
+			} else {
+				downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
+			}
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
