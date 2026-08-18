@@ -368,8 +368,8 @@ class HpcDataManagementBusServiceImplTest {
 
         when(dataManagementService.createDirectory("/test/path")).thenReturn(true);
         doNothing().when(metadataService).addMetadataToCollection(eq("/test/path"), anyList(), eq("configuration-id"));
-        doNothing().when(metadataService).addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
-                "configuration-id", null);
+        when(metadataService.addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
+                "configuration-id", null)).thenReturn(new HpcSystemGeneratedMetadata());
         doNothing().when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
 
         assertTrue(service.registerCollection("/test/path", collectionRegistration, "user", "User Name",
@@ -384,8 +384,8 @@ class HpcDataManagementBusServiceImplTest {
 
         when(dataManagementService.createDirectory("/test/path")).thenReturn(true);
         doNothing().when(metadataService).addMetadataToCollection(eq("/test/path"), anyList(), eq("configuration-id"));
-        doNothing().when(metadataService).addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
-                "configuration-id", null);
+        when(metadataService.addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
+                "configuration-id", null)).thenReturn(new HpcSystemGeneratedMetadata());
         doNothing().when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
 
         assertTrue(service.registerCollection("/test/path", collectionRegistration, "user", "User Name",
@@ -400,8 +400,8 @@ class HpcDataManagementBusServiceImplTest {
 
         when(dataManagementService.createDirectory("/test/path")).thenReturn(true);
         doNothing().when(metadataService).addMetadataToCollection(eq("/test/path"), anyList(), eq("configuration-id"));
-        doNothing().when(metadataService).addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
-                "configuration-id", null);
+        when(metadataService.addSystemGeneratedMetadataToCollection("/test/path", "user", "User Name",
+                "configuration-id", null)).thenReturn(new HpcSystemGeneratedMetadata());
         doNothing().when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
         doThrow(new HpcException("index failed", HpcErrorType.UNEXPECTED_ERROR))
                 .when(vectorIngestionService).indexCollection("/test/path");
@@ -425,6 +425,8 @@ class HpcDataManagementBusServiceImplTest {
         when(metadataService.getCollectionMetadataEntries("/test/path")).thenReturn(metadataBefore);
         when(metadataService.toSystemGeneratedMetadata(metadataBefore.getSelfMetadataEntries()))
                 .thenReturn(systemGeneratedMetadata);
+        when(metadataService.toMap(metadataBefore.getSelfMetadataEntries()))
+                .thenReturn(java.util.Collections.singletonMap("collection_type", "ParentCollection"));
         when(securityService.getRequestInvoker()).thenReturn(invoker);
         when(invoker.getUserRole()).thenReturn(HpcUserRole.USER);
 
