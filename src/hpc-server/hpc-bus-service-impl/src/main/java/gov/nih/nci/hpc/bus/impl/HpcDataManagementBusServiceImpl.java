@@ -816,8 +816,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Check if a permanent archive link already exists for this file path in irods
 		String permanentArchiveLinkPath = basePath + relativeFilePath;
-		boolean permanentArchiveLinkExists = dataManagementService.getDataObject(permanentArchiveLinkPath) != null;
-		if(permanentArchiveLinkExists) {
+		if(dataManagementService.getDataObject(permanentArchiveLinkPath) != null) {
 			throw new HpcException("Permanent or default Archive Link for " + relativeFilePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
@@ -832,7 +831,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				try {
 					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
 					if(temporaryArchiveLinkDoesNotExist) {
-						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), archiveObjectId + relativeFilePath, bucket);
+						String s3Path = archiveObjectId + relativeFilePath;
+						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), s3Path, bucket);
 					}
 				} catch (HpcException e) {
 					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
