@@ -120,7 +120,9 @@ import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
 import gov.nih.nci.hpc.util.HpcUtil;
+
 
 /**
  * HPC Data Transfer Service Implementation.
@@ -249,6 +251,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	// Google access token retention period in hours available for retries
 	@Value("${hpc.service.dataTransfer.googleAccessTokenRetentionPeriod}")
 	private Integer googleAccessTokenRetentionPeriod = null;
+
+	@Value("${hpc.bus.downloadArchiveLinkBasePath}")
+	private String downloadArchiveLinkBasePath = null;
+
 
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
@@ -1167,33 +1173,42 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
-		/*
-		 * For external archive downloads, the data object must be deleted after
-		 * the download completes (whether successful or failed). However, we must
-		 * ensure no other active external archive download tasks exist for the same path
-		 * before performing the deletion.
-		 *
-		 * If multiple download tasks are active for the same path, deletion is deferred
-		 * until the final task completes to prevent data corruption.
-		 */
-		int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
-		logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(path);
 
-		if (numberOfActiveExternalDownloadTasksForPath == 0) {
-			try {
-				HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
-				temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
-						configurationId, s3ConfigurationId);
-			} catch (HpcException e) {
-				logger.error("Failed to delete data object after download from external archive for path: "
-						+ path + ". Error: " + e.getMessage(), e);
-				notificationService.sendNotification(new HpcException(
-						"Failure to delete data object after download from external archive for path "
-								+ path + ". Error: " + e.getMessage(),
-						HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
-				throw new HpcException("Failed to delete data object after download from external archive for path: "
-						+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+		try {
+			synchronized (externalArchivePathLock) {
+				/*
+				 * For external archive downloads, the data object must be deleted after
+				 * the download completes (whether successful or failed). However, we must
+				 * ensure no other active external archive download tasks exist for the same path
+				 * before performing the deletion.
+				 *
+				 * If multiple download tasks are active for the same path, deletion is deferred
+				 * until the final task completes to prevent data corruption.
+				 */
+				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
+				logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
+
+				if (numberOfActiveExternalDownloadTasksForPath == 0) {
+					try {
+						logger.info("Temporary Archive Link: {} being deleted", path);
+						HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
+						temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
+								configurationId, s3ConfigurationId);
+					} catch (HpcException e) {
+						logger.error("Failed to delete data object after download from external archive for path: "
+								+ path + ". Error: " + e.getMessage(), e);
+						notificationService.sendNotification(new HpcException(
+								"Failure to delete data object after download from external archive for path "
+										+ path + ". Error: " + e.getMessage(),
+								HpcErrorType.DATA_MANAGEMENT_ERROR, HpcIntegratedSystem.IRODS));
+						throw new HpcException("Failed to delete data object after download from external archive for path: "
+								+ path + ". Error: " + e.getMessage(), HpcErrorType.DATA_MANAGEMENT_ERROR, e);
+					}
+				}
 			}
+		} finally {
+			HpcExternalArchiveLinkLockManager.deletePathLock(path);
 		}
 
 		return temporaryArchiveLinkDeleted;
@@ -1335,7 +1350,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				logger.info("external archive download task: [taskId={}] - checking if there are no active downloads for path: {}",
 						downloadTask.getId(), downloadTask.getPath());
 				securityService.executeAsSystemAccount(Optional.empty(), () -> {
-					if(deleteTemporaryArchiveLink(downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
+					if(deleteTemporaryArchiveLink(downloadArchiveLinkBasePath + downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
 						logger.info("external archive download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
 						 downloadTask.getId(), downloadTask.getPath());
 					} else {
@@ -1485,7 +1500,11 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
-			downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
+			if (downloadTask.getExternalArchiveFlag()){
+				downloadRequest.setArchiveLocation(getArchiveLocation(downloadArchiveLinkBasePath + downloadRequest.getPath()));
+			} else {
+				downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
+			}
 			downloadRequest.setFileDestination(secondHopDownload.getSourceFile());
 		}
 
@@ -4636,6 +4655,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 			this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 			this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
+			this.downloadTask.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 			dataDownloadDAO.updateDataObjectDownloadTask(this.downloadTask);
 		}
@@ -4672,5 +4692,4 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 	}
-	
 }
