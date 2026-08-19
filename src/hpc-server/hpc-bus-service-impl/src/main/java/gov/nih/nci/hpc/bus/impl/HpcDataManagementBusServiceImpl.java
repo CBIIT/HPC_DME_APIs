@@ -837,7 +837,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Download Step
 				try {
 					boolean externalArchiveFlag = true;
-					downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
+					downloadResponse = downloadDataObject(path, downloadRequest, externalArchiveFlag);
 				} catch (HpcException e) {
 					logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
 					boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
@@ -1798,6 +1798,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (externalArchiveFlag) {
+			path = downloadArchiveLinkBasePath + path;
 		}
 
 		// Append path/collection-name is only for collection download request.
