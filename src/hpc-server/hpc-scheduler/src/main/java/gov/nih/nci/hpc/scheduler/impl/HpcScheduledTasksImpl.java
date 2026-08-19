@@ -211,6 +211,12 @@ public class HpcScheduledTasksImpl {
 				systemBusService::completeCanceledDataObjectDownloadTasks, logger);
 	}
 
+	/** Process external collection download tasks. */
+	@Scheduled(cron = "${hpc.scheduler.cron.processExternalDownloadTasks.delay}")
+	private void processExternalDownloadTasksTask() {
+		execute("processExternalCollectionDownloadTasksTask()", systemBusService::processExternalDownloadTasks, logger);
+	}
+
 	/** Process collection download tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.processCollectionDownloadTasks.delay}")
 	private void processCollectionDownloadTasksTask() {
