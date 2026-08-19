@@ -1173,8 +1173,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
-		String temporaryArchiveLinkPath = downloadArchiveLinkBasePath + path;
-		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(temporaryArchiveLinkPath);
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(path);
 
 		try {
 			synchronized (externalArchivePathLock) {
@@ -1193,8 +1192,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				if (numberOfActiveExternalDownloadTasksForPath == 0) {
 					try {
 						logger.info("Temporary Archive Link: {} being deleted", path);
-						HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
-						temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
+						HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
+						temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
 								configurationId, s3ConfigurationId);
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: "
@@ -1209,7 +1208,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			}
 		} finally {
-			HpcExternalArchiveLinkLockManager.deletePathLock(temporaryArchiveLinkPath);
+			HpcExternalArchiveLinkLockManager.deletePathLock(path);
 		}
 
 		return temporaryArchiveLinkDeleted;
@@ -1351,7 +1350,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				logger.info("external archive download task: [taskId={}] - checking if there are no active downloads for path: {}",
 						downloadTask.getId(), downloadTask.getPath());
 				securityService.executeAsSystemAccount(Optional.empty(), () -> {
-					if(deleteTemporaryArchiveLink(downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
+					if(deleteTemporaryArchiveLink(downloadArchiveLinkBasePath + downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
 						logger.info("external archive download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
 						 downloadTask.getId(), downloadTask.getPath());
 					} else {
