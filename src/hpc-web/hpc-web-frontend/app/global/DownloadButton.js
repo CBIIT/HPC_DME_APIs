@@ -27,7 +27,12 @@ export default function DownloadButton() {
             console.log('Selected row data:', selectedRowData);
 
 		} else if (selectedRows[0].isDirectory){
-			alert('Downloading directories is not supported. Please select a file to download.');
+			const selectedRowData = selectedRows[0];
+			            const url = selectedRowData.archived ?
+			                '/download?type=collection&path=' + normalizePath(selectedRowData.archivePath) :
+			                '/download?ext=true&type=collection&path=' + normalizePath(selectedRowData.path);
+			            window.open(url, '_blank', 'noopener noreferrer');
+			            console.log('Selected row data:', selectedRowData);
 		}
 		
         console.log("Download clicked");
