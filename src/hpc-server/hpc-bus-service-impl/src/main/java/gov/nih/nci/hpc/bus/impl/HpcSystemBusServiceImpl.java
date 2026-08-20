@@ -196,6 +196,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	@Value("${hpc.bus.processCollectionDownloadTasksPerformer}")
 	private Boolean processCollectionDownloadTasksPerformer;
 
+	@Value("${hpc.bus.downloadArchiveLinkBasePath}")
+	private String downloadArchiveLinkBasePath = null;
+
+
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -835,7 +839,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 								// Get the System generated metadata.
 								HpcSystemGeneratedMetadata metadata = metadataService
-										.getCollectionSystemGeneratedMetadata(downloadTask.getPath());
+										.getCollectionSystemGeneratedMetadata(downloadArchiveLinkBasePath + downloadTask.getPath());
 								if(metadata != null) {
 									logger.info(" 2172 metadata for collection: " + gson.toJson(metadata));
 								}
