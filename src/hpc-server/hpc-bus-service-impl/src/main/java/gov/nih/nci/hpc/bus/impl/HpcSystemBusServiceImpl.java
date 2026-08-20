@@ -837,9 +837,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+								String pathPrefixForMetadata = "";
+								if (downloadTask.getExternalArchiveFlag()) {
+									pathPrefixForMetadata = downloadArchiveLinkBasePath;
+								}
 								// Get the System generated metadata.
 								HpcSystemGeneratedMetadata metadata = metadataService
-										.getCollectionSystemGeneratedMetadata(downloadArchiveLinkBasePath + downloadTask.getPath());
+										.getCollectionSystemGeneratedMetadata(pathPrefixForMetadata + downloadTask.getPath());
 								if(metadata != null) {
 									logger.info(" 2172 metadata for collection: " + gson.toJson(metadata));
 								}
@@ -848,7 +852,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								}
 								// Get the collection to be downloaded.
 								HpcCollection collection = dataManagementService
-										.getFullCollection(downloadTask.getPath(), metadata.getLinkSourcePath());
+										.getFullCollection(pathPrefixForMetadata + downloadTask.getPath(), metadata.getLinkSourcePath());
 								if (collection == null) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
