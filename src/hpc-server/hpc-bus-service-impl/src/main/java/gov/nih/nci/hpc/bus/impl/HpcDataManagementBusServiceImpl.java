@@ -892,15 +892,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			//downloadResponseDTO = downloadCollection(path, downloadRequest, externalArchiveFlag);
 			String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 		// Submit a collection download task.
-		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadExternal(downloadArchiveLinkBasePath + path,
+		HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadExternal(path,
 				downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 				downloadRequest.getGoogleDriveDownloadDestination(),
 				downloadRequest.getGoogleCloudStorageDownloadDestination(),
 				downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), userId,
 				Boolean.TRUE.equals(downloadRequest.getAppendPathToDownloadDestination()),
 				Boolean.TRUE.equals(downloadRequest.getAppendCollectionNameToDownloadDestination()), HpcDownloadTaskType.COLLECTION);
-
+		// Test code
 		//HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerCollectionFromExternalSource(collectionDownloadTask);
+
 		// Create and return a DTO with the request receipt.
 		responseDTO = new HpcCollectionDownloadResponseDTO();
 		responseDTO.setTaskId(collectionDownloadTask.getId());
@@ -958,18 +959,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		dataTransferService.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTask.getId(), registrationResponseDTO.getTaskId());
-		/*if(registrationResponseDTO != null && !CollectionUtils.isEmpty(registrationResponseDTO.getDataObjectRegistrationItems())) {
+		if(registrationResponseDTO != null && !CollectionUtils.isEmpty(registrationResponseDTO.getDataObjectRegistrationItems())) {
 			logger.info("Successfully completed the Registration step for external collection download for path: " + path);
 			// Set the download task status to RECEIVED since the Registration step was successful and data objects were registered.
 		} else {
 			logger.info("All Archive links are being reused. No data objects were registered in the Registration step for external collection download for path: " + path);
-		}*/
-
-		// TEST CODE
-
-		//HpcBulkDataObjectRegistrationTaskDTO taskStatusDTO = dataManagementService.getBulkDataObjectRegistrationTask(registrationResponseDTO.getTaskId());
-
-		// END TEST CODE
+			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+			dataTransferService.updateCollectionDownloadTask(downloadTask);
+		}
 		return registrationResponseDTO;
 	}
 
