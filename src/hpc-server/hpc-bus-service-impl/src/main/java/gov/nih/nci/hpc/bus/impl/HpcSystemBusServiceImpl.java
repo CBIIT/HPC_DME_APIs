@@ -857,6 +857,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
 
+								logger.info(" 2172 in processCollection: collection for download: " + gson.toJson(collection));
+
 								// Download all files under this collection.
 								downloadItems = downloadCollection(collection,
 										downloadTask.getGlobusDownloadDestination(),
@@ -1931,8 +1933,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		logger.info("Processing collection download task {}: Excluded Paths: {}", collectionDownloadTaskId,
 				excludedPaths);
 
+		Gson gson = new Gson();
 		// Iterate through the data objects in the collection and download them.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
+			logger.info("2172: Processing data object entry: {}", gson.toJson(dataObjectEntry));
 			if (excludedPaths.contains(dataObjectEntry.getPath())) {
 				// This file was successfully downloaded in the original run. No need to
 				// download in this retry attempt.
