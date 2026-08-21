@@ -929,6 +929,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
 							downloadTask.getItems().addAll(downloadItems);
 
+							logger.info("2172: Final collection download task with items: " + gson.toJson(downloadTask));
+
 							// Persist the collection download task.
 							dataTransferService.updateCollectionDownloadTask(downloadTask);
 
