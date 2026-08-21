@@ -842,7 +842,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Download Step
 				try {
 					boolean externalArchiveFlag = true;
-					downloadResponse = downloadDataObject(path, downloadRequest, externalArchiveFlag);
+					downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
 				} catch (HpcException e) {
 					logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
 					boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
@@ -1930,10 +1930,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		if (externalArchiveFlag) {
-			path = downloadArchiveLinkBasePath + path;
-		}
-
 		// Append path/collection-name is only for collection download request.
 		if (downloadRequest.getAppendPathToDownloadDestination() != null
 				|| downloadRequest.getAppendCollectionNameToDownloadDestination() != null) {
@@ -4316,6 +4312,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+		if (metadata == null) {
+			logger.error("Could not locate data object: {}", path);
+			throw new HpcException("Could not locate data object path " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
