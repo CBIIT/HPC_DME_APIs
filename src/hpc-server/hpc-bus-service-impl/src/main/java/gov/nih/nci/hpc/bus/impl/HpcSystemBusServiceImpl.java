@@ -1953,6 +1953,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination,
 						appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, userId, null,
 						collectionDownloadTaskId, externalArchiveFlag);
+				if(externalArchiveFlag) {
+					logger.info("2172: Processing data object entry: {}", gson.toJson(dataObjectEntry));
+					downloadItem.setPath(dataObjectEntry.getPath().replaceFirst(downloadArchiveLinkBasePath, ""));
+					logger.info("2172: Processing data object entry: {}", gson.toJson(dataObjectEntry));
+				}
 				downloadItems.add(downloadItem);
 				if (collectionDownloadBreaker.abortDownload(downloadItem)) {
 					// Need to abort collection download processing. Cancel and return the items
