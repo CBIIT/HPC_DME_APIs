@@ -1927,10 +1927,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		/* 
 		if (externalArchiveFlag) {
 			path = downloadArchiveLinkBasePath + path;
 		}
-
+		*/
 		// Append path/collection-name is only for collection download request.
 		if (downloadRequest.getAppendPathToDownloadDestination() != null
 				|| downloadRequest.getAppendCollectionNameToDownloadDestination() != null) {
