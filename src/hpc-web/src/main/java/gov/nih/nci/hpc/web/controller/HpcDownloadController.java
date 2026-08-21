@@ -96,6 +96,9 @@ public class HpcDownloadController extends AbstractHpcController {
 	private String asperaBucket;
 	@Value("${gov.nih.nci.hpc.server.external.dataObject}")
 	private String dataObjectExternalDownloadServiceURL;
+	@Value("${gov.nih.nci.hpc.server.external.collection}")
+	private String collectionExternalDownloadServiceURL;
+	
 
 	private Logger logger = LoggerFactory.getLogger(HpcCreateCollectionDataFileController.class);
 	private Gson gson = new Gson();
@@ -368,9 +371,18 @@ public class HpcDownloadController extends AbstractHpcController {
     		if(StringUtils.isNoneEmpty(external)) {
     			externalArchive = Boolean.parseBoolean(external);
     		}
-			final String basisURL = externalArchive ? this.dataObjectExternalDownloadServiceURL: ("collection".equals(downloadFile
-        .getDownloadType()) ? this.collectionDownloadServiceURL :
-        this.dataObjectDownloadServiceURL);
+    		final boolean isCollectionDownload = "collection".equals(downloadFile.getDownloadType());
+    		final String basisURL;
+    		if (externalArchive) {
+			  basisURL = isCollectionDownload
+			      ? this.collectionExternalDownloadServiceURL
+			      : this.dataObjectExternalDownloadServiceURL;
+			} else {
+			  basisURL = isCollectionDownload
+			      ? this.collectionDownloadServiceURL
+			      : this.dataObjectDownloadServiceURL;
+			}
+
       final String serviceURL = UriComponentsBuilder.fromHttpUrl(basisURL)
         .path("/{dme-archive-path}/download").buildAndExpand(downloadFile
         .getDestinationPath()).encode().toUri().toURL().toExternalForm();
