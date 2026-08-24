@@ -560,13 +560,13 @@ class HpcDataManagementBusServiceImplTest {
 
         var downloadResponse = new HpcDataObjectDownloadResponseDTO();
         downloadResponse.setTaskId("task-1");
-        doReturn(downloadResponse).when(service).downloadDataObject(eq(path), any(HpcDownloadRequestDTO.class), eq(true));
+        doReturn(downloadResponse).when(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
 
         HpcDataObjectDownloadResponseDTO response = service.downloadDataObjectFromExternalSource(path, downloadRequest);
 
         assertEquals("task-1", response.getTaskId());
         verify(service).registerDataObject(eq(temporaryArchiveLinkPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
-        verify(service).downloadDataObject(eq(path), any(HpcDownloadRequestDTO.class), eq(true));
+        verify(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
     }
 
     @Test
@@ -596,7 +596,7 @@ class HpcDataManagementBusServiceImplTest {
         registrationResponse.setRegistered(true);
         doReturn(registrationResponse).when(service).registerDataObject(eq(temporaryArchiveLinkPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
         doThrow(new HpcException("delegated download failed", HpcErrorType.INVALID_REQUEST_INPUT))
-                .when(service).downloadDataObject(eq(path), any(HpcDownloadRequestDTO.class), eq(true));
+                .when(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
 
         HpcException exception = assertThrows(HpcException.class, () -> {
             service.downloadDataObjectFromExternalSource(path, downloadRequest);
