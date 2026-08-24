@@ -4128,6 +4128,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		taskDTO.setEffectiveTransferSpeed(
 				effectiveTransferSpeed != null && effectiveTransferSpeed > 0 ? effectiveTransferSpeed : null);
 		taskDTO.setUploadMethod(result.getUploadMethod());
+		taskDTO.setRegistrationSize(result.getRegistrationSize());
 		populateRegistrationItems(taskDTO, result.getItems());
 		return taskDTO;
 	}
