@@ -1568,7 +1568,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (StringUtils.isEmpty(path)) {
 				throw new HpcException("Null / Empty path in registration request", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-
+			dataObjectRegistrationRequest.setRegistrationSize(dataObjectRegistrationItem.getRegistrationSize());
 			// Validate no multiple registration requests for the same path.
 			if (dataObjectRegistrationRequests.put(path, dataObjectRegistrationRequest) != null) {
 				throw new HpcException("Duplicated path in registration requests list: " + path,
@@ -3839,6 +3839,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						HpcErrorType.INVALID_REQUEST_INPUT);
 
 			}
+			singleFile.setRegistrationSize(pathAttributes.getSize());
 		}
 	}
 
@@ -4101,6 +4102,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		taskDTO.setTaskStatus(task.getStatus());
 		taskDTO.setPercentComplete(calculateDataObjectBulkRegistrationPercentComplete(task));
 		taskDTO.setUploadMethod(task.getUploadMethod());
+		taskDTO.setRegistrationSize(task.getRegistrationSize());
 		populateRegistrationItems(taskDTO, task.getItems());
 		return taskDTO;
 	}

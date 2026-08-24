@@ -101,6 +101,11 @@
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getTaskStatus().value()}"
 											th:text="${hpcBulkDataObjectRegistrationTaskDTO.getTaskStatus().value()}"></label>
 									</div>
+									<div class="col-md-12 form-group" th:if="${registrationSize != null}">
+										<label for="Name">Registration Size:</label> <label
+											for="${registrationSize}"
+											th:text="${registrationSize}"></label>
+									</div>
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getResult() != null}">
 										<label for="Name">Registration Completed:</label> <label id="regComplete"
 											for="${hpcBulkDataObjectRegistrationTaskDTO.getResult()}"
