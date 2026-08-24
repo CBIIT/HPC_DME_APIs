@@ -4123,7 +4123,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		for (HpcBulkDataObjectRegistrationItem item : items) {
 			Boolean result = item.getTask().getResult();
 			if (result == null) {
-				item.getTask().setSize(null);
 				taskDTO.getInProgressItems().add(item.getTask());
 			} else if (result) {
 				item.getTask().setPercentComplete(null);
