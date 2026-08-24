@@ -499,12 +499,11 @@ class HpcDataManagementBusServiceImplTest {
     }
 
     @Test
-    void testInProgressBulkRegistrationTaskClearsItemSize() throws Exception {
+    void testInProgressBulkRegistrationTaskPreservesItemSize() throws Exception {
         HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
         HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
         HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
         taskItem.setPath("/path/to/data");
-        taskItem.setResult(null);
         taskItem.setPercentComplete(50);
         taskItem.setSize(123L);
         registrationItem.setTask(taskItem);
@@ -518,7 +517,7 @@ class HpcDataManagementBusServiceImplTest {
                 (HpcBulkDataObjectRegistrationTaskDTO) method.invoke(service, task, false);
 
         assertEquals(1, taskDTO.getInProgressItems().size());
-        assertEquals(null, taskDTO.getInProgressItems().get(0).getSize());
+        assertEquals(123L, taskDTO.getInProgressItems().get(0).getSize());
     }
 
 }
