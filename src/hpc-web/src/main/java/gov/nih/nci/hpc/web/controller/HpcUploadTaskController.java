@@ -113,6 +113,9 @@ public class HpcUploadTaskController extends AbstractHpcController {
 			}
 			model.addAttribute("hpcBulkDataObjectRegistrationTaskDTO", uploadTask.getTask());
 			model.addAttribute("hpcBulkDataObjectRegistrationRetry", retry);
+			model.addAttribute("registrationSize",
+			MiscUtil.addHumanReadableSize(Long.toString(uploadTask.getTask().getRegistrationSize()), true));
+
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get registration status: " + e.getMessage());
 			return "redirect:/uploadtasks";
