@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
+import java.lang.reflect.Method;
 import java.util.Calendar;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationItem;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTask;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -468,6 +474,50 @@ class HpcDataManagementBusServiceImplTest {
         var resp = service.deleteDataObject("/path/to/data", true, null);
         assertEquals(false, resp.getDataManagementDeleteStatus());
         assertTrue(resp.getMessage().contains("Delete failed"));
+    }
+
+    @Test
+    void testCompletedBulkRegistrationResultPreservesItemSize() throws Exception {
+        HpcBulkDataObjectRegistrationResult result = new HpcBulkDataObjectRegistrationResult();
+        HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
+        HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
+        taskItem.setPath("/path/to/data");
+        taskItem.setResult(true);
+        taskItem.setSize(123L);
+        registrationItem.setTask(taskItem);
+        result.getItems().add(registrationItem);
+
+        Method method = HpcDataManagementBusServiceImpl.class.getDeclaredMethod("toBulkDataObjectRegistrationTaskDTO",
+                HpcBulkDataObjectRegistrationResult.class, boolean.class);
+        method.setAccessible(true);
+
+        HpcBulkDataObjectRegistrationTaskDTO taskDTO =
+                (HpcBulkDataObjectRegistrationTaskDTO) method.invoke(service, result, false);
+
+        assertEquals(1, taskDTO.getCompletedItems().size());
+        assertEquals(123L, taskDTO.getCompletedItems().get(0).getSize());
+    }
+
+    @Test
+    void testInProgressBulkRegistrationTaskClearsItemSize() throws Exception {
+        HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
+        HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
+        HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
+        taskItem.setPath("/path/to/data");
+        taskItem.setPercentComplete(50);
+        taskItem.setSize(123L);
+        registrationItem.setTask(taskItem);
+        task.getItems().add(registrationItem);
+
+        Method method = HpcDataManagementBusServiceImpl.class.getDeclaredMethod("toBulkDataObjectRegistrationTaskDTO",
+                HpcBulkDataObjectRegistrationTask.class, boolean.class);
+        method.setAccessible(true);
+
+        HpcBulkDataObjectRegistrationTaskDTO taskDTO =
+                (HpcBulkDataObjectRegistrationTaskDTO) method.invoke(service, task, false);
+
+        assertEquals(1, taskDTO.getInProgressItems().size());
+        assertEquals(null, taskDTO.getInProgressItems().get(0).getSize());
     }
 
 }
