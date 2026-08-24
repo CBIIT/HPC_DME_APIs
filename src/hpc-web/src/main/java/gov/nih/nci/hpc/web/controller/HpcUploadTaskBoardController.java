@@ -42,6 +42,7 @@ import gov.nih.nci.hpc.web.model.HpcTask;
 import gov.nih.nci.hpc.web.util.HpcClientUtil;
 import gov.nih.nci.hpc.web.util.HpcIdentityUtil;
 import gov.nih.nci.hpc.web.util.HpcSearchUtil;
+import gov.nih.nci.hpc.web.util.MiscUtil;
 
 /**
  * <p>
@@ -138,6 +139,10 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 							transferResult = "Failed";
 					}
 					task.setResult(transferResult);
+					String dataSize = String.valueOf(registration.getRegistrationSize());
+					task.setDataSize(dataSize);
+					task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
+
 					result.add(task);
 				}
 			for (HpcBulkDataObjectRegistrationTaskDTO registration : registrations.getCompletedTasks()) {
@@ -175,6 +180,9 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 						transferResult = "Failed";
 				}
 				task.setResult(transferResult);
+				String dataSize = String.valueOf(registration.getRegistrationSize());
+				task.setDataSize(dataSize);
+				task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
 				result.add(task);
 			}
 			model.addAttribute("currentPage", Integer.toString(page));

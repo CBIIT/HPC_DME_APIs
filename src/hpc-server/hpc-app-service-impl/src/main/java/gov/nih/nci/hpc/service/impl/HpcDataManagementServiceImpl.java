@@ -1002,6 +1002,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// Iterate through the individual data object registration requests and add them
 		// as items to the
 		// list registration task.
+		long totalRegistrationSize = 0L;
 		for (String path : dataObjectRegistrationRequests.keySet()) {
 			HpcDataObjectRegistrationRequest registrationRequest = dataObjectRegistrationRequests.get(path);
 			// Validate registration request.
@@ -1011,13 +1012,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
 			HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
 			reqistrationTask.setPath(path);
+			reqistrationTask.setSize(registrationRequest.getRegistrationSize());
 			registrationItem.setTask(reqistrationTask);
 			registrationItem.setRequest(registrationRequest);
 
 			bulkDataObjectRegistrationTask.getItems().add(registrationItem);
+			totalRegistrationSize += registrationRequest.getRegistrationSize();
 		}
 
 		// Persist the registration request.
+		bulkDataObjectRegistrationTask.setRegistrationSize(totalRegistrationSize);
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
 		return bulkDataObjectRegistrationTask.getId();
 	}

@@ -157,6 +157,7 @@ tfoot input {
 											<th class="column-heading resultWidth" id='colheading008' th:text="'Transfer Result'"></th>
 											<th class="column-heading createdWidth" id='colheading006' th:text="'Created On'"></th>
 											<th class="column-heading completedWidth" id='colheading007' th:text="'Completed On'"></th>
+											<th class="column-heading dataSizeWidth" id='colheading010' th:text="'Registration Size'"></th>
 											<th class="column-heading errorWidth" id='colheading009' th:text="'Error'"></th>
 										</tr>
 									</thead>
@@ -169,6 +170,7 @@ tfoot input {
 											<td id='col4' class="resultWidth" th:text="${result.result}"></td>
 											<td id='col5' class="createdWidth" th:text="${result.created}"></td>
 											<td id='col6' class="completedWidth" th:text="${result.completed}"></td>
+											<td id='col10' class="dataSizeWidth" th:attr="data-order=${result.dataSize}" th:text="${result.humanReadableSize}"></td>
 											<td id='col7' class="errorWidth" th:text="${result.error}"></td>
 											<td id='col8' style="visibility: hidden;" th:text="${result.sortCreated}"></td>
 											<td id='col9' style="visibility: hidden;" th:text="${result.sortCompleted}"></td>
@@ -279,9 +281,10 @@ tfoot input {
 							{targets: 3, data: 'result', width: 105, visible: true},  // transfer result
 							{targets: 4, data: 'created', width: 110, visible: true, orderData:[4,7]},  // created
 							{targets: 5, data: 'completed', width: 110, visible: true, orderData:[5,8]},  // completed
-							{targets: 6, data: 'error', width: 335, type: 'non-empty-string', render: DataTable.render.ellipsis( 55, true )}, // error
-							{targets: 7, data: 'sortCreated', visible: false, searchable: false},
-							{targets: 8, data: 'sortCompleted', visible: false, searchable: false}
+							{targets: 6, width: 90, visible: true, type: 'num', className: 'dt-head-left dt-body-left'}, //data size
+							{targets: 7, data: 'error', width: 245, type: 'non-empty-string', render: DataTable.render.ellipsis( 55, true )}, // error
+							{targets: 8, data: 'sortCreated', visible: false, searchable: false},
+							{targets: 9, data: 'sortCompleted', visible: false, searchable: false}
 				],
 				"lengthMenu": [ [-1], ["All"] ],
 				"initComplete": function () {
