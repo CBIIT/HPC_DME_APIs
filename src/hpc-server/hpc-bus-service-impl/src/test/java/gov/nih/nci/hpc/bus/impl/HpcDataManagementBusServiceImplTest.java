@@ -517,7 +517,7 @@ class HpcDataManagementBusServiceImplTest {
     }
 
     @Test
-    void testInProgressBulkRegistrationTaskClearsItemSize() throws Exception {
+    void testInProgressBulkRegistrationTaskPreservesItemSize() throws Exception {
         HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
         HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
         HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
