@@ -504,6 +504,7 @@ class HpcDataManagementBusServiceImplTest {
         HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
         HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
         taskItem.setPath("/path/to/data");
+        taskItem.setResult(null);
         taskItem.setPercentComplete(50);
         taskItem.setSize(123L);
         registrationItem.setTask(taskItem);
