@@ -29,7 +29,7 @@ comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."COMPLETED" i
 
 comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."EFFECTIVE_TRANSFER_SPEED" is 'The upload effective transfer speed in bytes per second';
 
-Comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."REGISTRATION_SIZE" is "The total size in bytes of the data objects requested for registration";
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."REGISTRATION_SIZE" is 'The total size in bytes of the data objects requested for registration';
 
 
 
