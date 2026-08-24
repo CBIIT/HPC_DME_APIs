@@ -65,11 +65,11 @@
 		<property name="fileLocation" ref="hpcS3ArchiveDestinationLocation" />
 		<property name="type" value="ARCHIVE" />
 	</bean>
-	<bean id="hpcS3Connection" class="gov.nih.nci.hpc.integration.s3.impl.HpcS3Connection">
+	<bean id="hpcS3Connection" class="gov.nih.nci.hpc.integration.s3.v1.impl.HpcS3Connection">
 		<constructor-arg value="N/A" index="0" />
 	</bean>
 	<bean id="hpcS3DataTransferProxy" 
-	      class="gov.nih.nci.hpc.integration.s3.impl.HpcDataTransferProxyImpl" />
+	      class="gov.nih.nci.hpc.integration.s3.v1.impl.HpcDataTransferProxyImpl" />
 	<bean id="hpcLdapAuthenticationProxy"
 		  class="gov.nih.nci.hpc.integration.ldap.impl.HpcLdapAuthenticationProxyImpl" >
 		  <constructor-arg value="N/A" index="0" />

@@ -8,7 +8,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
-package gov.nih.nci.hpc.integration.s3.v2.impl;
+package gov.nih.nci.hpc.integration.s3.v2.crt.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -272,7 +272,7 @@ public class HpcS3Connection {
 			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
 					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
 					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
-					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold).maxConcurrency(1);
+					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
 
 			if (trustAllCerts) {
 				crtAsyncClientBuilder.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true));
@@ -325,7 +325,7 @@ public class HpcS3Connection {
 			// Instantiate a S3 async client.
 			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
 					.minimumPartSizeInBytes(minimumUploadPartSize)
-					.thresholdInBytes(multipartUploadThreshold).maxConcurrency(1).build();
+					.thresholdInBytes(multipartUploadThreshold).build();
 
 			// Instantiate the S3 transfer manager.
 			s3.transferManager = S3TransferManager.builder().s3Client(s3.client).executor(executorService).build();
