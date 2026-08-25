@@ -3789,7 +3789,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE,
-						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
+						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), true);
 			} else if (singleFile.getS3UploadSource() != null) {
 				// It is a request for a S3 file
 				source = "S3";
@@ -3797,7 +3797,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(singleFileSource.getAccount(),
-						singleFileSource.getSourceLocation(), false);
+						singleFileSource.getSourceLocation(), true);
 			} else if (singleFile.getGoogleDriveUploadSource() != null) {
 				// It is a request for a Google Drive file
 				source = "Google Drive";
@@ -3805,7 +3805,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE,
-						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
+						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), true);
 			} else if (singleFile.getGlobusUploadSource() != null) {
 				// It is a request for a Globus file
 				source = "Globus";
@@ -3820,7 +3820,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GLOBUS,
-						singleGlobusFileSource.getSourceLocation(), false, configurationId, null);
+						singleGlobusFileSource.getSourceLocation(), true, configurationId, null);
 			} else {
 				continue;
 			}
