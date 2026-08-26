@@ -138,10 +138,14 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 						else
 							transferResult = "Failed";
 					}
-					task.setResult(transferResult);
-					String dataSize = registration.getRegistrationSize() > 0 ? String.valueOf(registration.getRegistrationSize()) : " ";
+
+					String dataSize = registration.getRegistrationSize() > 0 ? String.valueOf(registration.getRegistrationSize()) : "0";
 					task.setDataSize(dataSize);
-					task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
+					if (dataSize == "0"){
+						task.setHumanReadableSize(" ");
+					} else {
+						task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
+					}
 
 					result.add(task);
 				}
@@ -180,9 +184,13 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 						transferResult = "Failed";
 				}
 				task.setResult(transferResult);
-				String dataSize = registration.getRegistrationSize() > 0 ? String.valueOf(registration.getRegistrationSize()) : " ";
+				String dataSize = registration.getRegistrationSize() > 0 ? String.valueOf(registration.getRegistrationSize()) : "0";
 				task.setDataSize(dataSize);
-				task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
+				if (dataSize == "0"){
+					task.setHumanReadableSize(" ");
+				} else {
+					task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
+				}
 				result.add(task);
 			}
 			model.addAttribute("currentPage", Integer.toString(page));
