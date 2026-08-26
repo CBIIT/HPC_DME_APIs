@@ -1,0 +1,31 @@
+{
+    "callerObjectId": "eran-base-globus",
+    "globusUploadSource": {
+        "sourceLocation": {
+            "fileContainerId": "5447f338-c50f-11e9-98e0-0a63aa6b37da",
+            "fileId": "/data-object"
+        }
+    },
+    "metadataEntries": [
+        {
+            "attribute": "data_compression_status",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "data_encryption_status",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "object_name",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "phi_content",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "pii_content",
+            "value": "Unspecified"
+        }
+    ]
+}
