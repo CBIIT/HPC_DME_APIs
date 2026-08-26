@@ -139,7 +139,7 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 							transferResult = "Failed";
 					}
 					task.setResult(transferResult);
-					String dataSize = String.valueOf(registration.getRegistrationSize());
+					String dataSize = registration.getRegistrationSize() > 0 ? String.valueOf(registration.getRegistrationSize()) : " ";
 					task.setDataSize(dataSize);
 					task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
 
@@ -180,7 +180,7 @@ public class HpcUploadTaskBoardController extends AbstractHpcController {
 						transferResult = "Failed";
 				}
 				task.setResult(transferResult);
-				String dataSize = String.valueOf(registration.getRegistrationSize());
+				String dataSize = registration.getRegistrationSize() > 0 ? String.valueOf(registration.getRegistrationSize()) : " ";
 				task.setDataSize(dataSize);
 				task.setHumanReadableSize(MiscUtil.getHumanReadableSize(dataSize, true));
 				result.add(task);
