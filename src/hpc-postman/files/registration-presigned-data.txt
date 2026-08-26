@@ -1,0 +1,2 @@
+This is a text document for testing download using pre-signed URLs.
+Including client side encryption
