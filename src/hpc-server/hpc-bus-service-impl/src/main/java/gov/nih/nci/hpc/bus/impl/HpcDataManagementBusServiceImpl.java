@@ -905,7 +905,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
-		logger.info("2172: registerCollectionFromExternalSource:Download Task = " + gson.toJson(downloadTask));
+		logger.info("Registration invoked from ExternalDownload Task for a Collection. Download task = " + gson.toJson(downloadTask));
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		String path = downloadTask.getPath().replace(downloadArchiveLinkBasePath, "");
 		String userId = downloadTask.getUserId();
@@ -945,10 +945,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		if(registrationResponseDTO != null && !CollectionUtils.isEmpty(registrationResponseDTO.getDataObjectRegistrationItems())) {
-			logger.info("Successfully completed the Registration step for external collection download for path: " + path);
+			logger.info("Successfully started the Registration step for external collection download for path: " + path);
 			dataTransferService.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTask.getId(), registrationResponseDTO.getTaskId());
 		} else {
-			logger.info("All Archive links are being reused. No data objects were registered in the Registration step for external collection download for path: " + path);
+			logger.info("All Archive links are Permanent/Temporary Archive Links. No data objects were registered in the Registration step for external collection download for path: " + path);
 			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 			dataTransferService.updateCollectionDownloadTask(downloadTask);
 			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
@@ -4598,7 +4598,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				registrationItem.setPath(temporaryArchiveLinkPath);
 			} else {
 				// The temporary archive link already exists, so we can skip this registration item.
-				//iterator.remove();
+				iterator.remove();
 			}
 		}
 		return bulkDataObjectRegistrationRequest;
