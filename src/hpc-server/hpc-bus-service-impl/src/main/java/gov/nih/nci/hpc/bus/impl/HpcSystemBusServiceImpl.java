@@ -107,7 +107,6 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
-import com.google.gson.Gson;
 
 
 /**
@@ -739,7 +738,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	public void processExternalDownloadTasks() throws HpcException {
 		// Iterate through all the external download requests that were submitted (not
 		// processed yet).
-        Gson gson = new Gson();
 		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)
 				.forEach(downloadTask -> {
 					try {
@@ -748,7 +746,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
 						HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
 								.registerCollectionFromExternalSource(downloadTask);
-						logger.info("2172 registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
 					} catch (HpcException e) {
 						logger.error("Failed to process external collection download task: " + downloadTask.getId(), e);
 						try {
@@ -772,9 +769,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
 			logger.info("collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
 					downloadTask.getType());
-
-			Gson gson = new Gson();
-			logger.info("collection download task:" + gson.toJson(downloadTask));
 
 			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
 				// User requested to cancel this collection download task.
@@ -852,12 +846,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								// Get the System generated metadata.
 								HpcSystemGeneratedMetadata metadata = metadataService
 										.getCollectionSystemGeneratedMetadata(pathPrefixForMetadata + downloadTask.getPath());
-								if(metadata != null) {
-									logger.info(" 2172 metadata for collection: " + gson.toJson(metadata));
-								}
-								else {
-									logger.info(" 2172 metadata for collection: ");
-								}
 								// Get the collection to be downloaded.
 								HpcCollection collection = dataManagementService
 										.getFullCollection(pathPrefixForMetadata + downloadTask.getPath(), metadata.getLinkSourcePath());
@@ -887,21 +875,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										String posixPath = s3ArchiveConfiguration.getPosixPath();
 										String relativePath = downloadTask.getPath().substring(posixPath.length());
 										String downloadPath = basePath + relativePath;
-										logger.info(" 2172 in processCollection: downloadPath for download of Permanent Archive Links: " + downloadPath);
+										logger.info(" In processCollection: downloadPath for download of Permanent Archive Links: " + downloadPath);
 										// Get the System generated metadata.
 										metadata = metadataService
 												.getCollectionSystemGeneratedMetadata(downloadPath);
-										if(metadata != null) {
-											logger.info(" 2172 metadata for Permanent Archive Linkcollection: " + gson.toJson(metadata));
-										}
-										else {
-											logger.info(" 2172 metadata for collection: ");
-										}
 										// Get the collection to be downloaded.
 										collection = dataManagementService
 												.getFullCollection(downloadPath, metadata.getLinkSourcePath());
 										if (collection != null) {
-											logger.info(" 2172 in processCollection: Permanent Archive Links collection for download: " + gson.toJson(collection));
 											List<HpcCollectionDownloadTaskItem> downloadExternalArchivedItems = null;
 											downloadExternalArchivedItems = downloadCollection(collection,
 												downloadTask.getGlobusDownloadDestination(),
@@ -974,8 +955,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							// 'Activate' the collection download request.
 							downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
 							downloadTask.getItems().addAll(downloadItems);
-
-							logger.info("2172: Final collection download task with items: " + gson.toJson(downloadTask));
 
 							// Persist the collection download task.
 							dataTransferService.updateCollectionDownloadTask(downloadTask);
@@ -1981,10 +1960,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		logger.info("Processing collection download task {}: Excluded Paths: {}", collectionDownloadTaskId,
 				excludedPaths);
 
-		Gson gson = new Gson();
 		// Iterate through the data objects in the collection and download them.
 		for (HpcCollectionListingEntry dataObjectEntry : collection.getDataObjects()) {
-			logger.info("2172: Processing data object entry: {}", gson.toJson(dataObjectEntry));
 			if (excludedPaths.contains(dataObjectEntry.getPath())) {
 				// This file was successfully downloaded in the original run. No need to
 				// download in this retry attempt.
@@ -2000,9 +1977,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, userId, null,
 						collectionDownloadTaskId, externalArchiveFlag);
 				if(externalArchiveFlag) {
-					logger.info("2172: Processing data object entry: {}", gson.toJson(dataObjectEntry));
 					downloadItem.setPath(dataObjectEntry.getPath().replaceFirst(downloadArchiveLinkBasePath, ""));
-					logger.info("2172: Processing data object entry: {}", gson.toJson(dataObjectEntry));
 				}
 				downloadItems.add(downloadItem);
 				if (collectionDownloadBreaker.abortDownload(downloadItem)) {
