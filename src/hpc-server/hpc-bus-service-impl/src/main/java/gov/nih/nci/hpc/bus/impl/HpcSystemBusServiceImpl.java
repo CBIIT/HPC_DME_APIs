@@ -917,9 +917,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 												excludedPaths, false);
 											// Combine both the items
 											downloadItems.addAll(downloadExternalArchivedItems);
-										} else {
-											logger.info(" 2172 in processCollection: Permanent Archive links collection not found for download: " + downloadPath);
-											throw new HpcException("Permanent Archive Links collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 										}
 									}
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
