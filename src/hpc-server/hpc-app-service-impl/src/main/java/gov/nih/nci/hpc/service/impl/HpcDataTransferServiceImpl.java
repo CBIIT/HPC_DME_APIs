@@ -2435,12 +2435,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public String getCollectionDownloadTaskByRegistrationIdExternal(String registrationTaskId) throws HpcException {
-
-		return dataDownloadDAO.getCollectionDownloadTaskByRegistrationIdExternal(registrationTaskId);
-	}
-
-	@Override
 	public void removeGoogleAccessTokens() throws HpcException {
 		dataDownloadDAO.removeGoogleAccessTokens(googleAccessTokenRetentionPeriod);
 	}
