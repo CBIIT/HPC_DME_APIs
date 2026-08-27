@@ -66,7 +66,7 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 	// SQL Queries.
 	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_TASK using dual on (ID = ?) "
-			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, CREATED = ?, UPLOAD_METHOD = ?, REGISTRATION_SIZE = ?, EXTERNAL_ARCHIVE_FLAG = ?"
+			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, CREATED = ?, UPLOAD_METHOD = ?, REGISTRATION_SIZE = ?, EXTERNAL_ARCHIVE_FLAG = ? "
 			+ "when not matched then insert (ID, USER_ID, UI_URL, STATUS, CREATED, UPLOAD_METHOD, REGISTRATION_SIZE, EXTERNAL_ARCHIVE_FLAG) "
 			+ "values (?, ?, ?, ?, ?, ?, ?, ?)";
 
