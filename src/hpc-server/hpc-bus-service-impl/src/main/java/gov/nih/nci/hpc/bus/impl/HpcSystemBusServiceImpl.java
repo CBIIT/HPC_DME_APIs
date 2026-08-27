@@ -751,6 +751,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						logger.info("2172 registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
 					} catch (HpcException e) {
 						logger.error("Failed to process external collection download task: " + downloadTask.getId(), e);
+						try {
+							completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
+
+						} catch (HpcException ex) {
+							logger.error("Failed to complete collection download as failed {}",
+									downloadTask.getId(), ex);
+						}
 					}
 				});
 	}
