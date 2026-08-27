@@ -881,12 +881,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										String posixPath = s3ArchiveConfiguration.getPosixPath();
 										String relativePath = downloadTask.getPath().substring(posixPath.length());
 										String downloadPath = basePath + relativePath;
-										logger.info(" 2172 in processCollection: downloadPath for download: " + downloadPath);
+										logger.info(" 2172 in processCollection: downloadPath for download of Permanent Archive Links: " + downloadPath);
 										// Get the System generated metadata.
 										metadata = metadataService
 												.getCollectionSystemGeneratedMetadata(downloadPath);
 										if(metadata != null) {
-											logger.info(" 2172 metadata for collection: " + gson.toJson(metadata));
+											logger.info(" 2172 metadata for Permanent Archive Linkcollection: " + gson.toJson(metadata));
 										}
 										else {
 											logger.info(" 2172 metadata for collection: ");
@@ -897,9 +897,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										if (collection == null) {
 											throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 										}
-										logger.info(" 2172 in processCollection: collection for download: " + gson.toJson(collection));
-
-									}
+										logger.info(" 2172 in processCollection: Permanent Archive Links collection for download: " + gson.toJson(collection));
+										List<HpcCollectionDownloadTaskItem> downloadExternalArchivedItems = null;
+										downloadExternalArchivedItems = downloadCollection(collection,
+											downloadTask.getGlobusDownloadDestination(),
+											downloadTask.getS3DownloadDestination(),
+											downloadTask.getGoogleDriveDownloadDestination(),
+											downloadTask.getGoogleCloudStorageDownloadDestination(),
+											downloadTask.getAsperaDownloadDestination(),
+											downloadTask.getBoxDownloadDestination(),
+											downloadTask.getAppendPathToDownloadDestination(),
+											downloadTask.getAppendCollectionNameToDownloadDestination(),
+											downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
+											excludedPaths, false);
+										// Combine both the items
+										downloadItems.addAll(downloadExternalArchivedItems);
+										}
 							// Test code End
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
