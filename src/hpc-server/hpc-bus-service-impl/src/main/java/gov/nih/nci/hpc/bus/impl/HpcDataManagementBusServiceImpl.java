@@ -4600,7 +4600,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			String permanentArchiveLink = dataManagementConfiguration.getBasePath() + relativeFilePath;
 			if(dataManagementService.getDataObject(permanentArchiveLink) != null) {
 				iterator.remove();
-				logger.error("Permanent or default Archive Link for " + s3Path + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
+				logger.error("Permanent or default Archive Link for {} already exists. The Archive Link could have been created for a Migration.", s3Path);
 			}
 		}
 		return bulkDataObjectRegistrationRequest;
