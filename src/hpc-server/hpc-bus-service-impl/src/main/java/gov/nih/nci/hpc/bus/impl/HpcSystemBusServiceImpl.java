@@ -865,7 +865,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
 
-								logger.info(" 2172 in processCollection: collection for download: " + gson.toJson(collection));
 								if (collection != null) {
 									// Download all files under this collection.
 									downloadItems = downloadCollection(collection,
