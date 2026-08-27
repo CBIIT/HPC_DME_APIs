@@ -7,7 +7,8 @@ CREATE TABLE "IRODS"."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"
    ITEMS CLOB,
    CREATED timestamp NOT NULL,
    COMPLETED timestamp NOT NULL,
-   EFFECTIVE_TRANSFER_SPEED number(10)
+   EFFECTIVE_TRANSFER_SPEED number(10),
+   REGISTRATION_SIZE number(20)
 )
 ;
 comment on table IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT" is 'Bulk data object registration task results';
@@ -28,6 +29,8 @@ comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."COMPLETED" i
 
 comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."EFFECTIVE_TRANSFER_SPEED" is 'The upload effective transfer speed in bytes per second';
 
+comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."REGISTRATION_SIZE" is 'The total size in bytes of the data objects requested for registration';
+
 
 
 CREATE TABLE "IRODS"."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"
@@ -37,7 +40,8 @@ CREATE TABLE "IRODS"."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"
    STATUS VARCHAR2(50),
    ITEMS CLOB,
    CREATED timestamp,
-   UI_URL VARCHAR2(2000)
+   UI_URL VARCHAR2(2000),
+   REGISTRATION_SIZE number(20)
 )
 ;
 comment on table IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK" is 'Bulk data object registration tasks';
@@ -53,6 +57,8 @@ comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."ITEMS" is 'The
 comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."CREATED" is 'The data/time the bulk registration request was submitted';
 
 comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."UI_URL" is 'The UI URL to view the task by id';
+
+Comment on column IRODS."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."REGISTRATION_SIZE" is "The total size in bytes of the data objects requested for registration";
 
 
 
