@@ -1154,16 +1154,6 @@ public interface HpcDataTransferService {
 	 */
 	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String downloadTaskId, String archiveLinkRegistrationTaskId) throws HpcException;
 
-
-	/**
-	 * Get a collection download task by registration ID external.
-	 *
-	 * @param registrationTaskId The registration task ID.
-	 * @return The collection download task ID, or null if not found.
-	 * @throws HpcException on service failure.
-	 */
-	public String getCollectionDownloadTaskByRegistrationIdExternal(String registrationTaskId) throws HpcException;
-
 	/**
 	 * Removes google access token retained for retries beyond the retention period.
 	 *
