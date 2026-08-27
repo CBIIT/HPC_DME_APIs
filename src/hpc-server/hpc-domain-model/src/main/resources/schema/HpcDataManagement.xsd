@@ -163,7 +163,7 @@
 			<xsd:element name="uploadMethod" 
 				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
 			<xsd:element name="registrationSize" type="xsd:long" />
-			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
