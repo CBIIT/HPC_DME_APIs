@@ -943,6 +943,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		if(registrationResponseDTO == null) {
 			logger.info("All the archive links are Permanent Archive Links, we will skip Registration and complete download");
+			downloadTask.setExternalArchiveFlag(false);
+			downloadTask.setPath(basePath + relativePath);
 			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
 			dataTransferService.updateCollectionDownloadTask(downloadTask);
