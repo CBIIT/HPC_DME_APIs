@@ -960,7 +960,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
 			dataTransferService.updateCollectionDownloadTask(downloadTask);
 			return registrationResponseDTO;
-		} else if(registrationResponseDTO != null && !CollectionUtils.isEmpty(registrationResponseDTO.getDataObjectRegistrationItems())) {
+		} else if(registrationResponseDTO.getTaskId() != null) {
 			logger.info("Successfully started the Registration step for external collection download for path: " + path);
 			dataTransferService.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTask.getId(), registrationResponseDTO.getTaskId());
 		}
