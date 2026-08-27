@@ -861,13 +861,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								// Get the collection to be downloaded.
 								HpcCollection collection = dataManagementService
 										.getFullCollection(pathPrefixForMetadata + downloadTask.getPath(), metadata.getLinkSourcePath());
-								if (collection == null) {
+								if (collection == null && !downloadTask.getExternalArchiveFlag()) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
 
 								logger.info(" 2172 in processCollection: collection for download: " + gson.toJson(collection));
-
-								// Download all files under this collection.
+								if (collection != null) {
+									// Download all files under this collection.
 									downloadItems = downloadCollection(collection,
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
@@ -879,8 +879,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getAppendCollectionNameToDownloadDestination(),
 										downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
 										excludedPaths, downloadTask.getExternalArchiveFlag());
+									}
 
-							// Test code Begin
 									if (downloadTask.getExternalArchiveFlag()) {
 										HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(downloadTask.getPath());
 										HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
@@ -917,10 +917,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 												excludedPaths, false);
 											// Combine both the items
 											downloadItems.addAll(downloadExternalArchivedItems);
-											}
+										} else {
+											logger.info(" 2172 in processCollection: Permanent Archive links collection not found for download: " + downloadPath);
+											throw new HpcException("Permanent Archive Links collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+										}
 									}
-							// Test code End
-
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 								downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
 										downloadTask.getGlobusDownloadDestination(),
