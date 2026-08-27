@@ -181,7 +181,6 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
-import com.google.gson.Gson;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -250,7 +249,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -905,7 +903,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
-		logger.info("Registration invoked from ExternalDownload Task for a Collection. Download task = " + gson.toJson(downloadTask));
+		logger.info("Registration invoked from ExternalDownload Task for a Collection. Download task id = " + downloadTask.getId());
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		String path = downloadTask.getPath().replace(downloadArchiveLinkBasePath, "");
 		String userId = downloadTask.getUserId();
@@ -939,7 +937,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		boolean externalArchiveFlag = true;
 		try{
 			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, externalArchiveFlag, userId);
-			logger.info("registrationResponseDTO = " + gson.toJson(registrationResponseDTO));
 		} catch (HpcException e) {
 			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -947,6 +944,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if(registrationResponseDTO == null) {
 			logger.info("All the archive links are Permanent Archive Links, we will skip Registration and complete download");
 			downloadTask.setExternalArchiveFlag(false);
+			downloadTask.setPath(basePath + relativePath);
 			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
 			dataTransferService.updateCollectionDownloadTask(downloadTask);
