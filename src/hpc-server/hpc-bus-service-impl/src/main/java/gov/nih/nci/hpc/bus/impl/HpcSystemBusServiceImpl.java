@@ -90,6 +90,7 @@ import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
@@ -860,7 +861,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								logger.info(" 2172 in processCollection: collection for download: " + gson.toJson(collection));
 
 								// Download all files under this collection.
-								downloadItems = downloadCollection(collection,
+									downloadItems = downloadCollection(collection,
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
@@ -871,6 +872,35 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getAppendCollectionNameToDownloadDestination(),
 										downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
 										excludedPaths, downloadTask.getExternalArchiveFlag());
+
+							// Test code Begin
+									if (downloadTask.getExternalArchiveFlag()) {
+										HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(downloadTask.getPath());
+										HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+										String basePath = dataManagementConfiguration.getBasePath();
+										String posixPath = s3ArchiveConfiguration.getPosixPath();
+										String relativePath = downloadTask.getPath().substring(posixPath.length());
+										String downloadPath = basePath + relativePath;
+										logger.info(" 2172 in processCollection: downloadPath for download: " + downloadPath);
+										// Get the System generated metadata.
+										metadata = metadataService
+												.getCollectionSystemGeneratedMetadata(downloadPath);
+										if(metadata != null) {
+											logger.info(" 2172 metadata for collection: " + gson.toJson(metadata));
+										}
+										else {
+											logger.info(" 2172 metadata for collection: ");
+										}
+										// Get the collection to be downloaded.
+										collection = dataManagementService
+												.getFullCollection(downloadPath, metadata.getLinkSourcePath());
+										if (collection == null) {
+											throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+										}
+										logger.info(" 2172 in processCollection: collection for download: " + gson.toJson(collection));
+
+									}
+							// Test code End
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 								downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
