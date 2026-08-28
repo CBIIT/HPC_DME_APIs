@@ -886,8 +886,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), userId,
 					Boolean.TRUE.equals(downloadRequest.getAppendPathToDownloadDestination()),
 					Boolean.TRUE.equals(downloadRequest.getAppendCollectionNameToDownloadDestination()), HpcDownloadTaskType.COLLECTION);
-		// Test code
-		// HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = registerCollectionFromExternalSource(collectionDownloadTask);
 
 		// Create and return a DTO with the request receipt.
 		responseDTO = new HpcCollectionDownloadResponseDTO();
@@ -1652,7 +1650,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (externalArchiveFlag) {
 			// Validate and build the external archive link paths for the registration items.
 			try {
-				// If all links already exist or they are permanent archive links, then return null response
+				// If all links already exist as permanent archive link or there are no files in the path then return null response
 				bulkDataObjectRegistrationRequest = validatePermanentArchiveLinks(bulkDataObjectRegistrationRequest);
 				if (bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().isEmpty()) {
 					return null;
@@ -4586,11 +4584,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService
 				.getS3ArchiveConfiguration(bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().get(0).getS3ArchiveConfigurationId());
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		Iterator<HpcDirectoryScanRegistrationItemDTO> iteratorDirectoryScan = bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().iterator();
-		while (iteratorDirectoryScan.hasNext()) {
-			HpcDirectoryScanRegistrationItemDTO directoryScanItem = iteratorDirectoryScan.next();
-			directoryScanItem.setBasePath(downloadArchiveLinkBasePath + s3ArchiveConfiguration.getPosixPath());
-		}
 		Iterator<HpcDataObjectRegistrationItemDTO> iterator = bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().iterator();
 		while (iterator.hasNext()) {
 			// Validate if permanent archive link already exists. If it does, we generate error, remove the registration item and continue with the rest of the items.
@@ -4610,7 +4603,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException {
 		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService
 				.getS3ArchiveConfiguration(bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().get(0).getS3ArchiveConfigurationId());
-		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
 		Iterator<HpcDirectoryScanRegistrationItemDTO> iteratorDirectoryScan = bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().iterator();
 		while (iteratorDirectoryScan.hasNext()) {
 			HpcDirectoryScanRegistrationItemDTO directoryScanItem = iteratorDirectoryScan.next();
