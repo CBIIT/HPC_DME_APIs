@@ -895,8 +895,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 												downloadTask.getAppendCollectionNameToDownloadDestination(),
 												downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
 												excludedPaths, false);
-											// Combine both the items
-											downloadItems.addAll(downloadExternalArchivedItems);
+											// Combine both the items 1) download items from the external archive and 2) download items from the permanent archive (for files that already have been archived)
+											if(downloadItems != null && !downloadItems.isEmpty() && downloadExternalArchivedItems != null && !downloadExternalArchivedItems.isEmpty()) {
+												downloadItems.addAll(downloadExternalArchivedItems);
+											}
 										}
 									}
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
