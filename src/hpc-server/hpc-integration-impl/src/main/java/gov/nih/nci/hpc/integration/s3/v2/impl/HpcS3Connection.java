@@ -8,7 +8,7 @@
  * Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
-package gov.nih.nci.hpc.integration.s3.v2.crt.impl;
+package gov.nih.nci.hpc.integration.s3.v2.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,30 +31,30 @@ import gov.nih.nci.hpc.exception.HpcException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkException;
-import software.amazon.awssdk.crt.CrtRuntimeException;
-import software.amazon.awssdk.crt.Log;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
-import software.amazon.awssdk.services.s3.S3CrtAsyncClientBuilder;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 /**
- * HPC S3 Connection.
+ * HPC S3 Connection base class. Holds all logic shared between the concrete S3
+ * connection implementations. The only behavior that differs between
+ * implementations is how the {@link S3AsyncClient} is built (e.g. AWS CRT vs
+ * Netty-NIO), which is delegated to the abstract build methods.
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public class HpcS3Connection {
+public abstract class HpcS3Connection {
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
 
 	// 5GB in bytes
-	private static final long FIVE_GB = 5368709120L;
+	protected static final long FIVE_GB = 5368709120L;
 
 	// Google Storage S3 URL.
-	private static final String GOOGLE_STORAGE_URL = "https://storage.googleapis.com";
+	protected static final String GOOGLE_STORAGE_URL = "https://storage.googleapis.com";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -66,25 +66,21 @@ public class HpcS3Connection {
 
 	// The multipart upload minimum part size.
 	@Value("${hpc.integration.s3.minimumUploadPartSize}")
-	private Long minimumUploadPartSize = null;
+	protected Long minimumUploadPartSize = null;
 
 	// The multipart upload threshold.
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
-	private Long multipartUploadThreshold = null;
+	protected Long multipartUploadThreshold = null;
 
-	// The CRT log file (Optional).
-	@Value("${hpc.integration.s3.crtLogFile:#{null}}")
-	private String crtLogFile = null;
-
-	// AWS CRT to trust all certs config.
+	// To trust all certs config.
 	@Value("${hpc.integration.s3.trustAllCerts:false}")
-	private Boolean trustAllCerts = null;
+	protected Boolean trustAllCerts = null;
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
 
 	// The logger instance.
-	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
+	protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -99,7 +95,7 @@ public class HpcS3Connection {
 	 * @param awsTransferManagerThreadPoolSize The thread pool size to be used for
 	 *                                         AWS transfer manager
 	 */
-	private HpcS3Connection(String pathStyleAccessEnabledProviders, int awsTransferManagerThreadPoolSize) {
+	protected HpcS3Connection(String pathStyleAccessEnabledProviders, int awsTransferManagerThreadPoolSize) {
 		for (String s3Provider : pathStyleAccessEnabledProviders.split(",")) {
 			this.pathStyleAccessEnabledProviders.add(HpcIntegratedSystem.fromValue(s3Provider));
 		}
@@ -110,21 +106,35 @@ public class HpcS3Connection {
 	}
 
 	// ---------------------------------------------------------------------//
-	// Methods
+	// Abstract Methods
 	// ---------------------------------------------------------------------//
 
 	/**
-	 * Authenticate a (system) data transfer account to S3 (AWS or 3rd Party
-	 * Provider)
+	 * Build a S3 async client for a 'S3 3rd Party Provider' account.
 	 *
-	 * @param dataTransferAccount A data transfer account to authenticate.
-	 * @param s3URLorRegion       The S3 URL if authenticating with a 3rd party S3
-	 *                            Provider (Cleversafe, Cloudian, etc), or Region if
-	 *                            authenticating w/ AWS.
-	 * @return An authenticated TransferManager object, or null if authentication
-	 *         failed.
-	 * @throws HpcException if authentication failed
+	 * @param credentialsProvider    The S3 credentials provider.
+	 * @param endpoint               The S3 provider endpoint.
+	 * @param pathStyleAccessEnabled true if the S3 3rd Party provider supports path
+	 *                               style access.
+	 * @param thresholdInBytes       The multipart upload threshold in bytes.
+	 * @return A S3 async client.
 	 */
+	protected abstract S3AsyncClient buildS3ProviderAsyncClient(StaticCredentialsProvider credentialsProvider,
+			URI endpoint, boolean pathStyleAccessEnabled, long thresholdInBytes);
+
+	/**
+	 * Build a S3 async client for an AWS S3 account.
+	 *
+	 * @param credentialsProvider The AWS credentials provider.
+	 * @param region              The AWS account region.
+	 * @return A S3 async client.
+	 */
+	protected abstract S3AsyncClient buildAwsAsyncClient(StaticCredentialsProvider credentialsProvider, String region);
+
+	// ---------------------------------------------------------------------//
+	// Public Methods
+	// ---------------------------------------------------------------------//
+
 	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URLorRegion)
 			throws HpcException {
 		if (dataTransferAccount.getIntegratedSystem().equals(HpcIntegratedSystem.AWS)) {
@@ -139,13 +149,6 @@ public class HpcS3Connection {
 		}
 	}
 
-	/**
-	 * Authenticate a (user) S3 account (AWS or 3rd Party Provider)
-	 *
-	 * @param s3Account AWS S3 account.
-	 * @return TransferManager
-	 * @throws HpcException if authentication failed
-	 */
 	public Object authenticate(HpcS3Account s3Account) throws HpcException {
 		if (!StringUtils.isEmpty(s3Account.getRegion())) {
 			return authenticateAWS(s3Account.getAccessKey(), s3Account.getSecretKey(), s3Account.getRegion());
@@ -160,13 +163,6 @@ public class HpcS3Connection {
 		}
 	}
 
-	/**
-	 * Get S3 Transfer Manager from an authenticated token.
-	 *
-	 * @param authenticatedToken An authenticated token.
-	 * @return A transfer manager object.
-	 * @throws HpcException on invalid authentication token.
-	 */
 	public S3TransferManager getTransferManager(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof HpcS3)) {
 			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -175,13 +171,6 @@ public class HpcS3Connection {
 		return ((HpcS3) authenticatedToken).transferManager;
 	}
 
-	/**
-	 * Get S3 Client from an authenticated token.
-	 *
-	 * @param authenticatedToken An authenticated token.
-	 * @return A S3 client object.
-	 * @throws HpcException on invalid authentication token.
-	 */
 	public S3AsyncClient getClient(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof HpcS3)) {
 			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -190,13 +179,6 @@ public class HpcS3Connection {
 		return ((HpcS3) authenticatedToken).client;
 	}
 
-	/**
-	 * Get S3 Presigner from an authenticated token.
-	 *
-	 * @param authenticatedToken An authenticated token.
-	 * @return A S3 presigner object.
-	 * @throws HpcException on invalid authentication token.
-	 */
 	public S3Presigner getPresigner(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof HpcS3)) {
 			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -205,13 +187,6 @@ public class HpcS3Connection {
 		return ((HpcS3) authenticatedToken).presigner;
 	}
 
-	/**
-	 * Get S3 Provider from an authenticated token.
-	 *
-	 * @param authenticatedToken An authenticated token.
-	 * @return A transfer manager object.
-	 * @throws HpcException on invalid authentication token.
-	 */
 	public HpcIntegratedSystem getS3Provider(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof HpcS3)) {
 			return null;
@@ -224,7 +199,7 @@ public class HpcS3Connection {
 	// Helper Methods
 	// ---------------------------------------------------------------------//
 
-	private class HpcS3 {
+	protected class HpcS3 {
 		private S3TransferManager transferManager = null;
 		private S3AsyncClient client = null;
 		private S3Presigner presigner = null;
@@ -262,24 +237,12 @@ public class HpcS3Connection {
 		HpcS3 s3 = new HpcS3();
 		s3.provider = s3Provider;
 
+		long thresholdInBytes = url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold;
+
 		try {
-			// If configured, start the AWS CRT logger.
-			if (!StringUtils.isEmpty(crtLogFile)) {
-				Log.initLoggingToFile(Log.LogLevel.Trace, crtLogFile);
-			}
-
-			// Instantiate a S3 async client.
-			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
-					.credentialsProvider(s3ProviderCredentialsProvider).forcePathStyle(pathStyleAccessEnabled)
-					.endpointOverride(uri).minimumPartSizeInBytes(minimumUploadPartSize)
-					.thresholdInBytes(url.equalsIgnoreCase(GOOGLE_STORAGE_URL) ? FIVE_GB : multipartUploadThreshold);
-
-			if (trustAllCerts) {
-				crtAsyncClientBuilder.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true));
-				logger.warn("hpc.integration.s3.trustAllCerts property is set to true. CRT cert validation is off");
-			}
-
-			s3.client = crtAsyncClientBuilder.build();
+			// Instantiate a S3 async client (implementation specific).
+			s3.client = buildS3ProviderAsyncClient(s3ProviderCredentialsProvider, uri, pathStyleAccessEnabled,
+					thresholdInBytes);
 
 			// Instantiate the S3 transfer manager.
 			s3.transferManager = S3TransferManager.builder().s3Client(s3.client).executor(executorService).build();
@@ -292,7 +255,7 @@ public class HpcS3Connection {
 
 			return s3;
 
-		} catch (SdkException | CrtRuntimeException e) {
+		} catch (SdkException e) {
 			throw new HpcException(
 					"[S3] Failed to authenticate S3 Provider: " + s3Provider.value() + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -317,15 +280,8 @@ public class HpcS3Connection {
 		s3.provider = HpcIntegratedSystem.AWS;
 
 		try {
-			// If configured, start the AWS CRT logger.
-			if (!StringUtils.isEmpty(crtLogFile)) {
-				Log.initLoggingToFile(Log.LogLevel.Trace, crtLogFile);
-			}
-
-			// Instantiate a S3 async client.
-			s3.client = S3AsyncClient.crtBuilder().credentialsProvider(awsCredentialsProvider).region(Region.of(region))
-					.minimumPartSizeInBytes(minimumUploadPartSize)
-					.thresholdInBytes(multipartUploadThreshold).build();
+			// Instantiate a S3 async client (implementation specific).
+			s3.client = buildAwsAsyncClient(awsCredentialsProvider, region);
 
 			// Instantiate the S3 transfer manager.
 			s3.transferManager = S3TransferManager.builder().s3Client(s3.client).executor(executorService).build();
@@ -336,7 +292,7 @@ public class HpcS3Connection {
 
 			return s3;
 
-		} catch (SdkException | CrtRuntimeException e) {
+		} catch (SdkException e) {
 			throw new HpcException("[S3] Failed to authenticate S3 in region " + region + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}
