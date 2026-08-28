@@ -41,6 +41,7 @@ import gov.nih.nci.hpc.dao.HpcBulkUpdateAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
+import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
@@ -57,6 +58,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -126,6 +128,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// Data Registration DAO.
 	@Autowired
 	private HpcDataRegistrationDAO dataRegistrationDAO = null;
+
+	// Data Download DAO.
+	@Autowired
+	private HpcDataDownloadDAO dataDownloadDAO = null;
 
 	// Bulk Update Audit DAO.
 	@Autowired
@@ -978,7 +984,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public String registerDataObjects(String userId, String uiURL,
-			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests) throws HpcException {
+			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests, boolean externalArchiveFlag) throws HpcException {
 		// Input validation
 		if (StringUtils.isEmpty(userId)) {
 			throw new HpcException("Null / Empty userId in registration list request",
@@ -998,10 +1004,12 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED);
 		bulkDataObjectRegistrationTask
 				.setUploadMethod(toDataTransferUploadMethod(dataObjectRegistrationRequests.values().iterator().next()));
+		bulkDataObjectRegistrationTask.setExternalArchiveFlag(externalArchiveFlag);
 
 		// Iterate through the individual data object registration requests and add them
 		// as items to the
 		// list registration task.
+		long totalRegistrationSize = 0L;
 		for (String path : dataObjectRegistrationRequests.keySet()) {
 			HpcDataObjectRegistrationRequest registrationRequest = dataObjectRegistrationRequests.get(path);
 			// Validate registration request.
@@ -1011,13 +1019,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
 			HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
 			reqistrationTask.setPath(path);
+			reqistrationTask.setSize(registrationRequest.getRegistrationSize());
 			registrationItem.setTask(reqistrationTask);
 			registrationItem.setRequest(registrationRequest);
 
 			bulkDataObjectRegistrationTask.getItems().add(registrationItem);
+			totalRegistrationSize += registrationRequest.getRegistrationSize();
 		}
 
 		// Persist the registration request.
+		bulkDataObjectRegistrationTask.setRegistrationSize(totalRegistrationSize);
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
 		return bulkDataObjectRegistrationTask.getId();
 	}
@@ -1041,6 +1052,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		if (registrationTask == null) {
 			throw new HpcException("Invalid data object list registration task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+        if (registrationTask.getExternalArchiveFlag()) {
+            // Find external download task with archive_link_registration_task_id matching the registration task id
+			String collectionDownloadTaskId = dataDownloadDAO.getCollectionDownloadTaskByRegistrationIdExternal(registrationTask.getId());
+			if (collectionDownloadTaskId != null && !collectionDownloadTaskId.isBlank()) {
+				dataDownloadDAO.updateCollectionDownloadTaskStatus(collectionDownloadTaskId, HpcCollectionDownloadTaskStatus.RECEIVED.toString());
+				dataDownloadDAO.setCollectionDownloadTaskInProcess(collectionDownloadTaskId, false);
+			} else {
+					return;
+			}
+        }
 
 		// Cleanup the DB record.
 		dataRegistrationDAO.deleteBulkDataObjectRegistrationTask(registrationTask.getId());
@@ -1054,6 +1075,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		registrationResult.setCreated(registrationTask.getCreated());
 		registrationResult.setCompleted(completed);
 		registrationResult.setUploadMethod(registrationTask.getUploadMethod());
+		registrationResult.setRegistrationSize(registrationTask.getRegistrationSize());
 		registrationResult.getItems().addAll(registrationTask.getItems());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
