@@ -90,10 +90,12 @@ import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadStatusDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -105,6 +107,7 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+
 
 /**
  * HPC System Business Service Implementation.
@@ -192,6 +195,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	// task. Note that just one server is expected to perform this task
 	@Value("${hpc.bus.processCollectionDownloadTasksPerformer}")
 	private Boolean processCollectionDownloadTasksPerformer;
+
+	@Value("${hpc.bus.downloadArchiveLinkBasePath}")
+	private String downloadArchiveLinkBasePath = null;
+
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -728,6 +735,32 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
+	public void processExternalDownloadTasks() throws HpcException {
+		// Iterate through all the external download requests that were submitted (not
+		// processed yet).
+		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)
+				.forEach(downloadTask -> {
+					try {
+						logger.info("External collection download task: [taskId={}] - started processing [{}]",
+								downloadTask.getId(), downloadTask.getType());
+						dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
+						HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
+								.registerCollectionFromExternalSource(downloadTask);
+					} catch (HpcException e) {
+						logger.error("Failed to process external collection download task: " + downloadTask.getId(), e);
+						try {
+							completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
+
+						} catch (HpcException ex) {
+							logger.error("Failed to complete collection download as failed {}",
+									downloadTask.getId(), ex);
+						}
+					}
+				});
+	}
+
+	@Override
+	@HpcExecuteAsSystemAccount
 	public void processCollectionDownloadTasks() throws HpcException {
 		// Iterate through all the collection download requests that were submitted (not
 		// processed yet).
@@ -806,19 +839,23 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getId());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+								String pathPrefixForMetadata = "";
+								if (downloadTask.getExternalArchiveFlag()) {
+									pathPrefixForMetadata = downloadArchiveLinkBasePath;
+								}
 								// Get the System generated metadata.
 								HpcSystemGeneratedMetadata metadata = metadataService
-										.getCollectionSystemGeneratedMetadata(downloadTask.getPath());
-
+										.getCollectionSystemGeneratedMetadata(pathPrefixForMetadata + downloadTask.getPath());
 								// Get the collection to be downloaded.
 								HpcCollection collection = dataManagementService
-										.getFullCollection(downloadTask.getPath(), metadata.getLinkSourcePath());
-								if (collection == null) {
+										.getFullCollection(pathPrefixForMetadata + downloadTask.getPath(), metadata.getLinkSourcePath());
+								if (collection == null && !downloadTask.getExternalArchiveFlag()) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
 
-								// Download all files under this collection.
-								downloadItems = downloadCollection(collection,
+								if (collection != null) {
+									// Download all files under this collection.
+									downloadItems = downloadCollection(collection,
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
@@ -828,8 +865,40 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getAppendPathToDownloadDestination(),
 										downloadTask.getAppendCollectionNameToDownloadDestination(),
 										downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
-										excludedPaths);
+										excludedPaths, downloadTask.getExternalArchiveFlag());
+									}
 
+									if (downloadTask.getExternalArchiveFlag()) {
+										HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(downloadTask.getPath());
+										HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+										String basePath = dataManagementConfiguration.getBasePath();
+										String posixPath = s3ArchiveConfiguration.getPosixPath();
+										String relativePath = downloadTask.getPath().substring(posixPath.length());
+										String downloadPath = basePath + relativePath;
+										logger.info(" In processCollection: downloadPath for download of Permanent Archive Links: " + downloadPath);
+										// Get the System generated metadata.
+										metadata = metadataService
+												.getCollectionSystemGeneratedMetadata(downloadPath);
+										// Get the collection to be downloaded.
+										collection = dataManagementService
+												.getFullCollection(downloadPath, metadata.getLinkSourcePath());
+										if (collection != null) {
+											List<HpcCollectionDownloadTaskItem> downloadExternalArchivedItems = null;
+											downloadExternalArchivedItems = downloadCollection(collection,
+												downloadTask.getGlobusDownloadDestination(),
+												downloadTask.getS3DownloadDestination(),
+												downloadTask.getGoogleDriveDownloadDestination(),
+												downloadTask.getGoogleCloudStorageDownloadDestination(),
+												downloadTask.getAsperaDownloadDestination(),
+												downloadTask.getBoxDownloadDestination(),
+												downloadTask.getAppendPathToDownloadDestination(),
+												downloadTask.getAppendCollectionNameToDownloadDestination(),
+												downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
+												excludedPaths, false);
+											// Combine both the items
+											downloadItems.addAll(downloadExternalArchivedItems);
+										}
+									}
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
 								downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
 										downloadTask.getGlobusDownloadDestination(),
@@ -840,7 +909,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getBoxDownloadDestination(),
 										downloadTask.getAppendPathToDownloadDestination(),
 										downloadTask.getAppendCollectionNameToDownloadDestination(),
-										downloadTask.getUserId(), downloadTask.getId());
+										downloadTask.getUserId(), downloadTask.getId(), downloadTask.getExternalArchiveFlag());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 								downloadItems = new ArrayList<>();
@@ -867,7 +936,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 											downloadTask.getAppendPathToDownloadDestination(),
 											downloadTask.getAppendCollectionNameToDownloadDestination(),
 											downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
-											excludedPaths);
+											excludedPaths, downloadTask.getExternalArchiveFlag());
 
 									// Update the collection path on the items.
 									items.forEach(item -> item.setCollectionPath(path));
@@ -1885,7 +1954,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination, String userId,
 			HpcCollectionDownloadBreaker collectionDownloadBreaker, String collectionDownloadTaskId,
-			Set<String> excludedPaths) throws HpcException {
+			Set<String> excludedPaths, boolean externalArchiveFlag) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		logger.info("Processing collection download task {}: Excluded Paths: {}", collectionDownloadTaskId,
@@ -1906,7 +1975,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 						googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination,
 						appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, userId, null,
-						collectionDownloadTaskId);
+						collectionDownloadTaskId, externalArchiveFlag);
+				if(externalArchiveFlag) {
+					downloadItem.setPath(dataObjectEntry.getPath().replaceFirst(downloadArchiveLinkBasePath, ""));
+				}
 				downloadItems.add(downloadItem);
 				if (collectionDownloadBreaker.abortDownload(downloadItem)) {
 					// Need to abort collection download processing. Cancel and return the items
@@ -1948,7 +2020,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						calculateBoxDownloadDestination(boxDownloadDestination, subCollectionPath,
 								appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, true, null),
 						appendPathToDownloadDestination, false, userId, collectionDownloadBreaker,
-						collectionDownloadTaskId, excludedPaths));
+						collectionDownloadTaskId, excludedPaths, externalArchiveFlag));
 			}
 		}
 
@@ -2000,7 +2072,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination, String userId,
-			String collectionDownloadTaskId) throws HpcException {
+			String collectionDownloadTaskId, boolean externalArchiveFlag) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 
 		// Iterate through the data objects in the collection and download them.
@@ -2008,7 +2080,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(dataObjectPath, globusDownloadDestination,
 					s3DownloadDestination, googleDriveDownloadDestination, googleCloudStorageDownloadDestination,
 					asperaDownloadDestination, boxDownloadDestination, appendPathToDownloadDestination,
-					appendCollectionNameToDownloadDestination, userId, null, collectionDownloadTaskId);
+					appendCollectionNameToDownloadDestination, userId, null, collectionDownloadTaskId, externalArchiveFlag);
 			downloadItems.add(downloadItem);
 		}
 
@@ -2075,7 +2147,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(retryItem.getPath(),
 					globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 					googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, false,
-					false, userId, retryItem.getDestinationLocation(), collectionDownloadTaskId);
+					false, userId, retryItem.getDestinationLocation(), collectionDownloadTaskId, false);
 			downloadItems.add(downloadItem);
 		}
 
@@ -2167,7 +2239,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			boolean appendPathToDownloadDestination, boolean appendCollectionNameToDownloadDestination, String userId,
-			HpcFileLocation retryDestinationLocation, String collectionDownloadTaskId) {
+			HpcFileLocation retryDestinationLocation, String collectionDownloadTaskId, boolean externalArchiveFlag) {
 		HpcDownloadRequestDTO dataObjectDownloadRequest = new HpcDownloadRequestDTO();
 		dataObjectDownloadRequest.setGlobusDownloadDestination(
 				calculateGlobusDownloadDestination(globusDownloadDestination, path, appendPathToDownloadDestination,
@@ -2195,8 +2267,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		// Download this data object.
 		try {
+
 			HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = dataManagementBusService.downloadDataObject(
-					path, dataObjectDownloadRequest, null, userId, null, false, collectionDownloadTaskId);
+					path, dataObjectDownloadRequest, null, userId, null, false, collectionDownloadTaskId, externalArchiveFlag);
 
 			downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());

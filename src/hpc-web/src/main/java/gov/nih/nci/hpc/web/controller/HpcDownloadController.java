@@ -439,6 +439,7 @@ public class HpcDownloadController extends AbstractHpcController {
 				boxDestination.setAccessToken(accessBoxToken);
 				boxDestination.setRefreshToken(refreshBoxToken);
 				dto.setBoxDownloadDestination(boxDestination);
+			logger.debug("BOX JSON before downloading=" + gson.toJson(dto));				
 			}
 			if("collection".equals(downloadFile.getDownloadType())) {
 				if (downloadFile.getDownloadDestinationType() != null

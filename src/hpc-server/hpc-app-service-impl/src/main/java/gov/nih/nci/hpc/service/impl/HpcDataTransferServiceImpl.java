@@ -1173,8 +1173,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException {
 		boolean temporaryArchiveLinkDeleted = false;
-		String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(path, s3ConfigurationId);
-		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(temporaryArchiveLinkPath);
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(path);
 
 		try {
 			synchronized (externalArchivePathLock) {
@@ -1192,9 +1191,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 
 				if (numberOfActiveExternalDownloadTasksForPath == 0) {
 					try {
-						logger.info("Temporary Archive Link: {} being deleted", temporaryArchiveLinkPath);
-						HpcFileLocation archiveLinkLocation = getArchiveLocation(temporaryArchiveLinkPath);
-						temporaryArchiveLinkDeleted = deleteArchiveLink(temporaryArchiveLinkPath, archiveLinkLocation,
+						logger.info("Temporary Archive Link: {} being deleted", path);
+						HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
+						temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
 								configurationId, s3ConfigurationId);
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: "
@@ -1209,12 +1208,10 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				}
 			}
 		} finally {
-			HpcExternalArchiveLinkLockManager.deletePathLock(temporaryArchiveLinkPath);
+			HpcExternalArchiveLinkLockManager.deletePathLock(path);
 		}
-
 		return temporaryArchiveLinkDeleted;
 	}
-
 
 	@Override
 	public HpcDownloadTaskResult completeDataObjectDownloadTask(HpcDataObjectDownloadTask downloadTask,
@@ -1351,7 +1348,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 				logger.info("external archive download task: [taskId={}] - checking if there are no active downloads for path: {}",
 						downloadTask.getId(), downloadTask.getPath());
 				securityService.executeAsSystemAccount(Optional.empty(), () -> {
-					if(deleteTemporaryArchiveLink(downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
+					if(deleteTemporaryArchiveLink(downloadArchiveLinkBasePath + downloadTask.getPath(), downloadTask.getConfigurationId(), downloadTask.getS3ArchiveConfigurationId())) {
 						logger.info("external archive download task: [taskId={}] - successfully deleted temporary archive link for path: {}",
 						 downloadTask.getId(), downloadTask.getPath());
 					} else {
@@ -1502,8 +1499,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
 			if (downloadTask.getExternalArchiveFlag()){
-				String temporaryArchiveLinkPath = getTemporaryArchiveLinkPath(downloadRequest.getPath(), downloadTask.getS3ArchiveConfigurationId());
-				downloadRequest.setArchiveLocation(getArchiveLocation(temporaryArchiveLinkPath));
+				downloadRequest.setArchiveLocation(getArchiveLocation(downloadArchiveLinkBasePath + downloadRequest.getPath()));
 			} else {
 				downloadRequest.setArchiveLocation(getArchiveLocation(downloadRequest.getPath()));
 			}
@@ -1727,7 +1723,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException {
 
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
@@ -1755,12 +1751,45 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
+		downloadTask.setExternalArchiveFlag(externalArchiveFlag);
 		Long collectionSize = metadataService.getCollectionSizeForPath(dataManagementProxy.getAbsolutePath(path));
 		downloadTask.setDataSize(collectionSize != null ? collectionSize : 0L);
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 		return downloadTask;
 	}
+
+	@Override
+	public HpcCollectionDownloadTask downloadExternal(String path,
+			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
+			HpcGoogleDownloadDestination googleDriveDownloadDestination,
+			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
+			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
+			String userId, boolean appendPathToDownloadDestination,
+			boolean appendCollectionNameToDownloadDestination, HpcDownloadTaskType type) throws HpcException {
+
+		// Create a new COLLECTION/COLLECTION_LIST/DATAOBJECT_LIST download task for an external archive download.
+		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+		downloadTask.setCreated(Calendar.getInstance());
+		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
+		downloadTask.setS3DownloadDestination(s3DownloadDestination);
+		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
+		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
+		downloadTask.setAsperaDownloadDestination(asperaDownloadDestination);
+		downloadTask.setBoxDownloadDestination(boxDownloadDestination);
+		downloadTask.setPath(path);
+		downloadTask.setUserId(userId);
+		downloadTask.setType(type);
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL);
+		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
+		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
+		downloadTask.setExternalArchiveFlag(true);
+		// Persist the request.
+		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
+		return downloadTask;
+	}
+
+
 
 	@Override
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
@@ -2395,6 +2424,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			dataDownloadDAO.updateDataObjectsDownloadTaskPriority(taskId, priority);
 		}
 		
+	}
+
+	@Override
+	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String downloadTaskId, String archiveLinkRegistrationTaskId) throws HpcException {
+
+		dataDownloadDAO.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTaskId, archiveLinkRegistrationTaskId);
 	}
 
 	@Override
@@ -4694,16 +4729,4 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		}
 
 	}
-
-	private String getTemporaryArchiveLinkPath(String userInputtedPath, String s3ArchiveConfigurationId) throws HpcException {
-		String temporaryArchiveLinkPath = null;
-		try {
-			HpcDataTransferConfiguration s3Config = dataManagementService.getS3ArchiveConfiguration(s3ArchiveConfigurationId);
-			temporaryArchiveLinkPath = userInputtedPath.replaceFirst(s3Config.getPosixPath(), downloadArchiveLinkBasePath);
-		} catch (HpcException e) {
-			logger.error("Failed to determine temporary archive link path", e);
-		}
-		return temporaryArchiveLinkPath;
-	}
-	
 }
