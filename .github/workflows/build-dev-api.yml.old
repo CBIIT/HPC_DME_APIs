@@ -1,4 +1,4 @@
-name: Build  DME HPC API workflow
+name: Build  Dev API war file
 permissions:
   contents: write
   id-token: write
@@ -8,26 +8,31 @@ on:
       environment:
         description: env to build war file
         type: choice
-        default: build
+        default: dev
         options:
-          - build
+          - dev
+          - prod
+      environment_target:
+        description: target environment
+        type: choice
+        default: Ddev
+        options:
+          - dev
+          - prod
       code_branch:
         description: branch to build
         required: true
-        default: master
-run-name: "Build for DME API (branch: ${{ github.event.inputs.code_branch }})"
+        default: main
+run-name: "Build WARs for ${{ github.event.inputs.environment }} (branch: ${{ github.event.inputs.code_branch }}, target: ${{ github.event.inputs.environment_target }})"
 jobs:
   build:
     name: Build war file
     runs-on:
       group: cbiit-global-runners
-      #labels: [self-hosted]
-      labels: [nonprod-org-runner]
-      #labels: [prod-org-runner]
+      labels: [self-hosted]
     environment: ${{ inputs.environment }}
     env:
       CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
-      SPRING_DS_PWD: ${{ secrets.SPRING_DS_PWD }}
     steps:
       - name: check git installation
         run: git --version
@@ -47,25 +52,15 @@ jobs:
         uses: stCarolas/setup-maven@v4.5
         with:
           maven-version: '3.9.4'
-      #- name: install ojdbc6 to local maven repo
-        #run: |
-          #mvn install:install-file \
-            #-Dfile=/path/to/ojdbc6.jar \
-            #-DgroupId=com.oracle \
-            #-DartifactId=ojdbc6 \
-            #-Dversion=11.2.0.4 \
-            #-Dpackaging=jar
-
-      - name: build the war file
+      - name: build the war
         run: |
-          cd HPC_DME_APIs/src
-          #cd $GITHUB_WORKSPACE
-          #sed -i "s|^spring.datasource.password=.*|spring.datasource.password=${{ env.SPRING_DS_PWD }}|" src/main/resources/application.properties
-          mvn clean install -Ddev
+          #cd HPC_DME_APIs/src
+          cd $GITHUB_WORKSPACE/src
+          mvn clean install -D${{ github.event.inputs.environment_target }}
       - name: upload artifacts for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: dme-dev-hpc-api-artifacts
+          name: hpc-api-artifacts
           path: |
             src/hpc-server/hpc-ws-rs-impl/target/*.war
             src/hpc-server/hpc-scheduler/target/*.war
