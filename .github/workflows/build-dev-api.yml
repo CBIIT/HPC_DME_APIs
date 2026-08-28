@@ -8,9 +8,9 @@ on:
       environment:
         description: env to build war file
         type: choice
-        default: dev
+        default: build-dev
         options:
-          - dev
+          - build-dev
       code_branch:
         description: branch to build
         required: true
