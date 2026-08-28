@@ -59,7 +59,7 @@ jobs:
       - name: build the war file
         run: |
           #cd HPC_DME_APIs/src
-          cd $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE/src
           #sed -i "s|^spring.datasource.password=.*|spring.datasource.password=${{ env.SPRING_DS_PWD }}|" src/main/resources/application.properties
           mvn clean install -Ddev
       - name: upload artifacts for deployment job
