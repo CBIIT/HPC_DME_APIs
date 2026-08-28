@@ -8,9 +8,9 @@ on:
       environment:
         description: env to build war file
         type: choice
-        default: build
+        default: dev
         options:
-          - build
+          - dev
       code_branch:
         description: branch to build
         required: true
@@ -27,7 +27,10 @@ jobs:
     environment: ${{ inputs.environment }}
     env:
       CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
-      SPRING_DS_PWD: ${{ secrets.SPRING_DS_PWD }}
+      HPC_DRIVE_CLIENTID: ${{ secrets.HPC_DRIVE_CLIENTID }}
+      HPC_DRIVE_CLIENTSECRET: ${{ secrets.HPC_DRIVE_CLIENTSECRET }}
+      HPC_BOX_CLIENTID: ${{ secrets.HPC_BOX_CLIENTID }}
+      HPC_BOX_CLIENTSECRET: ${{ secrets.HPC_BOX_CLIENTSECRET }}
     steps:
       - name: check git installation
         run: git --version
@@ -61,6 +64,10 @@ jobs:
           #cd HPC_DME_APIs/src
           cd $GITHUB_WORKSPACE/src
           #sed -i "s|^spring.datasource.password=.*|spring.datasource.password=${{ env.SPRING_DS_PWD }}|" src/main/resources/application.properties
+          sed -i "s|^gov.nih.nci.hpc.drive.clientid=.*|gov.nih.nci.hpc.drive.clientid=${{ env.HPC_DRIVE_CLIENTID }}|" hpc-web/src/main/resources/appconfigs/dev-env.conf 
+          sed -i "s|^gov.nih.nci.hpc.drive.clientsecret=.*|gov.nih.nci.hpc.drive.clientsecret=${{ env.HPC_DRIVE_CLIENTSECRET }}|" hpc-web/src/main/resources/appconfigs/dev-env.conf 
+          sed -i "s|^gov.nih.nci.hpc.box.clientid=.*|gov.nih.nci.hpc.box.clientid=${{ env.HPC_BOX_CLIENTID }}|" hpc-web/src/main/resources/appconfigs/dev-env.conf 
+          sed -i "s|^gov.nih.nci.hpc.box.clientsecret=.*|gov.nih.nci.hpc.box.clientsecret=${{ env.HPC_BOX_CLIENTSECRET }}|" hpc-web/src/main/resources/appconfigs/dev-env.conf 
           mvn clean install -Ddev
       - name: upload artifacts for deployment job
         uses: actions/upload-artifact@v4
