@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.Calendar;
+import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +15,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDTO;
+import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
+import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -21,7 +37,9 @@ import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcAuthenticationType;
+import gov.nih.nci.hpc.domain.user.HpcNciAccount;
 import gov.nih.nci.hpc.domain.user.HpcUserRole;
+import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 
 class HpcDataManagementBusServiceImplTest {
 
@@ -47,6 +65,12 @@ class HpcDataManagementBusServiceImplTest {
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
+        setPrivateField("downloadArchiveLinkBasePath", "/download/archive");
+        var invoker = mock(HpcRequestInvoker.class);
+        var nciAccount = mock(HpcNciAccount.class);
+        when(nciAccount.getUserId()).thenReturn("test-user");
+        when(invoker.getNciAccount()).thenReturn(nciAccount);
+        when(securityService.getRequestInvoker()).thenReturn(invoker);
     }
     
     @AfterEach
@@ -468,6 +492,200 @@ class HpcDataManagementBusServiceImplTest {
         var resp = service.deleteDataObject("/path/to/data", true, null);
         assertEquals(false, resp.getDataManagementDeleteStatus());
         assertTrue(resp.getMessage().contains("Delete failed"));
+    }
+
+    @Test
+    void testCompletedBulkRegistrationResultPreservesItemSize() throws Exception {
+        HpcBulkDataObjectRegistrationResult result = new HpcBulkDataObjectRegistrationResult();
+        HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
+        HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
+        taskItem.setPath("/path/to/data");
+        taskItem.setResult(true);
+        taskItem.setSize(123L);
+        registrationItem.setTask(taskItem);
+        result.getItems().add(registrationItem);
+
+        Method method = HpcDataManagementBusServiceImpl.class.getDeclaredMethod("toBulkDataObjectRegistrationTaskDTO",
+                HpcBulkDataObjectRegistrationResult.class, boolean.class);
+        method.setAccessible(true);
+
+        HpcBulkDataObjectRegistrationTaskDTO taskDTO =
+                (HpcBulkDataObjectRegistrationTaskDTO) method.invoke(service, result, false);
+
+        assertEquals(1, taskDTO.getCompletedItems().size());
+        assertEquals(123L, taskDTO.getCompletedItems().get(0).getSize());
+    }
+
+    @Test
+    void testInProgressBulkRegistrationTaskPreservesItemSize() throws Exception {
+        HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
+        HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
+        HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
+        taskItem.setPath("/path/to/data");
+        taskItem.setPercentComplete(50);
+        taskItem.setSize(123L);
+        registrationItem.setTask(taskItem);
+        task.getItems().add(registrationItem);
+
+        Method method = HpcDataManagementBusServiceImpl.class.getDeclaredMethod("toBulkDataObjectRegistrationTaskDTO",
+                HpcBulkDataObjectRegistrationTask.class, boolean.class);
+        method.setAccessible(true);
+
+        HpcBulkDataObjectRegistrationTaskDTO taskDTO =
+                (HpcBulkDataObjectRegistrationTaskDTO) method.invoke(service, task, false);
+
+        assertEquals(1, taskDTO.getInProgressItems().size());
+        assertEquals(123L, taskDTO.getInProgressItems().get(0).getSize());
+    }
+    
+    @Test
+    void testDownloadDataObjectFromExternalSource_NullRequest() throws Exception {
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource("/external/path", null);
+        });
+
+        assertEquals("Null download request", exception.getMessage());
+    }
+
+    @Test
+    void testDownloadDataObjectFromExternalSource_MissingBasePath() throws Exception {
+        setPrivateField("downloadArchiveLinkBasePath", "");
+
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource("/external/path", new HpcDownloadRequestDTO());
+        });
+
+        assertTrue(exception.getMessage().contains(
+                "Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath"));
+    }
+
+    @Test
+    void testDownloadDataObjectFromExternalSource_NoMatchingS3Configuration() throws Exception {
+        String path = "/external/project/file.txt";
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(null);
+
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource(path, new HpcDownloadRequestDTO());
+        });
+
+        assertTrue(exception.getMessage().contains(
+                "No matching S3 archive configuration found for external download path: " + path));
+    }
+
+    @Test
+    void testDownloadDataObjectFromExternalSource_PermanentArchiveLinkExists() throws Exception {
+        String path = "/external/project/file.txt";
+        String permanentArchiveLinkPath = "/base/project/file.txt";
+        var s3ArchiveConfiguration = buildExternalDownloadConfiguration("dm-config", "s3-config", "/external",
+                "/base", "bucket-a", "archive-object-");
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(s3ArchiveConfiguration);
+        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(buildDataManagementConfiguration("/base"));
+        when(dataManagementService.getDataObject(permanentArchiveLinkPath)).thenReturn(mock(gov.nih.nci.hpc.domain.datamanagement.HpcDataObject.class));
+
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource(path, new HpcDownloadRequestDTO());
+        });
+
+        assertTrue(exception.getMessage().contains(
+                "Permanent or default Archive Link for /project/file.txt already exists. The Archive Link could have been created for a Migration."));
+    }
+
+    @Test
+    void testDownloadDataObjectFromExternalSource_Success() throws Exception {
+        String path = "/external/project/file.txt";
+        String permanentArchiveLinkPath = "/base/project/file.txt";
+        String temporaryArchiveLinkPath = "/download/archive/external/project/file.txt";
+        HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
+
+        var s3ArchiveConfiguration = buildExternalDownloadConfiguration("dm-config", "s3-config", "/external",
+                "/base", "bucket-a", "archive-object-");
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(s3ArchiveConfiguration);
+        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(buildDataManagementConfiguration("/base"));
+        when(dataManagementService.getDataObject(permanentArchiveLinkPath)).thenReturn(null);
+        when(dataManagementService.getDataObject(temporaryArchiveLinkPath)).thenReturn(null);
+
+        var registrationResponse = new HpcDataObjectRegistrationResponseDTO();
+        registrationResponse.setRegistered(true);
+        doReturn(registrationResponse).when(service).registerDataObject(eq(temporaryArchiveLinkPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
+
+        var downloadResponse = new HpcDataObjectDownloadResponseDTO();
+        downloadResponse.setTaskId("task-1");
+        doReturn(downloadResponse).when(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
+
+        HpcDataObjectDownloadResponseDTO response = service.downloadDataObjectFromExternalSource(path, downloadRequest);
+
+        assertEquals("task-1", response.getTaskId());
+        verify(service).registerDataObject(eq(temporaryArchiveLinkPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
+        verify(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
+    }
+
+    @Test
+    void testDownloadDataObjectFromExternalSource_DownloadFailureCleansUpTemporaryLink() throws Exception {
+        String path = "/external/project/file.txt";
+        String permanentArchiveLinkPath = "/base/project/file.txt";
+        String temporaryArchiveLinkPath = "/download/archive/external/project/file.txt";
+        HpcDownloadRequestDTO downloadRequest = new HpcDownloadRequestDTO();
+
+        var s3ArchiveConfiguration = buildExternalDownloadConfiguration("dm-config", "s3-config", "/external",
+                "/base", "bucket-a", "archive-object-");
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(s3ArchiveConfiguration);
+        when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(buildDataManagementConfiguration("/base"));
+        when(dataManagementService.getDataObject(permanentArchiveLinkPath)).thenReturn(null);
+        when(dataManagementService.getDataObject(temporaryArchiveLinkPath)).thenReturn(mock(gov.nih.nci.hpc.domain.datamanagement.HpcDataObject.class));
+
+        var metadataEntries = mock(HpcMetadataEntries.class);
+        var tempMetadata = mock(HpcSystemGeneratedMetadata.class);
+        when(metadataService.getDataObjectMetadataEntries(temporaryArchiveLinkPath, false)).thenReturn(metadataEntries);
+        when(metadataEntries.getSelfMetadataEntries()).thenReturn(Collections.emptyList());
+        when(metadataService.toSystemGeneratedMetadata(Collections.emptyList())).thenReturn(tempMetadata);
+        when(tempMetadata.getConfigurationId()).thenReturn("dm-config");
+        when(tempMetadata.getS3ArchiveConfigurationId()).thenReturn("s3-config");
+        when(dataTransferService.deleteTemporaryArchiveLink(temporaryArchiveLinkPath, "dm-config", "s3-config")).thenReturn(true);
+
+        var registrationResponse = new HpcDataObjectRegistrationResponseDTO();
+        registrationResponse.setRegistered(true);
+        doReturn(registrationResponse).when(service).registerDataObject(eq(temporaryArchiveLinkPath), any(HpcDataObjectRegistrationRequestDTO.class), isNull());
+        doThrow(new HpcException("delegated download failed", HpcErrorType.INVALID_REQUEST_INPUT))
+                .when(service).downloadDataObject(eq(temporaryArchiveLinkPath), any(HpcDownloadRequestDTO.class), eq(true));
+
+        HpcException exception = assertThrows(HpcException.class, () -> {
+            service.downloadDataObjectFromExternalSource(path, downloadRequest);
+        });
+
+        assertTrue(exception.getMessage().contains("Failed the Registration/Download step for external download"));
+        verify(dataTransferService).deleteTemporaryArchiveLink(temporaryArchiveLinkPath, "dm-config", "s3-config");
+    }
+
+    private HpcDataTransferConfiguration buildExternalDownloadConfiguration(String configurationId,
+            String s3ArchiveConfigurationId, String posixPath, String basePath, String bucket, String archiveObjectId) {
+        var baseArchiveDestination = mock(gov.nih.nci.hpc.domain.datatransfer.HpcArchive.class);
+        var fileLocation = new gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation();
+        fileLocation.setFileContainerId(bucket);
+        fileLocation.setFileId(archiveObjectId);
+        when(baseArchiveDestination.getFileLocation()).thenReturn(fileLocation);
+
+        var s3ArchiveConfiguration = new HpcDataTransferConfiguration();
+        s3ArchiveConfiguration.setId(s3ArchiveConfigurationId);
+        s3ArchiveConfiguration.setDataManagementConfigurationId(configurationId);
+        s3ArchiveConfiguration.setPosixPath(posixPath);
+        s3ArchiveConfiguration.setBaseArchiveDestination(baseArchiveDestination);
+        return s3ArchiveConfiguration;
+    }
+
+    private HpcDataManagementConfiguration buildDataManagementConfiguration(String basePath) {
+        var configuration = new HpcDataManagementConfiguration();
+        configuration.setBasePath(basePath);
+        return configuration;
+    }
+
+    private void setPrivateField(String fieldName, Object value) {
+        try {
+            Field field = HpcDataManagementBusServiceImpl.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(service, value);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to set field: " + fieldName, e);
+        }
     }
 
 }

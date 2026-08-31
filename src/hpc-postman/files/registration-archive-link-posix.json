@@ -1,0 +1,30 @@
+{
+    "archiveLinkSource": {
+        "sourceLocation": {
+            "fileContainerId": "POSIX",
+            "fileId": "/mnt/DMEDataStage/GlobusUAT/linked-archive/file4"
+        }
+    },
+    "metadataEntries": [
+        {
+            "attribute": "data_compression_status",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "data_encryption_status",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "object_name",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "phi_content",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "pii_content",
+            "value": "Unspecified"
+        }
+    ]
+}
