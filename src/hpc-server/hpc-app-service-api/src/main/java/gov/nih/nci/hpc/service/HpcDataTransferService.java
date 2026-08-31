@@ -705,11 +705,11 @@ public interface HpcDataTransferService {
 	 *                                              path will be used in the
 	 *                                              destination path, otherwise just
 	 *                                              the object name will be used.
-	 * @param appendPathToDownloadDestination       If true, the collection name
-	 *                                              (containing this object) will be
-	 *                                              used in the destination path,
-	 *                                              otherwise just the object name
-	 *                                              will be used.
+	 * @param appendCollectionNameToDownloadDestination If true, the collection name
+	 *                                                  (containing this object) will be
+	 *                                                  used in the destination path,
+	 *                                                  otherwise just the object name
+	 *                                                  will be used.
 	 * @return The submitted collection download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -718,7 +718,7 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId,  boolean appendPathToDownloadDestination,
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
 			boolean appendCollectionNameToDownloadDestination, HpcDownloadTaskType type) throws HpcException;
 
 	/**
