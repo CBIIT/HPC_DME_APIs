@@ -941,6 +941,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		downloadTask.setConfigurationId(dataManagementConfiguration.getId());
 		if(registrationResponseDTO == null) {
 			logger.info("All the archive links are Permanent Archive Links, we will skip Registration and complete download");
 			downloadTask.setExternalArchiveFlag(false);
