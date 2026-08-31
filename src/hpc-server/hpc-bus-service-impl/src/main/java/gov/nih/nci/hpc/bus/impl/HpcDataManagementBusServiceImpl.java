@@ -875,6 +875,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
 			throw new HpcException("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
+		// Find the matching S3 data transfer configuration for the external path
+		try {
+			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
+			if(s3ArchiveConfiguration == null) {
+				logger.warn("No matching S3 archive configuration found for external download path: " + path);
+				throw new HpcException("No matching S3 archive configuration found for external download path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} catch (HpcException e) {
+			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+
 		// Download Step
 		try {
 			String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
@@ -883,7 +897,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
-					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), userId,
+					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), userId, dataManagementConfiguration.getId(), 
 					Boolean.TRUE.equals(downloadRequest.getAppendPathToDownloadDestination()),
 					Boolean.TRUE.equals(downloadRequest.getAppendCollectionNameToDownloadDestination()), HpcDownloadTaskType.COLLECTION);
 
