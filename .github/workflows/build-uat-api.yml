@@ -72,7 +72,7 @@ jobs:
       - name: upload artifacts for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: dme-dev-hpc-api-artifacts
+          name: dme-uat-hpc-api-artifacts
           path: |
             src/hpc-server/hpc-ws-rs-impl/target/*.war
             src/hpc-server/hpc-scheduler/target/*.war
