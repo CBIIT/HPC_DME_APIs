@@ -223,38 +223,29 @@ jobs:
             find . -maxdepth 1 -type f -name '${APP2}-*.war' -exec mv {} {}_backup_\$timestamp \;; \
             find . -maxdepth 1 -type f \( -name '${APP}-*' -o -name '${APP1}-*' -o -name '${APP2}-*' \) -exec chown '${SSH_USER}:tomcat' {} +"
 
-      - name: Stage and install new WARs
+      - name: Copy new WARs to deployment directory
         shell: bash
         run: |
           set -euo pipefail
 
           target_host="${{ matrix.host }}"
-          local_server_war="/tmp/${GITHUB_RUN_ID}-${target_host}-${HPC_SERVER_WAR_NAME}"
-          local_scheduler_war="/tmp/${GITHUB_RUN_ID}-${target_host}-${HPC_SCHEDULER_WAR_NAME}"
-          local_migration_war="/tmp/${GITHUB_RUN_ID}-${target_host}-${HPC_SCHEDULER_MIGRATION_WAR_NAME}"
-          remote_server_war="/tmp/${GITHUB_RUN_ID}-${HPC_SERVER_WAR_NAME}"
-          remote_scheduler_war="/tmp/${GITHUB_RUN_ID}-${HPC_SCHEDULER_WAR_NAME}"
-          remote_migration_war="/tmp/${GITHUB_RUN_ID}-${HPC_SCHEDULER_MIGRATION_WAR_NAME}"
-          trap 'sudo rm -f "$local_server_war" "$local_scheduler_war" "$local_migration_war"' EXIT
+          server_war="${GITHUB_WORKSPACE}/${HPC_SERVER_WAR_PATH}"
+          scheduler_war="${GITHUB_WORKSPACE}/${HPC_SCHEDULER_WAR_PATH}"
+          migration_war="${GITHUB_WORKSPACE}/${HPC_SCHEDULER_MIGRATION_WAR_PATH}"
 
-          sudo cp "$HPC_SERVER_WAR_PATH" "$local_server_war"
-          sudo cp "$HPC_SCHEDULER_WAR_PATH" "$local_scheduler_war"
-          sudo cp "$HPC_SCHEDULER_MIGRATION_WAR_PATH" "$local_migration_war"
-          sudo chown "$RUNNER_SSH_USER" "$local_server_war" "$local_scheduler_war" "$local_migration_war"
-          sudo chmod 644 "$local_server_war" "$local_scheduler_war" "$local_migration_war"
+          sudo -iu "$RUNNER_SSH_USER" test -r "$server_war"
+          sudo -iu "$RUNNER_SSH_USER" test -r "$scheduler_war"
+          sudo -iu "$RUNNER_SSH_USER" test -r "$migration_war"
 
           sudo -iu "$RUNNER_SSH_USER" scp -o IdentitiesOnly=yes -p \
-            "$local_server_war" \
-            "${SSH_USER}@${target_host}:${remote_server_war}"
+            "$server_war" \
+            "${SSH_USER}@${target_host}:${DIST}/${HPC_SERVER_WAR_NAME}"
           sudo -iu "$RUNNER_SSH_USER" scp -o IdentitiesOnly=yes -p \
-            "$local_scheduler_war" \
-            "${SSH_USER}@${target_host}:${remote_scheduler_war}"
+            "$scheduler_war" \
+            "${SSH_USER}@${target_host}:${DIST}/${HPC_SCHEDULER_WAR_NAME}"
           sudo -iu "$RUNNER_SSH_USER" scp -o IdentitiesOnly=yes -p \
-            "$local_migration_war" \
-            "${SSH_USER}@${target_host}:${remote_migration_war}"
-
-          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "set -e; trap 'rm -f -- \"${remote_server_war}\" \"${remote_scheduler_war}\" \"${remote_migration_war}\"' EXIT; sudo install -o '${SSH_USER}' -g tomcat -m 0644 '${remote_server_war}' '${DIST}/${HPC_SERVER_WAR_NAME}'; sudo install -o '${SSH_USER}' -g tomcat -m 0644 '${remote_scheduler_war}' '${DIST}/${HPC_SCHEDULER_WAR_NAME}'; sudo install -o '${SSH_USER}' -g tomcat -m 0644 '${remote_migration_war}' '${DIST}/${HPC_SCHEDULER_MIGRATION_WAR_NAME}'"
+            "$migration_war" \
+            "${SSH_USER}@${target_host}:${DIST}/${HPC_SCHEDULER_MIGRATION_WAR_NAME}"
 
       - name: Create WAR symlinks
         shell: bash
@@ -264,7 +255,7 @@ jobs:
           target_host="${{ matrix.host }}"
 
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "set -e; cd '${DIST}'; ln -s '${HPC_SERVER_WAR_NAME}' '${UNIT}'; ln -s '${HPC_SCHEDULER_WAR_NAME}' '${UNIT1}'; ln -s '${HPC_SCHEDULER_MIGRATION_WAR_NAME}' '${UNIT2}'"
+            "set -e; cd '${DIST}'; chown '${SSH_USER}:tomcat' '${HPC_SERVER_WAR_NAME}' '${HPC_SCHEDULER_WAR_NAME}' '${HPC_SCHEDULER_MIGRATION_WAR_NAME}'; ln -s '${HPC_SERVER_WAR_NAME}' '${UNIT}'; ln -s '${HPC_SCHEDULER_WAR_NAME}' '${UNIT1}'; ln -s '${HPC_SCHEDULER_MIGRATION_WAR_NAME}' '${UNIT2}'"
 
       - name: Archive Tomcat logs
         shell: bash
