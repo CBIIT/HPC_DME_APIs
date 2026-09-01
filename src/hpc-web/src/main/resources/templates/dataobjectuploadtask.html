@@ -133,6 +133,10 @@
 												for="${hpcDataObjectUploadStatusDTO.getDestinationLocation().getFileId()}"
 												th:text="${hpcDataObjectUploadStatusDTO.getDestinationLocation().getFileId()}"></label>
 										</div>
+										<div class="col-md-12 form-group" th:if="${registrationSize != null}">
+											<label for="Name">Registration Size:</label> <span
+												th:text="${registrationSize}"></span>
+										</div>
 										<div class="col-md-12 form-group" th:if="${hpcDataObjectUploadStatusDTO.getResult() != null}">
 											<label for="Name">Transfer Completed:</label> <label id="regComplete"
 												for="${hpcDataObjectUploadStatusDTO.getResult()}"

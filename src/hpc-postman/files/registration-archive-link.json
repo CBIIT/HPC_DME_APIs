@@ -1,0 +1,31 @@
+{
+    "archiveLinkSource": {
+        "sourceLocation": {
+            "fileContainerId": "dme-dev-bucket-vst",
+            "fileId": "Eran/archive-link/data-object-1"
+        }
+    },
+    "s3ArchiveConfigurationId" : "e8899a16-ae90-4649-a32d-00ba0514c2dd",
+    "metadataEntries": [
+        {
+            "attribute": "data_compression_status",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "data_encryption_status",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "object_name",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "phi_content",
+            "value": "Unspecified"
+        },
+        {
+            "attribute": "pii_content",
+            "value": "Unspecified"
+        }
+    ]
+}

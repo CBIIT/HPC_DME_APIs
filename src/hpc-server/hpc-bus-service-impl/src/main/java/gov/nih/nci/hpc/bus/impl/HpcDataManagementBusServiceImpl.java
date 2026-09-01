@@ -179,6 +179,7 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.service.HpcVectorIngestionService;
+import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -804,7 +805,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
 		String downloadArchiveLinkPath = null;
-		String filePath = null;
+		String relativeFilePath = null;
 
 		// Find the matching S3 data transfer configuration for the external path
 		try {
@@ -821,50 +822,64 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String basePath = dataManagementConfiguration.getBasePath();
 		String posixPath = s3ArchiveConfiguration.getPosixPath();
 		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+		String archiveObjectId = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId();
 
 		try {
-			filePath = path.substring(posixPath.length());
-			if(StringUtils.isEmpty(filePath)) {
+			relativeFilePath = path.substring(posixPath.length());
+			if(StringUtils.isEmpty(relativeFilePath)) {
 				logger.warn("Path after POSIX prefix is empty for path: " + path);
 				throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-			}
-
-			boolean permanentArchiveLinkExists = dataManagementService.getDataObject(basePath + filePath) != null;
-			if(permanentArchiveLinkExists) {
-				throw new HpcException("Permanent or default Archive Link for " + filePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		} catch (HpcException e) {
 			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
 			throw new HpcException("Failed path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Build temporary archive link path for external download
-		downloadArchiveLinkPath = downloadArchiveLinkBasePath + filePath;
-
-		// Registration Step
-		try {
-			boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
-			if(temporaryArchiveLinkDoesNotExist) {
-				registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), filePath, bucket);
-			}
-		} catch (HpcException e) {
-			logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
-			throw new HpcException("Failed the Registration step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		// Check if a permanent archive link already exists for this file path in irods
+		String permanentArchiveLinkPath = basePath + relativeFilePath;
+		if(dataManagementService.getDataObject(permanentArchiveLinkPath) != null) {
+			throw new HpcException("Permanent or default Archive Link for " + relativeFilePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Download Step
+		// Build temporary archive link path for external download
+		downloadArchiveLinkPath = downloadArchiveLinkBasePath + path;
+
+		// Serialize registration, task creation and failure cleanup per temporaryArchivelinkPath.
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath);
 		try {
-			boolean externalArchiveFlag = true;
-			downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
-		} catch (HpcException e) {
-			logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
-				boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
-				if (archiveLinkDeleted) {
-					logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
-				} else {
-					logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
+			synchronized (externalArchivePathLock) {
+				// Registration Step
+				try {
+					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
+					if(temporaryArchiveLinkDoesNotExist) {
+						String s3Path = archiveObjectId + relativeFilePath;
+						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), s3Path, bucket);
+					}
+				} catch (HpcException e) {
+					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
+					throw new HpcException("Failed the Registration step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 				}
-			throw new HpcException("Failed to create download task for external download for path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+
+				// Download Step
+				try {
+					boolean externalArchiveFlag = true;
+					downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
+				} catch (HpcException e) {
+					logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+					boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
+					if (archiveLinkDeleted) {
+						logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
+					} else {
+						logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
+					}
+					throw new HpcException("Failed to create download task for external download for path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+			}
+		} catch (HpcException e) {
+			logger.error("Failed external download coordination for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Failed the Registration/Download step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		} finally {
+			HpcExternalArchiveLinkLockManager.deletePathLock(downloadArchiveLinkPath);
 		}
 
 		return downloadResponse;
@@ -1579,7 +1594,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			if (StringUtils.isEmpty(path)) {
 				throw new HpcException("Null / Empty path in registration request", HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-
+			dataObjectRegistrationRequest.setRegistrationSize(dataObjectRegistrationItem.getRegistrationSize());
 			// Validate no multiple registration requests for the same path.
 			if (dataObjectRegistrationRequests.put(path, dataObjectRegistrationRequest) != null) {
 				throw new HpcException("Duplicated path in registration requests list: " + path,
@@ -1810,7 +1825,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-
 		// Append path/collection-name is only for collection download request.
 		if (downloadRequest.getAppendPathToDownloadDestination() != null
 				|| downloadRequest.getAppendCollectionNameToDownloadDestination() != null) {
@@ -1829,6 +1843,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						|| downloadRequest.getAsperaDownloadDestination() != null
 						|| downloadRequest.getBoxDownloadDestination() != null,
 				false);
+
+		if (externalArchiveFlag) {
+			// Construct the user inputed path by replacing the downloadArchiveLinkBasePath with empty string
+			path = path.replaceFirst(downloadArchiveLinkBasePath, "");
+		}
 
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
@@ -3797,7 +3816,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_CLOUD_STORAGE,
-						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
+						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), true);
 			} else if (singleFile.getS3UploadSource() != null) {
 				// It is a request for a S3 file
 				source = "S3";
@@ -3805,7 +3824,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(singleFileSource.getAccount(),
-						singleFileSource.getSourceLocation(), false);
+						singleFileSource.getSourceLocation(), true);
 			} else if (singleFile.getGoogleDriveUploadSource() != null) {
 				// It is a request for a Google Drive file
 				source = "Google Drive";
@@ -3813,7 +3832,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				filename = singleFileSource.getSourceLocation().getFileId();
 				fileContainerId = singleFileSource.getSourceLocation().getFileContainerId();
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GOOGLE_DRIVE,
-						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), false);
+						singleFileSource.getAccessToken(), singleFileSource.getSourceLocation(), true);
 			} else if (singleFile.getGlobusUploadSource() != null) {
 				// It is a request for a Globus file
 				source = "Globus";
@@ -3828,7 +3847,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 				pathAttributes = dataTransferService.getPathAttributes(HpcDataTransferType.GLOBUS,
-						singleGlobusFileSource.getSourceLocation(), false, configurationId, null);
+						singleGlobusFileSource.getSourceLocation(), true, configurationId, null);
 			} else {
 				continue;
 			}
@@ -3847,6 +3866,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						HpcErrorType.INVALID_REQUEST_INPUT);
 
 			}
+			singleFile.setRegistrationSize(pathAttributes.getSize());
 		}
 	}
 
@@ -4109,6 +4129,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		taskDTO.setTaskStatus(task.getStatus());
 		taskDTO.setPercentComplete(calculateDataObjectBulkRegistrationPercentComplete(task));
 		taskDTO.setUploadMethod(task.getUploadMethod());
+		taskDTO.setRegistrationSize(task.getRegistrationSize());
 		populateRegistrationItems(taskDTO, task.getItems());
 		return taskDTO;
 	}
@@ -4134,6 +4155,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		taskDTO.setEffectiveTransferSpeed(
 				effectiveTransferSpeed != null && effectiveTransferSpeed > 0 ? effectiveTransferSpeed : null);
 		taskDTO.setUploadMethod(result.getUploadMethod());
+		taskDTO.setRegistrationSize(result.getRegistrationSize());
 		populateRegistrationItems(taskDTO, result.getItems());
 		return taskDTO;
 	}
@@ -4149,7 +4171,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			List<HpcBulkDataObjectRegistrationItem> items) {
 		for (HpcBulkDataObjectRegistrationItem item : items) {
 			Boolean result = item.getTask().getResult();
-			item.getTask().setSize(null);
 			if (result == null) {
 				taskDTO.getInProgressItems().add(item.getTask());
 			} else if (result) {
@@ -4188,6 +4209,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Get the System generated metadata.
 		HpcSystemGeneratedMetadata metadata = metadataService.getDataObjectSystemGeneratedMetadata(path);
+		if (metadata == null) {
+			logger.error("Could not locate data object: {}", path);
+			throw new HpcException("Could not locate data object path " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		// If this is a link, we will used the link source system-generated-metadata.
 		if (metadata.getLinkSourcePath() != null) {
@@ -5220,10 +5245,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return uploadResponse;
 	}
 	
-	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String dmePath, String bucket) throws HpcException {
+	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String s3FilePath, String bucket) throws HpcException {
 		HpcFileLocation sourceLocation = new HpcFileLocation();
 		sourceLocation.setFileContainerId(bucket);
-		sourceLocation.setFileId(dmePath.substring(1));
+		sourceLocation.setFileId(s3FilePath);
 		HpcUploadSource uploadSource = new HpcUploadSource();
 		uploadSource.setSourceLocation(sourceLocation);
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
@@ -5253,6 +5278,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Get the metadata for this data object.
 			HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(downloadArchiveLinkPath,
 					false);
+			if (metadataEntries == null || metadataEntries.getSelfMetadataEntries() == null) {
+				throw new HpcException("No metadata found for data object. Unable to delete temporary Archive Link. : " + downloadArchiveLinkPath,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 			HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 					.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 

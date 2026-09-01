@@ -151,6 +151,7 @@
 			<xsd:element name="parentCollectionsBulkMetadataEntries"
 				type="hpc-domain-metadata:HpcBulkMetadataEntries" />
 			<xsd:element name="s3ArchiveConfigurationId" type="xsd:string" />
+			<xsd:element name="registrationSize" type="xsd:long" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -245,6 +246,7 @@
 			<xsd:element name="completed" type="xsd:dateTime" />
 			<xsd:element name="uploadMethod" 
 				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
+			<xsd:element name="registrationSize" type="xsd:long" />
 		</xsd:sequence>
 	</xsd:complexType>
 
