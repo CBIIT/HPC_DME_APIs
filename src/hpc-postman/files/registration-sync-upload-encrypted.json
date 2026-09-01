@@ -1,0 +1,22 @@
+{
+	"callerObjectId": "eran-base-sync",
+	"s3ArchiveConfigurationId" : "286c6a3f-bd50-49db-94ae-f010bab9d6fa",
+	"metadataEntries": [{
+			"attribute": "data_compression_status",
+			"value": "Unspecified"
+		}, {
+			"attribute": "data_encryption_status",
+			"value": "Unspecified"
+		}, {
+			"attribute": "object_name",
+			"value": "Unspecified"
+		}, {
+			"attribute": "phi_content",
+			"value": "Unspecified"
+		},
+		{
+			"attribute": "pii_content",
+			"value": "Unspecified"
+		}
+	]
+}

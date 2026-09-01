@@ -1,0 +1,23 @@
+{
+	"generateUploadRequestURL": true,
+	"uploadCompletion": true,
+	"callerObjectId": "eran-base-url",
+	"metadataEntries": [{
+			"attribute": "data_compression_status",
+			"value": "Unspecified"
+		}, {
+			"attribute": "data_encryption_status",
+			"value": "Unspecified"
+		}, {
+			"attribute": "object_name",
+			"value": "Unspecified"
+		}, {
+			"attribute": "phi_content",
+			"value": "Unspecified"
+		},
+		{
+			"attribute": "pii_content",
+			"value": "Unspecified"
+		}
+	]
+}
