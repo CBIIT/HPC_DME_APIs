@@ -72,9 +72,21 @@ public abstract class HpcS3Connection {
 	@Value("${hpc.integration.s3.multipartUploadThreshold}")
 	protected Long multipartUploadThreshold = null;
 
-	// To trust all certs config.
-	@Value("${hpc.integration.s3.trustAllCerts:false}")
-	protected Boolean trustAllCerts = null;
+	// The connection timeout - the time to wait to establish a new connection, in
+	// milliseconds. Same behavior across all S3 client implementations, so the
+	// property is shared.
+	@Value("${hpc.integration.s3.connectionTimeout}")
+	protected Integer connectionTimeout = null;
+
+	// The max number of error retries. Same behavior across all S3 client
+	// implementations, so the property is shared.
+	@Value("${hpc.integration.s3.maxErrorRetries}")
+	protected Integer maxErrorRetries = null;
+
+	// Disable SSL certificate checking (for development/testing only). Shares the
+	// property with the v1 client since the behavior is the same.
+	@Value("${hpc.integration.s3.disableCertChecking:false}")
+	protected Boolean disableCertChecking = null;
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;

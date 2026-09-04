@@ -1,0 +1,29 @@
+$kind: http-request
+name: Download to AWS S3
+method: POST
+url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}/download"
+scripts:
+  - type: beforeRequest
+    code: "pm.variables.set('path', pm.collectionVariables.get('lastSyncUploadPath')); "
+    language: text/javascript
+order: 3863696254383541
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "destinationType": "S_3",
+      "s3DownloadDestination": {
+        "destinationLocation": {
+          "fileContainerId": "{{aws-bucket}}",
+          "fileId": "{{aws-folder}}/file-download"
+        },
+        "account": {
+          "accessKey": "{{vault:aws-key}}",
+          "secretKey": "{{vault:aws-secret-key}}",
+          "region": "{{aws-region}}"
+        }
+      }
+    }

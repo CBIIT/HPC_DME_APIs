@@ -18,6 +18,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.retry.RetryPolicy;
 import software.amazon.awssdk.http.SdkHttpConfigurationOption;
 import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
@@ -56,6 +57,18 @@ public class HpcS3ConnectionNettyNioAsyncClient extends HpcS3Connection implemen
 	// preferable to failing the transfer.
 	@Value("${hpc.integration.s3.nettynio.connectionAcquisitionTimeout:60000}")
 	private Long connectionAcquisitionTimeout = null;
+
+	// The socket timeout - the max time to wait for data to be transferred over an
+	// established, open connection, in milliseconds. Maps to the Netty client's read
+	// and write timeouts. Shares the property with the v1 client since the behavior
+	// is the same.
+	@Value("${hpc.integration.s3.socketTimeout}")
+	private Integer socketTimeout = null;
+
+	// The TCP keep alive setting. Shares the property with the v1 client since the
+	// behavior is the same.
+	@Value("${hpc.integration.s3.useTcpKeepAlive}")
+	private Boolean useTcpKeepAlive = false;
 
 	// A single Netty-NIO HTTP client, shared by all the S3 async clients created by
 	// this connection. Netty allocates an event loop group and a connection pool per
@@ -99,6 +112,7 @@ public class HpcS3ConnectionNettyNioAsyncClient extends HpcS3Connection implemen
 		return S3AsyncClient.builder().credentialsProvider(credentialsProvider).forcePathStyle(pathStyleAccessEnabled)
 				.endpointOverride(endpoint).multipartEnabled(true)
 				.multipartConfiguration(multipartConfiguration(thresholdInBytes))
+				.overrideConfiguration(overrideConfiguration -> overrideConfiguration.retryPolicy(retryPolicy()))
 				.httpClient(getNettyNioHttpClient()).build();
 	}
 
@@ -107,6 +121,7 @@ public class HpcS3ConnectionNettyNioAsyncClient extends HpcS3Connection implemen
 		// Instantiate a S3 async client (Netty-NIO based) w/ multipart enabled.
 		return S3AsyncClient.builder().credentialsProvider(credentialsProvider).region(Region.of(region))
 				.multipartEnabled(true).multipartConfiguration(multipartConfiguration(multipartUploadThreshold))
+				.overrideConfiguration(overrideConfiguration -> overrideConfiguration.retryPolicy(retryPolicy()))
 				.httpClient(getNettyNioHttpClient()).build();
 	}
 
@@ -142,6 +157,16 @@ public class HpcS3ConnectionNettyNioAsyncClient extends HpcS3Connection implemen
 	}
 
 	/**
+	 * Get the retry policy to be applied to a S3 async client. Preserves the AWS SDK
+	 * default retry conditions and backoff, overriding only the number of retries.
+	 *
+	 * @return A retry policy.
+	 */
+	private RetryPolicy retryPolicy() {
+		return RetryPolicy.defaultRetryPolicy().toBuilder().numRetries(maxErrorRetries).build();
+	}
+
+	/**
 	 * Get the shared Netty-NIO based async HTTP client, instantiating it on first
 	 * use.
 	 *
@@ -163,22 +188,30 @@ public class HpcS3ConnectionNettyNioAsyncClient extends HpcS3Connection implemen
 	}
 
 	/**
-	 * Build a Netty-NIO based async HTTP client, honoring the trustAllCerts config.
+	 * Build a Netty-NIO based async HTTP client, honoring the disableCertChecking
+	 * config.
 	 *
 	 * @return A Netty-NIO async HTTP client.
 	 */
 	private SdkAsyncHttpClient buildNettyNioHttpClient() {
 		// Note that the options set on the builder take precedence over the defaults
-		// provided to buildWithDefaults(), so the trustAllCerts path below keeps them.
+		// provided to buildWithDefaults(), so the disableCertChecking path below keeps
+		// them.
 		NettyNioAsyncHttpClient.Builder nettyNioHttpClientBuilder = NettyNioAsyncHttpClient.builder()
 				.maxConcurrency(maxConnections)
-				.connectionAcquisitionTimeout(Duration.ofMillis(connectionAcquisitionTimeout));
+				.connectionAcquisitionTimeout(Duration.ofMillis(connectionAcquisitionTimeout))
+				.connectionTimeout(Duration.ofMillis(connectionTimeout))
+				.readTimeout(Duration.ofMillis(socketTimeout)).writeTimeout(Duration.ofMillis(socketTimeout))
+				.tcpKeepAlive(useTcpKeepAlive);
 
-		logger.info("Building the shared Netty-NIO HTTP client. maxConcurrency: {}, connectionAcquisitionTimeout: {}ms",
-				maxConnections, connectionAcquisitionTimeout);
+		logger.info(
+				"Building the shared Netty-NIO HTTP client. maxConcurrency: {}, connectionAcquisitionTimeout: {}ms, "
+						+ "connectionTimeout: {}ms, socketTimeout(read/write): {}ms, tcpKeepAlive: {}",
+				maxConnections, connectionAcquisitionTimeout, connectionTimeout, socketTimeout, useTcpKeepAlive);
 
-		if (trustAllCerts) {
-			logger.warn("hpc.integration.s3.trustAllCerts property is set to true. Netty-NIO cert validation is off");
+		if (Boolean.TRUE.equals(disableCertChecking)) {
+			logger.warn(
+					"hpc.integration.s3.disableCertChecking property is set to true. Netty-NIO cert validation is off");
 			return nettyNioHttpClientBuilder.buildWithDefaults(
 					AttributeMap.builder().put(SdkHttpConfigurationOption.TRUST_ALL_CERTIFICATES, true).build());
 		}

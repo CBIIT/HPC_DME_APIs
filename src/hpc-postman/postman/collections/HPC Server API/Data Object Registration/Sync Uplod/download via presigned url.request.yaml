@@ -1,0 +1,8 @@
+$kind: http-request
+name: Download via Pre-Signed URL
+method: GET
+url: '{{presignedDownloadUrl}}'
+order: 3599878279079720
+headers:
+  - key: Accept
+    value: '*/*'
