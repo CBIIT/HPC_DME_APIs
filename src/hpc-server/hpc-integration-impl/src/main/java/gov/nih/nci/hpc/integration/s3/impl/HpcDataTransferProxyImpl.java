@@ -9,10 +9,15 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,6 +27,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -119,6 +130,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Value("${hpc.integration.s3.restoreNumDays}")
 	private int restoreNumDays = 2;
 
+	// Disable SSL certificate checking for the source stream connection
+	// (for development/testing only).
+	@Value("${hpc.integration.s3.disableCertChecking}")
+	private Boolean disableCertChecking = false;
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -134,6 +150,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	// Date formatter to format files last-modified date
 	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+
+	// Lazily initialized SSL socket factory that trusts all certificates. Used
+	// only when disableCertChecking is enabled.
+	private SSLSocketFactory trustAllSslSocketFactory = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -883,7 +903,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				} else if (googleCloudStorageUploadSource != null) {
 					sourceInputStream = googleCloudStorageUploadSource.getSourceInputStream();
 				} else {
-					sourceInputStream = new URL(url).openStream();
+					sourceInputStream = openSourceInputStream(url);
 				}
 
 				// Create a S3 upload request.
@@ -1245,7 +1265,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		CompletableFuture<Void> s3TransferManagerDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
 				// Create source URL and open a connection to it.
-				InputStream sourceInputStream = new URL(sourceURL).openStream();
+				InputStream sourceInputStream = openSourceInputStream(sourceURL);
 
 				// Create a S3 upload request.
 				ObjectMetadata metadata = new ObjectMetadata();
@@ -1299,6 +1319,67 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 */
 	private int getReadLimit(long fileSize) {
 		return toIntExact(fileSize + 1);
+	}
+
+	/**
+	 * Open an input stream to a source URL. If SSL certificate checking is disabled
+	 * (via hpc.integration.s3.disableCertChecking) and the URL is HTTPS, the
+	 * connection is configured to trust all certificates. This is intended for
+	 * development/testing environments only.
+	 *
+	 * @param sourceURL The source URL to open a stream to.
+	 * @return An input stream to the source URL.
+	 * @throws IOException on connection failure.
+	 */
+	private InputStream openSourceInputStream(String sourceURL) throws IOException {
+		URLConnection connection = new URL(sourceURL).openConnection();
+		if (Boolean.TRUE.equals(disableCertChecking) && connection instanceof HttpsURLConnection) {
+			logger.warn(
+					"SSL certificate checking is disabled for the S3 source stream connection. This is not recommended for production environments.");
+			HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
+			httpsConnection.setSSLSocketFactory(getTrustAllSslSocketFactory());
+			httpsConnection.setHostnameVerifier((hostname, session) -> true);
+		}
+
+		return connection.getInputStream();
+	}
+
+	/**
+	 * Get (and lazily create) an SSL socket factory that trusts all certificates.
+	 *
+	 * @return A trust-all SSL socket factory.
+	 * @throws IOException if the SSL context could not be initialized.
+	 */
+	private synchronized SSLSocketFactory getTrustAllSslSocketFactory() throws IOException {
+		if (trustAllSslSocketFactory == null) {
+			try {
+				TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+					@Override
+					public void checkClientTrusted(X509Certificate[] chain, String authType) {
+						// Trust all clients.
+					}
+
+					@Override
+					public void checkServerTrusted(X509Certificate[] chain, String authType) {
+						// Trust all servers.
+					}
+
+					@Override
+					public X509Certificate[] getAcceptedIssuers() {
+						return new X509Certificate[0];
+					}
+				} };
+
+				SSLContext sslContext = SSLContext.getInstance("TLS");
+				sslContext.init(null, trustAllCerts, new SecureRandom());
+				trustAllSslSocketFactory = sslContext.getSocketFactory();
+
+			} catch (NoSuchAlgorithmException | KeyManagementException e) {
+				throw new IOException("Failed to initialize trust-all SSL context", e);
+			}
+		}
+
+		return trustAllSslSocketFactory;
 	}
 
 	/**
