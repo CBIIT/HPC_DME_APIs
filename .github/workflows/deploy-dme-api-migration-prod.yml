@@ -194,7 +194,7 @@ jobs:
             "${SSH_USER}@${target_host}" \
             "echo SSH connection OK"
 
-      - name: Stop Tomcat and remove exploded applications
+      - name: Stop Tomcat 
         shell: bash
         run: |
           set -euo pipefail
@@ -276,17 +276,18 @@ jobs:
           timestamp=\$(date +%Y%m%d.%H%M); \
 
           declare -A patterns=(
-            ["${APP}"]="${APP}-*.war"
-            ["${APP1}"]="${APP1}-[0-9]*.war"
-            ["${APP2}"]="${APP2}-*.war"
+            [hpc-server]="${APP}-*.war"
+            [hpc-scheduler]="${APP1}-[0-9]*.war"
+            [hpc-scheduler-migration]="${APP2}-*.war"
           )
-
-          for prefix in "${APP}" "${APP1}" "${APP2}"; do
-            pattern="${patterns[$prefix]}"
-            echo "Backing up existing WARs for ${prefix} (pattern: ${pattern})"
+  
+          for key in "${APP}" "${APP1}" "${APP2}"; do
+            pattern="${patterns[$key]}"
+            echo "Backing up existing WARs for ${key} (pattern: ${pattern})"
             sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
               "cd '${DIST}' && find . -maxdepth 1 -type f -name '${pattern}' -exec mv {} {}_backup_${timestamp} \; && find . -maxdepth 1 -type f -name '${pattern}_backup_${timestamp}' -exec chown '${SSH_USER}:tomcat' {} +"
           done
+
 
       - name: Copy new WARs to deployment directory
         shell: bash
