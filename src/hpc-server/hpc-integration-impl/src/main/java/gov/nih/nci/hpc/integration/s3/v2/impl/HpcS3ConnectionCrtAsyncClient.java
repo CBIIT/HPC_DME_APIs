@@ -11,6 +11,7 @@
 package gov.nih.nci.hpc.integration.s3.v2.impl;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +23,8 @@ import software.amazon.awssdk.crt.CrtRuntimeException;
 import software.amazon.awssdk.crt.Log;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.services.s3.S3CrtAsyncClientBuilder;
+import software.amazon.awssdk.services.s3.crt.S3CrtHttpConfiguration;
+import software.amazon.awssdk.services.s3.crt.S3CrtRetryConfiguration;
 
 /**
  * HPC S3 Connection - AWS CRT based implementation.
@@ -78,17 +80,10 @@ public class HpcS3ConnectionCrtAsyncClient extends HpcS3Connection {
 			initCrtLogging();
 
 			// Instantiate a S3 async client.
-			S3CrtAsyncClientBuilder crtAsyncClientBuilder = S3AsyncClient.crtBuilder()
-					.credentialsProvider(credentialsProvider).forcePathStyle(pathStyleAccessEnabled)
-					.endpointOverride(endpoint).minimumPartSizeInBytes(minimumUploadPartSize)
-					.thresholdInBytes(thresholdInBytes);
-
-			if (trustAllCerts) {
-				crtAsyncClientBuilder.httpConfiguration(builder -> builder.trustAllCertificatesEnabled(true));
-				logger.warn("hpc.integration.s3.trustAllCerts property is set to true. CRT cert validation is off");
-			}
-
-			return crtAsyncClientBuilder.build();
+			return S3AsyncClient.crtBuilder().credentialsProvider(credentialsProvider)
+					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(endpoint)
+					.minimumPartSizeInBytes(minimumUploadPartSize).thresholdInBytes(thresholdInBytes)
+					.httpConfiguration(httpConfiguration(true)).retryConfiguration(retryConfiguration()).build();
 
 		} catch (CrtRuntimeException e) {
 			throw SdkException.create(e.getMessage(), e);
@@ -103,7 +98,8 @@ public class HpcS3ConnectionCrtAsyncClient extends HpcS3Connection {
 
 			// Instantiate a S3 async client.
 			return S3AsyncClient.crtBuilder().credentialsProvider(credentialsProvider).region(Region.of(region))
-					.minimumPartSizeInBytes(minimumUploadPartSize).thresholdInBytes(multipartUploadThreshold).build();
+					.minimumPartSizeInBytes(minimumUploadPartSize).thresholdInBytes(multipartUploadThreshold)
+					.httpConfiguration(httpConfiguration(false)).retryConfiguration(retryConfiguration()).build();
 
 		} catch (CrtRuntimeException e) {
 			throw SdkException.create(e.getMessage(), e);
@@ -113,6 +109,36 @@ public class HpcS3ConnectionCrtAsyncClient extends HpcS3Connection {
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
+
+	/**
+	 * Build the HTTP configuration to be applied to a CRT S3 async client. Applies
+	 * the shared connection timeout and, when requested, the trust-all-certs
+	 * setting.
+	 *
+	 * @param applyDisableCertChecking true to honor the disableCertChecking config.
+	 * @return A CRT HTTP configuration.
+	 */
+	private S3CrtHttpConfiguration httpConfiguration(boolean applyDisableCertChecking) {
+		S3CrtHttpConfiguration.Builder builder = S3CrtHttpConfiguration.builder()
+				.connectionTimeout(Duration.ofMillis(connectionTimeout));
+
+		if (applyDisableCertChecking && Boolean.TRUE.equals(disableCertChecking)) {
+			builder.trustAllCertificatesEnabled(true);
+			logger.warn("hpc.integration.s3.disableCertChecking property is set to true. CRT cert validation is off");
+		}
+
+		return builder.build();
+	}
+
+	/**
+	 * Build the retry configuration to be applied to a CRT S3 async client, honoring
+	 * the shared max error retries config.
+	 *
+	 * @return A CRT retry configuration.
+	 */
+	private S3CrtRetryConfiguration retryConfiguration() {
+		return S3CrtRetryConfiguration.builder().numRetries(maxErrorRetries).build();
+	}
 
 	/**
 	 * If configured, start the AWS CRT logger. An invalid log level is logged and
