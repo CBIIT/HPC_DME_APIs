@@ -273,7 +273,7 @@ jobs:
           set -euo pipefail
 
           target_host="${{ matrix.host }}"
-          timestamp=\$(date +%Y%m%d.%H%M); \
+          timestamp=\$(date +%Y%m%d.%H%M)
 
           declare -A patterns=(
             [hpc-server]="${APP}-*.war"
