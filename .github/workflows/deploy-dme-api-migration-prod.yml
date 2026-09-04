@@ -202,9 +202,31 @@ jobs:
           target_host="${{ matrix.host }}"
 
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "set -e; sudo systemctl stop '${REMOTE_TOMCAT}'; cd '${DIST}'; ls -la; for application in '${APP}' '${APP1}' '${APP2}'; do if [ -d \"\$application\" ]; then rm -rf -- \"\$application\"; fi; done"
+            "sudo systemctl stop '${REMOTE_TOMCAT}'"
+          echo "Tomcat stopped on ${target_host}."
 
-      - name: Clean backups, remove symlinks, and back up current WARs
+      - name: Remove applications directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          target_host="${{ matrix.host }}"
+
+          for application in "${APP}" "${APP1}" "${APP2}"; do
+            echo "Checking exploded directory: ${application}"
+            sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && if [ -d '${application}' ]; then rm -rf -- '${application}' && echo 'Removed directory ${application}'; else echo 'No exploded directory found for ${application}'; fi"
+          done
+
+      - name: List current webapps directory contents
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && ls -la"
+
+      - name: Clean up old WAR backups
         shell: bash
         run: |
           set -euo pipefail
@@ -215,13 +237,56 @@ jobs:
             "set -e; cd '${DIST}'; \
             rm -f hpc-server-[0-9]*.war_backup* hpc-server-[0-9]*.war.backup*; \
             rm -f hpc-scheduler-[0-9]*.war_backup* hpc-scheduler-[0-9]*.war.backup*; \
-            rm -f hpc-scheduler-migration-[0-9]*.war_backup* hpc-scheduler-migration-[0-9]*.war.backup*; \
-            for unit in '${UNIT}' '${UNIT1}' '${UNIT2}'; do if [ -L \"\$unit\" ]; then rm -f -- \"\$unit\"; else echo \"No symlink found for \$unit\"; fi; done; \
-            timestamp=\$(date +%Y%m%d.%H%M); \
-            find . -maxdepth 1 -type f -name '${APP}-*.war' -exec mv {} {}_backup_\$timestamp \;; \
-            find . -maxdepth 1 -type f -name '${APP1}-[0-9]*.war' -exec mv {} {}_backup_\$timestamp \;; \
-            find . -maxdepth 1 -type f -name '${APP2}-*.war' -exec mv {} {}_backup_\$timestamp \;; \
-            find . -maxdepth 1 -type f \( -name '${APP}-*' -o -name '${APP1}-*' -o -name '${APP2}-*' \) -exec chown '${SSH_USER}:tomcat' {} +"
+            rm -f hpc-scheduler-migration-[0-9]*.war_backup* hpc-scheduler-migration-[0-9]*.war.backup*;" 
+
+      - name: Remove existing WAR symlinks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          for unit in "${UNIT}" "${UNIT1}" "${UNIT2}"; do
+            echo "Checking symlink: ${unit}"
+            sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && if [ -L '${unit}' ]; then rm -f -- '${unit}' && echo 'Removed symlink ${unit}'; else echo 'No symlink found for ${unit}'; fi"
+          done
+
+      - name: Verify symlinks are gone
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          for unit in "${UNIT}" "${UNIT1}" "${UNIT2}"; do
+            result="$(sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && if [ -L '${unit}' ]; then echo present; else echo absent; fi")"
+            if [ "$result" = "present" ]; then
+              echo "::error::Symlink ${unit} still present after removal attempt on ${target_host}."
+              exit 1
+            fi
+            echo "Confirmed ${unit} is absent."
+          done
+
+      - name: Back up current WAR files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          timestamp=\$(date +%Y%m%d.%H%M); \
+
+          declare -A patterns=(
+            ["${APP}"]="${APP}-*.war"
+            ["${APP1}"]="${APP1}-[0-9]*.war"
+            ["${APP2}"]="${APP2}-*.war"
+          )
+
+          for prefix in "${APP}" "${APP1}" "${APP2}"; do
+            pattern="${patterns[$prefix]}"
+            echo "Backing up existing WARs for ${prefix} (pattern: ${pattern})"
+            sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && find . -maxdepth 1 -type f -name '${pattern}' -exec mv {} {}_backup_${timestamp} \; && find . -maxdepth 1 -type f -name '${pattern}_backup_${timestamp}' -exec chown '${SSH_USER}:tomcat' {} +"
+          done
 
       - name: Copy new WARs to deployment directory
         shell: bash
@@ -246,6 +311,8 @@ jobs:
           sudo -iu "$RUNNER_SSH_USER" scp -o IdentitiesOnly=yes -p \
             "$migration_war" \
             "${SSH_USER}@${target_host}:${DIST}/${HPC_SCHEDULER_MIGRATION_WAR_NAME}"
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "cd '${DIST}' && chown '${SSH_USER}:tomcat' '${HPC_SERVER_WAR_NAME}' '${HPC_SCHEDULER_WAR_NAME}' '${HPC_SCHEDULER_MIGRATION_WAR_NAME}'"
 
       - name: Create WAR symlinks
         shell: bash
@@ -255,7 +322,7 @@ jobs:
           target_host="${{ matrix.host }}"
 
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "set -e; cd '${DIST}'; chown '${SSH_USER}:tomcat' '${HPC_SERVER_WAR_NAME}' '${HPC_SCHEDULER_WAR_NAME}' '${HPC_SCHEDULER_MIGRATION_WAR_NAME}'; ln -s '${HPC_SERVER_WAR_NAME}' '${UNIT}'; ln -s '${HPC_SCHEDULER_WAR_NAME}' '${UNIT1}'; ln -s '${HPC_SCHEDULER_MIGRATION_WAR_NAME}' '${UNIT2}'"
+            "set -e; cd '${DIST}'; ln -s '${HPC_SERVER_WAR_NAME}' '${UNIT}'; ln -s '${HPC_SCHEDULER_WAR_NAME}' '${UNIT1}'; ln -s '${HPC_SCHEDULER_MIGRATION_WAR_NAME}' '${UNIT2}'"
 
       - name: Archive Tomcat logs
         shell: bash
