@@ -18,18 +18,44 @@ on:
         description: "Build workflow run number that produced DME API artifacts"
         required: true
         type: string
+
+      fsdsgl_dmeap01p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap01p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdsgl_dmeap02p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap02p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+       fsdmel_dsapi03p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi03p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false 
+      fsdmel_dsapi04p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi04p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdmel_dsapi05p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi05p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+       fsdmel_dsapi06p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi06p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false 
+      fsdsgl_dmeap07p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap07p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false  
       fsdsgl_dmeap08p_ncifcrf_gov:
         description: "Deploy to fsdsgl-dmeap08p.ncifcrf.gov"
-        required: false
-        type: boolean
-        default: false
-      fsdmel_wflow04p_ncifcrf_gov:
-        description: "Deploy to fsdmel-wflow04p.ncifcrf.gov"
-        required: false
-        type: boolean
-        default: false
-      ncias_p2140_v_nci_nih_gov:
-        description: "Deploy to ncias-p2140-v.nci.nih.gov"
         required: false
         type: boolean
         default: false
@@ -63,17 +89,38 @@ jobs:
             separator=','
           }
 
+          if [ "${{ inputs.fsdsgl_dmeap01p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap01p.ncifcrf.gov" "fsdsgl-dmeap01p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap02p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap02p.ncifcrf.gov" "fsdsgl-dmeap02p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi03p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi03p.ncifcrf.gov" "fsdmel-dsapi03p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi04p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi04p.ncifcrf.gov" "fsdmel-dsapi04p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi05p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi05p.ncifcrf.gov" "fsdmel-dsapi05p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi06p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi06p.ncifcrf.gov" "fsdmel-dsapi06p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap07p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap07p.ncifcrf.gov" "fsdsgl-dmeap07p.ncifcrf.gov"
+          fi
+
           if [ "${{ inputs.fsdsgl_dmeap08p_ncifcrf_gov }}" = "true" ]; then
             add_server "fsdsgl-dmeap08p.ncifcrf.gov" "fsdsgl-dmeap08p.ncifcrf.gov"
           fi
 
-          if [ "${{ inputs.fsdmel_wflow04p_ncifcrf_gov }}" = "true" ]; then
-            add_server "fsdmel-wflow04p.ncifcrf.gov" "fsdmel-wflow04p.ncifcrf.gov"
-          fi
-
-          if [ "${{ inputs.ncias_p2140_v_nci_nih_gov }}" = "true" ]; then
-            add_server "ncias-p2140-v.nci.nih.gov" "ncias-p2140-v.nci.nih.gov"
-          fi
 
           matrix="${matrix}]}"
 
@@ -211,7 +258,7 @@ jobs:
           set -euo pipefail
           target_host="${{ matrix.host }}"
 
-          for application in "${APP}" "${APP1}" "${APP2}"; do
+          for application in ROOT "${APP1}" "${APP2}"; do
             echo "Checking exploded directory: ${application}"
             sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
               "cd '${DIST}' && if [ -d '${application}' ]; then rm -rf -- '${application}' && echo 'Removed directory ${application}'; else echo 'No exploded directory found for ${application}'; fi"
