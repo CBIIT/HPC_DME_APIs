@@ -29,7 +29,7 @@ on:
         required: false
         type: boolean
         default: false
-       fsdmel_dsapi03p_ncifcrf_gov:
+      fsdmel_dsapi03p_ncifcrf_gov:
         description: "Deploy to fsdmel-dsapi03p.ncifcrf.gov"
         required: false
         type: boolean
@@ -44,7 +44,7 @@ on:
         required: false
         type: boolean
         default: false
-       fsdmel_dsapi06p_ncifcrf_gov:
+      fsdmel_dsapi06p_ncifcrf_gov:
         description: "Deploy to fsdmel-dsapi06p.ncifcrf.gov"
         required: false
         type: boolean
