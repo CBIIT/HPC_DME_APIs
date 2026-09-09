@@ -867,16 +867,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
 										excludedPaths, downloadTask.getExternalArchiveFlag());
 									}
-
 									if (downloadTask.getExternalArchiveFlag()) {
+										if (downloadItems != null && !downloadItems.isEmpty()) {
+											// Update the path on the items to remove the downloadArchiveLinkBasePath prefix.
+											for (HpcCollectionDownloadTaskItem item : downloadItems) {
+												item.setPath(item.getPath().replaceFirst(downloadArchiveLinkBasePath, ""));
+												logger.info(" In processCollection: downloadItem path for download of Temporary Archive Links: " + item.getPath());
+											}
+										}
 										HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(downloadTask.getPath());
 										HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
 										String basePath = dataManagementConfiguration.getBasePath();
 										String posixPath = s3ArchiveConfiguration.getPosixPath();
 										String relativePath = downloadTask.getPath().substring(posixPath.length());
 										String downloadPath = basePath + relativePath;
-										logger.info(" In processCollection: downloadPath for download of Permanent Archive Links: " + downloadPath);
-										// Get the System generated metadata.
 										metadata = metadataService
 												.getCollectionSystemGeneratedMetadata(downloadPath);
 										// Get the collection to be downloaded.
@@ -1978,9 +1982,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination,
 						appendPathToDownloadDestination, appendCollectionNameToDownloadDestination, userId, null,
 						collectionDownloadTaskId, externalArchiveFlag);
-				if(externalArchiveFlag) {
-					downloadItem.setPath(dataObjectEntry.getPath().replaceFirst(downloadArchiveLinkBasePath, ""));
-				}
 				downloadItems.add(downloadItem);
 				if (collectionDownloadBreaker.abortDownload(downloadItem)) {
 					// Need to abort collection download processing. Cancel and return the items
