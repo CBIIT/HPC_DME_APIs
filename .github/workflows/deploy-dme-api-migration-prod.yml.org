@@ -16,9 +16,8 @@ on:
           - prod
       build_run_number:
         description: "Build workflow run number that produced DME API artifacts"
-        required: false
+        required: true
         type: string
-        default: "latest"
 
       fsdsgl_dmeap01p_ncifcrf_gov:
         description: "Deploy to fsdsgl-dmeap01p.ncifcrf.gov"
@@ -61,7 +60,7 @@ on:
         type: boolean
         default: false
 
-run-name: "Deploy DME API Migration in Prod from build #${{ inputs.build_run_number || 'latest' }} to ${{ inputs.environment }}"
+run-name: "Deploy DME API Migration in Prod from build #${{ inputs.build_run_number }} to ${{ inputs.environment }}"
 
 jobs:
   prepare:
@@ -73,24 +72,7 @@ jobs:
       labels: [prod-org-runner]
     outputs:
       matrix: ${{ steps.selected_servers.outputs.matrix }}
-      use_specific_run: ${{ steps.check_build.outputs.use_specific_run }}
     steps:
-      - name: Check build run number input
-        id: check_build
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          input="${{ inputs.build_run_number }}"
-
-          if [ -z "$input" ] || [ "$input" = "latest" ]; then
-            echo "No specific build_run_number provided; the download step will use the most recent successful build-prod-api.yml run automatically."
-            echo "use_specific_run=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "Using explicitly provided build_run_number: ${input}"
-            echo "use_specific_run=true" >> "$GITHUB_OUTPUT"
-          fi 
-
       - name: Build selected server matrix
         id: selected_servers
         shell: bash
@@ -178,16 +160,7 @@ jobs:
       SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
       RUNNER_SSH_USER: githubuser
     steps:
-      - name: Download build artifact (latest successful build)
-        if: needs.prepare.outputs.use_specific_run == 'false'
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          workflow: build-prod-api.yml
-          workflow_conclusion: success
-          name: dme-prod-hpc-api-artifacts
-          path: artifacts
-      - name: Download build artifact (specific run)
-        if: needs.prepare.outputs.use_specific_run == 'true'
+      - name: Download build artifact
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build-prod-api.yml
