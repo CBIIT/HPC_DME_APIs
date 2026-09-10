@@ -750,6 +750,20 @@ public interface HpcDataManagementRestService {
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest);
 
 	/**
+	 * Download a list of data objects or a list of collections from an external source.
+	 *
+	 * @param downloadRequest The download request.
+	 * @return The REST service response w/ HpcDataObjectsDownloadResponseDTO
+	 *         entity.
+	 */
+	@POST
+	@Path("/ext/download")
+	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
+	public Response downloadDataObjectsOrCollectionsFromExternalSource(
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest);
+
+	/**
 	 * Get download task status of a list of data objects or a list of collections.
 	 *
 	 * @param taskId The download task ID.
