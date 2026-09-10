@@ -914,6 +914,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 
+	@Override
+	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
+			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException {
+		// Implement the logic for downloading data object lists or collection lists from an external source.
+		// This is a placeholder implementation and should be replaced with actual logic.
+		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
+
+		return responseDTO;
+	}
+
 	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
 		logger.info("Registration invoked from ExternalDownload Task for a Collection. Download task id = " + downloadTask.getId());
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
