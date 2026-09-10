@@ -875,7 +875,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 											// Update the path on the items to remove the downloadArchiveLinkBasePath prefix.
 											for (HpcCollectionDownloadTaskItem item : downloadItems) {
 												item.setPath(item.getPath().replaceFirst(downloadArchiveLinkBasePath, ""));
-												logger.info(" In processCollection: downloadItem path for download of Temporary Archive Links: " + item.getPath());
 											}
 										}
 										logger.info("First invocation downloadItems = " + gson.toJson(downloadItems));
