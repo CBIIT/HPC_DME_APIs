@@ -1009,6 +1009,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		// Iterate through the individual data object registration requests and add them
 		// as items to the
 		// list registration task.
+		long totalRegistrationSize = 0L;
 		for (String path : dataObjectRegistrationRequests.keySet()) {
 			HpcDataObjectRegistrationRequest registrationRequest = dataObjectRegistrationRequests.get(path);
 			// Validate registration request.
@@ -1018,13 +1019,16 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
 			HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
 			reqistrationTask.setPath(path);
+			reqistrationTask.setSize(registrationRequest.getRegistrationSize());
 			registrationItem.setTask(reqistrationTask);
 			registrationItem.setRequest(registrationRequest);
 
 			bulkDataObjectRegistrationTask.getItems().add(registrationItem);
+			totalRegistrationSize += registrationRequest.getRegistrationSize();
 		}
 
 		// Persist the registration request.
+		bulkDataObjectRegistrationTask.setRegistrationSize(totalRegistrationSize);
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
 		return bulkDataObjectRegistrationTask.getId();
 	}
@@ -1048,17 +1052,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		if (registrationTask == null) {
 			throw new HpcException("Invalid data object list registration task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		logger.info("2172: Enter completeBulkDataObjectRegistrationTask externalArchiveFlag=" +  registrationTask.getExternalArchiveFlag());
         if (registrationTask.getExternalArchiveFlag()) {
             // Find external download task with archive_link_registration_task_id matching the registration task id
 			String collectionDownloadTaskId = dataDownloadDAO.getCollectionDownloadTaskByRegistrationIdExternal(registrationTask.getId());
-			logger.info("2172: Collection download task ID retrieved by registration ID: " + collectionDownloadTaskId + " registration ID: " + registrationTask.getId());
 			if (collectionDownloadTaskId != null && !collectionDownloadTaskId.isBlank()) {
 				dataDownloadDAO.updateCollectionDownloadTaskStatus(collectionDownloadTaskId, HpcCollectionDownloadTaskStatus.RECEIVED.toString());
 				dataDownloadDAO.setCollectionDownloadTaskInProcess(collectionDownloadTaskId, false);
 			} else {
-				logger.info("2172: No collection download task found for registration ID: " + registrationTask.getId());
-				return;
+					return;
 			}
         }
 
@@ -1074,6 +1075,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		registrationResult.setCreated(registrationTask.getCreated());
 		registrationResult.setCompleted(completed);
 		registrationResult.setUploadMethod(registrationTask.getUploadMethod());
+		registrationResult.setRegistrationSize(registrationTask.getRegistrationSize());
 		registrationResult.getItems().addAll(registrationTask.getItems());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by

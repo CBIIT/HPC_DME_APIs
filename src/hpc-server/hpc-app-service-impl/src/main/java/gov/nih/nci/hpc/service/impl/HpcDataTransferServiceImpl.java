@@ -1748,6 +1748,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
+		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
@@ -1766,7 +1767,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleDriveDownloadDestination,
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, boolean appendPathToDownloadDestination,
+			String userId, String configurationId, boolean appendPathToDownloadDestination,
 			boolean appendCollectionNameToDownloadDestination, HpcDownloadTaskType type) throws HpcException {
 
 		// Create a new COLLECTION/COLLECTION_LIST/DATAOBJECT_LIST download task for an external archive download.
@@ -1780,6 +1781,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setBoxDownloadDestination(boxDownloadDestination);
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
+		downloadTask.setConfigurationId(configurationId);
+		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setType(type);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL);
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
@@ -2431,12 +2434,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String downloadTaskId, String archiveLinkRegistrationTaskId) throws HpcException {
 
 		dataDownloadDAO.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTaskId, archiveLinkRegistrationTaskId);
-	}
-
-	@Override
-	public String getCollectionDownloadTaskByRegistrationIdExternal(String registrationTaskId) throws HpcException {
-
-		return dataDownloadDAO.getCollectionDownloadTaskByRegistrationIdExternal(registrationTaskId);
 	}
 
 	@Override
