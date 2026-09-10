@@ -107,6 +107,7 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
+import com.google.gson.Gson;
 
 
 /**
@@ -202,6 +203,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -875,6 +878,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 												logger.info(" In processCollection: downloadItem path for download of Temporary Archive Links: " + item.getPath());
 											}
 										}
+										logger.info("First invocation downloadItems = " + gson.toJson(downloadItems));
 										HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(downloadTask.getPath());
 										HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
 										String basePath = dataManagementConfiguration.getBasePath();
@@ -903,6 +907,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 											if(downloadItems != null && !downloadItems.isEmpty() && downloadExternalArchivedItems != null && !downloadExternalArchivedItems.isEmpty()) {
 												downloadItems.addAll(downloadExternalArchivedItems);
 											}
+											logger.info("After second invocation downloadItems = " + gson.toJson(downloadItems));
 										}
 									}
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
