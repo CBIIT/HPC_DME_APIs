@@ -147,6 +147,18 @@ public abstract class HpcS3Connection {
 	// Public Methods
 	// ---------------------------------------------------------------------//
 
+	/**
+	 * Authenticate a (system) data transfer account to S3 (AWS or 3rd Party
+	 * Provider)
+	 *
+	 * @param dataTransferAccount A data transfer account to authenticate.
+	 * @param s3URLorRegion       The S3 URL if authenticating with a 3rd party S3
+	 *                            Provider (Cleversafe, Cloudian, etc), or Region if
+	 *                            authenticating w/ AWS.
+	 * @return An authenticated TransferManager object, or null if authentication
+	 *         failed.
+	 * @throws HpcException if authentication failed
+	 */
 	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URLorRegion)
 			throws HpcException {
 		if (dataTransferAccount.getIntegratedSystem().equals(HpcIntegratedSystem.AWS)) {
@@ -161,6 +173,13 @@ public abstract class HpcS3Connection {
 		}
 	}
 
+	/**
+	 * Authenticate a (user) S3 account (AWS or 3rd Party Provider)
+	 *
+	 * @param s3Account AWS S3 account.
+	 * @return TransferManager
+	 * @throws HpcException if authentication failed
+	 */
 	public Object authenticate(HpcS3Account s3Account) throws HpcException {
 		if (!StringUtils.isEmpty(s3Account.getRegion())) {
 			return authenticateAWS(s3Account.getAccessKey(), s3Account.getSecretKey(), s3Account.getRegion());
@@ -175,6 +194,13 @@ public abstract class HpcS3Connection {
 		}
 	}
 
+	/**
+	 * Get S3 Transfer Manager from an authenticated token.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @return A transfer manager object.
+	 * @throws HpcException on invalid authentication token.
+	 */
 	public S3TransferManager getTransferManager(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof HpcS3)) {
 			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -183,6 +209,13 @@ public abstract class HpcS3Connection {
 		return ((HpcS3) authenticatedToken).transferManager;
 	}
 
+	/**
+	 * Get S3 Client from an authenticated token.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @return A S3 client object.
+	 * @throws HpcException on invalid authentication token.
+	 */
 	public S3AsyncClient getClient(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof HpcS3)) {
 			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -191,6 +224,13 @@ public abstract class HpcS3Connection {
 		return ((HpcS3) authenticatedToken).client;
 	}
 
+	/**
+	 * Get S3 Presigner from an authenticated token.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @return A S3 presigner object.
+	 * @throws HpcException on invalid authentication token.
+	 */
 	public S3Presigner getPresigner(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof HpcS3)) {
 			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -199,6 +239,13 @@ public abstract class HpcS3Connection {
 		return ((HpcS3) authenticatedToken).presigner;
 	}
 
+	/**
+	 * Get S3 Provider from an authenticated token.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @return A transfer manager object.
+	 * @throws HpcException on invalid authentication token.
+	 */
 	public HpcIntegratedSystem getS3Provider(Object authenticatedToken) throws HpcException {
 		if (!(authenticatedToken instanceof HpcS3)) {
 			return null;
