@@ -1,4 +1,4 @@
-package gov.nih.nci.hpc.integration.s3.impl;
+package gov.nih.nci.hpc.integration.s3.v1.impl;
 
 import static gov.nih.nci.hpc.integration.HpcDataTransferProxy.getArchiveDestinationLocation;
 import static gov.nih.nci.hpc.util.HpcUtil.toIntExact;
