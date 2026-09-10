@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}/download"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  path: NCI/myCollection/myFile.txt
+body:
+  type: json
+  content: |-
+    {
+      "destinationType": "GOOGLE_DRIVE",
+      "googleDriveDestination": {
+        "accessToken": "{{googleAccessToken}}",
+        "folderName": "HPC-Download"
+      }
+    }
+order: 14390

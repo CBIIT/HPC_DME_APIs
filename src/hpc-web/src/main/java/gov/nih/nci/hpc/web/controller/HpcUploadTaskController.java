@@ -111,8 +111,18 @@ public class HpcUploadTaskController extends AbstractHpcController {
 					}
 				}
 			}
+
 			model.addAttribute("hpcBulkDataObjectRegistrationTaskDTO", uploadTask.getTask());
 			model.addAttribute("hpcBulkDataObjectRegistrationRetry", retry);
+
+			String dataSize = uploadTask.getTask().getRegistrationSize() > 0 ? String.valueOf(uploadTask.getTask().getRegistrationSize()) : "0";
+			if(dataSize == "0") {
+				model.addAttribute("registrationSize"," ");
+			} else {
+				model.addAttribute("registrationSize",
+						MiscUtil.addHumanReadableSize(dataSize, true));
+			}
+
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get registration status: " + e.getMessage());
 			return "redirect:/uploadtasks";

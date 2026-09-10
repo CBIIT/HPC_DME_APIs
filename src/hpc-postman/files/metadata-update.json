@@ -1,0 +1,9 @@
+{
+	"callerObjectId": "eran-base-sync",
+	"metadataEntries": [
+		{
+			"attribute": "path",
+			"value": "/somepath/col1"
+		}
+	]
+}

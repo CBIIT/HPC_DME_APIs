@@ -853,6 +853,20 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 	}
 
 	@Override
+	public Response downloadDataObjectsOrCollectionsFromExternalSource(
+			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
+		HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
+		try {
+			downloadResponse = dataManagementBusService.downloadDataObjectsOrCollections(downloadRequest);
+
+		} catch (HpcException e) {
+			return errorResponse(e);
+		}
+
+		return okResponse(downloadResponse, false);
+	}
+
+	@Override
 	public Response getDataObjectsOrCollectionsDownloadStatus(String taskId) {
 		HpcCollectionDownloadStatusDTO downloadStatus = null;
 		try {
