@@ -67,6 +67,7 @@ import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.http.HttpStatusCode;
 import software.amazon.awssdk.services.s3.model.BucketLifecycleConfiguration;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
@@ -85,10 +86,12 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.MetadataDirective;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.RestoreObjectRequest;
 import software.amazon.awssdk.services.s3.model.RestoreRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.Tier;
 import software.amazon.awssdk.services.s3.model.Transition;
@@ -566,11 +569,33 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return false;
 
 		} catch (CompletionException e) {
+			if (isNoSuchLifecycleConfiguration(e.getCause())) {
+				// The bucket has no lifecycle configuration, so no tiering policy exists.
+				return false;
+			}
 			throw new HpcException(
 					"[S3] Failed to retrieve life cycle policy on bucket: " + archiveLocation.getFileContainerId()
 							+ "- " + e.getCause().getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
+	}
+
+	/**
+	 * Determine whether a failure represents a bucket that has no lifecycle
+	 * configuration.
+	 * <p>
+	 * AWS SDK v1 returned {@code null} when a bucket had no lifecycle configuration,
+	 * whereas AWS SDK v2 throws a 404 ({@code NoSuchLifecycleConfiguration})
+	 * instead. This is detected via the HTTP status code rather than by matching on
+	 * the error-code string. A missing bucket (also a 404) is a genuine error and is
+	 * therefore excluded.
+	 *
+	 * @param cause The cause of the failure (typically {@code CompletionException.getCause()}).
+	 * @return true if the cause indicates the bucket has no lifecycle configuration.
+	 */
+	private boolean isNoSuchLifecycleConfiguration(Throwable cause) {
+		return cause instanceof S3Exception s3Exception && !(s3Exception instanceof NoSuchBucketException)
+				&& s3Exception.statusCode() == HttpStatusCode.NOT_FOUND;
 	}
 
 	@Override
@@ -643,18 +668,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					.filter(builder -> builder.prefix(prefix)).status(ExpirationStatus.ENABLED).build());
 
 			// Retrieve the configuration
-			GetBucketLifecycleConfigurationResponse bucketLifeCycleConfigurationResponse = s3Connection
-					.getClient(authenticatedToken)
-					.getBucketLifecycleConfiguration(builder -> builder.bucket(archiveLocation.getFileContainerId()))
-					.join();
+			try {
+				GetBucketLifecycleConfigurationResponse bucketLifeCycleConfigurationResponse = s3Connection
+						.getClient(authenticatedToken)
+						.getBucketLifecycleConfiguration(builder -> builder.bucket(archiveLocation.getFileContainerId()))
+						.join();
 
-			// Add the existing rules to the list.
-			if (bucketLifeCycleConfigurationResponse != null) {
+				// Add the existing rules to the list.
 				for (LifecycleRule lifeCycleRule : bucketLifeCycleConfigurationResponse.rules()) {
 					// Rules existing in Cloudian is retrieved with the prefix
 					// set to the same value as filter.
 					// Removing since it fails if this value is provided.
 					lifeCycleRules.add(lifeCycleRule.toBuilder().prefix(null).build());
+				}
+			} catch (CompletionException e) {
+				// If the bucket has no lifecycle configuration yet, proceed with just the new
+				// rule. Otherwise, rethrow to be handled below.
+				if (!isNoSuchLifecycleConfiguration(e.getCause())) {
+					throw e;
 				}
 			}
 
