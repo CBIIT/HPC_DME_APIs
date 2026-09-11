@@ -4,3 +4,5 @@ values:
     value: 'https://fsdsgl-dmeap01d.ncifcrf.gov:7738'
   - key: basePath
     value: /hpc-server
+  - key: dataObjectPath
+    value: FNL_SF_Archive/eran-pi-lab/eran-project/eran-flowcell/eran-sample/eran-data-object-sync-
