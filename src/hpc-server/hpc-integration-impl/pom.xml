@@ -130,6 +130,10 @@
   			<artifactId>aws-crt</artifactId>
 		</dependency>
 		<dependency>
+  			<groupId>software.amazon.awssdk</groupId>
+  			<artifactId>netty-nio-client</artifactId>
+		</dependency>
+		<dependency>
     		<groupId>com.google.apis</groupId>
     		<artifactId>google-api-services-drive</artifactId>
 		</dependency>
