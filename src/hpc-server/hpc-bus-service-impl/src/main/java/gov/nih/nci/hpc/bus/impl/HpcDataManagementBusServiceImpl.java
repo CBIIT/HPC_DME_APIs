@@ -887,19 +887,36 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+
+		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
+			// Default to false - i.e. don't use the absolute data object path in the
+			// download destination.
+			downloadRequest.setAppendPathToDownloadDestination(false);
+		}
+
+		if (downloadRequest.getAppendCollectionNameToDownloadDestination() == null) {
+			// Default to false - i.e. don't use the collection name in the download
+			// destination.
+			downloadRequest.setAppendCollectionNameToDownloadDestination(false);
+		}
+
+		if (downloadRequest.getAppendPathToDownloadDestination()
+				&& downloadRequest.getAppendCollectionNameToDownloadDestination()) {
+			throw new HpcException("Both append indicators are set: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
 
 		// Download Step
 		try {
-			String userId = securityService.getRequestInvoker().getNciAccount().getUserId();
 			// Submit a collection download task.
-			HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadExternal(path,
+			HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadCollection(path,
 					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
 					downloadRequest.getGoogleDriveDownloadDestination(),
 					downloadRequest.getGoogleCloudStorageDownloadDestination(),
-					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), userId, dataManagementConfiguration.getId(), 
-					Boolean.TRUE.equals(downloadRequest.getAppendPathToDownloadDestination()),
-					Boolean.TRUE.equals(downloadRequest.getAppendCollectionNameToDownloadDestination()), HpcDownloadTaskType.COLLECTION);
+					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), securityService.getRequestInvoker().getNciAccount().getUserId(), dataManagementConfiguration.getId(),
+					downloadRequest.getAppendPathToDownloadDestination(),
+					downloadRequest.getAppendCollectionNameToDownloadDestination(), true);
 
 		// Create and return a DTO with the request receipt.
 		responseDTO = new HpcCollectionDownloadResponseDTO();

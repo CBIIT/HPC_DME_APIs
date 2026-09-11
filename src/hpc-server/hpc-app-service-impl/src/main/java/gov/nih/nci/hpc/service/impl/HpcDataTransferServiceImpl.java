@@ -1748,7 +1748,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
-		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		downloadTask.setStatus(externalArchiveFlag ? HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL
+				: HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
@@ -1760,40 +1761,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 		return downloadTask;
 	}
-
-	@Override
-	public HpcCollectionDownloadTask downloadExternal(String path,
-			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination, HpcDownloadTaskType type) throws HpcException {
-
-		// Create a new COLLECTION/COLLECTION_LIST/DATAOBJECT_LIST download task for an external archive download.
-		HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
-		downloadTask.setCreated(Calendar.getInstance());
-		downloadTask.setGlobusDownloadDestination(globusDownloadDestination);
-		downloadTask.setS3DownloadDestination(s3DownloadDestination);
-		downloadTask.setGoogleDriveDownloadDestination(googleDriveDownloadDestination);
-		downloadTask.setGoogleCloudStorageDownloadDestination(googleCloudStorageDownloadDestination);
-		downloadTask.setAsperaDownloadDestination(asperaDownloadDestination);
-		downloadTask.setBoxDownloadDestination(boxDownloadDestination);
-		downloadTask.setPath(path);
-		downloadTask.setUserId(userId);
-		downloadTask.setConfigurationId(configurationId);
-		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
-		downloadTask.setType(type);
-		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL);
-		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
-		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
-		downloadTask.setExternalArchiveFlag(true);
-		// Persist the request.
-		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
-		return downloadTask;
-	}
-
-
 
 	@Override
 	public HpcCollectionDownloadTask downloadCollections(List<String> collectionPaths,
