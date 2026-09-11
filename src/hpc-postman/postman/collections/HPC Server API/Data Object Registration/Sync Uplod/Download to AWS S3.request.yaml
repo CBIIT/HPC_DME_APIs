@@ -3,8 +3,11 @@ name: Download to AWS S3
 method: POST
 url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}/download"
 scripts:
+  - type: afterResponse
+    code: "pm.collectionVariables.set('lastS3DownloadFileId', pm.variables.get('fileId')); const res = pm.response.json(); if (res.taskId) { pm.collectionVariables.set('lastS3DownloadTaskId', res.taskId); }"
+    language: text/javascript
   - type: beforeRequest
-    code: "pm.variables.set('path', pm.collectionVariables.get('lastSyncUploadPath')); "
+    code: "pm.variables.set('path', pm.collectionVariables.get('lastSyncUploadPath')); const now = new Date(); const ts = (now.getMonth()+1).toString().padStart(2,'0') + '-' + now.getDate().toString().padStart(2,'0') + '-' + now.getFullYear() + '-' + now.getHours().toString().padStart(2,'0') + '-' + now.getMinutes().toString().padStart(2,'0') + '-' + now.getSeconds().toString().padStart(2,'0'); pm.variables.set('fileId', pm.globals.get('aws-folder') + '/file-download-' + ts);"
     language: text/javascript
 order: 3863696254383541
 headers:
@@ -18,7 +21,7 @@ body:
       "s3DownloadDestination": {
         "destinationLocation": {
           "fileContainerId": "{{aws-bucket}}",
-          "fileId": "{{aws-folder}}/file-download"
+          "fileId": "{{fileId}}"
         },
         "account": {
           "accessKey": "{{vault:aws-key}}",
