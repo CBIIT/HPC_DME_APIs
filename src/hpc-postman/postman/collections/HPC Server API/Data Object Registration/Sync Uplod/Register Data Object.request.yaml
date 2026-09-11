@@ -31,3 +31,4 @@ body:
     - type: file
       key: dataObject
       src: /Users/rosenbergea/Development/HPC-DM/hpc-dm-repo/src/hpc-postman/files/data-object-binary.png
+      contentType: application/octet-stream
