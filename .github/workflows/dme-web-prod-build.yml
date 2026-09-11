@@ -62,12 +62,12 @@ jobs:
       - name: build the war file
         run: |
           #cd HPC_DME_APIs/src
-          cd $GITHUB_WORKSPACE/src
+          cd $GITHUB_WORKSPACE/src/hpc-web
           #sed -i "s|^spring.datasource.password=.*|spring.datasource.password=${{ env.SPRING_DS_PWD }}|" src/main/resources/application.properties
-          sed -i "s|^gov.nih.nci.hpc.drive.clientid=.*|gov.nih.nci.hpc.drive.clientid=${{ env.HPC_DRIVE_CLIENTID }}|" hpc-web/src/main/resources/appconfigs/prod-env.conf 
-          sed -i "s|^gov.nih.nci.hpc.drive.clientsecret=.*|gov.nih.nci.hpc.drive.clientsecret=${{ env.HPC_DRIVE_CLIENTSECRET }}|" hpc-web/src/main/resources/appconfigs/prod-env.conf 
-          sed -i "s|^gov.nih.nci.hpc.box.clientid=.*|gov.nih.nci.hpc.box.clientid=${{ env.HPC_BOX_CLIENTID }}|" hpc-web/src/main/resources/appconfigs/prod-env.conf 
-          sed -i "s|^gov.nih.nci.hpc.box.clientsecret=.*|gov.nih.nci.hpc.box.clientsecret=${{ env.HPC_BOX_CLIENTSECRET }}|" hpc-web/src/main/resources/appconfigs/prod-env.conf 
+          sed -i "s|^gov.nih.nci.hpc.drive.clientid=.*|gov.nih.nci.hpc.drive.clientid=${{ env.HPC_DRIVE_CLIENTID }}|" src/main/resources/appconfigs/prod-env.conf 
+          sed -i "s|^gov.nih.nci.hpc.drive.clientsecret=.*|gov.nih.nci.hpc.drive.clientsecret=${{ env.HPC_DRIVE_CLIENTSECRET }}|" src/main/resources/appconfigs/prod-env.conf 
+          sed -i "s|^gov.nih.nci.hpc.box.clientid=.*|gov.nih.nci.hpc.box.clientid=${{ env.HPC_BOX_CLIENTID }}|" src/main/resources/appconfigs/prod-env.conf 
+          sed -i "s|^gov.nih.nci.hpc.box.clientsecret=.*|gov.nih.nci.hpc.box.clientsecret=${{ env.HPC_BOX_CLIENTSECRET }}|" src/main/resources/appconfigs/prod-env.conf 
           mvn clean install -Pprod -DskipTests
       - name: upload artifacts for deployment job
         uses: actions/upload-artifact@v4
