@@ -135,12 +135,21 @@ def main(argv=None):
                         help="S3 access key ID. Env: DME_S3_ACCESS_KEY")
     parser.add_argument("--secret-key", default=os.environ.get("DME_S3_SECRET_KEY"),
                         help="S3 secret access key. Env: DME_S3_SECRET_KEY")
-    parser.add_argument("--dry-run", action="store_true", default=env_flag("DME_DRY_RUN"),
+    dry_run_group = parser.add_mutually_exclusive_group()
+    dry_run_group.add_argument("--dry-run", dest="dry_run", action="store_true", default=env_flag("DME_DRY_RUN"),
                         help="Do not modify tags; just log actions. Env: DME_DRY_RUN")
-    parser.add_argument("--insecure", action="store_true", default=env_flag("DME_INSECURE"),
+    dry_run_group.add_argument("--no-dry-run", dest="dry_run", action="store_false",
+                        help="Modify tags even if DME_DRY_RUN is set in the environment.")
+    insecure_group = parser.add_mutually_exclusive_group()
+    insecure_group.add_argument("--insecure", dest="insecure", action="store_true", default=env_flag("DME_INSECURE"),
                         help="Skip SSL certificate verification for Trino and S3 connections. Env: DME_INSECURE")
-    parser.add_argument("--stacktrace", action="store_true", default=env_flag("DME_STACKTRACE"),
+    insecure_group.add_argument("--no-insecure", dest="insecure", action="store_false",
+                        help="Verify SSL certificates even if DME_INSECURE is set in the environment.")
+    stacktrace_group = parser.add_mutually_exclusive_group()
+    stacktrace_group.add_argument("--stacktrace", dest="stacktrace", action="store_true", default=env_flag("DME_STACKTRACE"),
                         help="Print full stack trace on errors. Env: DME_STACKTRACE")
+    stacktrace_group.add_argument("--no-stacktrace", dest="stacktrace", action="store_false",
+                        help="Do not print full stack trace on errors even if DME_STACKTRACE is set in the environment.")
 
 
     args = parser.parse_args(argv)
