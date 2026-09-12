@@ -1,7 +1,11 @@
 $kind: http-request
 name: Delete Data Object
 method: DELETE
-url: "{{baseUrl}}{{basePath}}/dataObject/{{path}}?force=true"
+url: "{{baseUrl}}{{basePath}}/dataObject/{{path}}"
 queryParams:
-  force: "true"
+  - key: force
+    value: "true"
+pathVariables:
+  - key: path
+    value: NCI/myCollection/myFile.txt
 order: 13000
