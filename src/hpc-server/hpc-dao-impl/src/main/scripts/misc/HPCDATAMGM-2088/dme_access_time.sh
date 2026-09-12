@@ -5,7 +5,9 @@
 # The Python script reads every parameter from an environment variable (a CLI
 # flag, if passed, overrides it). This wrapper simply loads the env file and runs
 # the script, so secrets are passed via the environment and NEVER appear on the
-# command line (nothing sensitive is visible in `ps aux` / /proc). Safe for cron.
+# command line (nothing sensitive is visible in `ps aux`). Note: environment
+# variables are still readable by same-user processes via `/proc/<pid>/environ`.
+# Safe for cron.
 #
 # Usage:
 #   ./dme_access_time.sh [extra args passed through to dme_access_time.py]
