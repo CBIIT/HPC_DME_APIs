@@ -337,7 +337,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			// The metadata is only considered "already set" if every expected attribute is present
 			// with a non-blank value.
 			Map<String, String> s3Metadata = headObjectResponse.metadata();
-			boolean metadataAlreadySet = !metadataEntries.isEmpty();
+			boolean metadataAlreadySet = true;
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				if (StringUtils.isBlank(getS3MetadataValue(s3Metadata, metadataEntry.getAttribute()))) {
 					metadataAlreadySet = false;
