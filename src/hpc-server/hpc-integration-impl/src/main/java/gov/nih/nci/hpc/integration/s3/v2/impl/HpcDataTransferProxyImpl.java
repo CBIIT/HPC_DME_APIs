@@ -931,8 +931,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				streamUpload.completionFuture().join();
 
 			} catch (CompletionException | HpcException | IOException e) {
-				logger.error("[S3] Failed to " + sourceDestinationLogMessage + ": " + e.getCause().getMessage(), e);
-				progressListener.transferFailed(e.getCause().getMessage());
+				Throwable cause = e.getCause() != null ? e.getCause() : e;
+				logger.error("[S3] Failed to " + sourceDestinationLogMessage + ": " + cause.getMessage(), e);
+				progressListener.transferFailed(cause.getMessage());
 
 			}
 
