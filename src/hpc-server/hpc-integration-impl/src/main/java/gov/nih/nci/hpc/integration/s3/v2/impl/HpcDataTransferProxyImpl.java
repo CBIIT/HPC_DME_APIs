@@ -312,10 +312,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HeadObjectResponse headObjectResponse = s3Connection.getClient(authenticatedToken)
 					.headObject(headObjectRequest).join();
 
+			// Note: The AWS SDK v2 returns user-metadata keys lower-cased, so the lookup below
+			// is performed case-insensitively (matching the SDK v1 getUserMetaDataOf() behavior).
+			// The metadata is only considered "already set" if every expected attribute is present
+			// with a non-blank value.
 			Map<String, String> s3Metadata = headObjectResponse.metadata();
-			boolean metadataAlreadySet = true;
+			boolean metadataAlreadySet = !metadataEntries.isEmpty();
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
-				if (!s3Metadata.containsKey(metadataEntry.getAttribute())) {
+				if (StringUtils.isBlank(getS3MetadataValue(s3Metadata, metadataEntry.getAttribute()))) {
 					metadataAlreadySet = false;
 					break;
 				}
@@ -1075,6 +1079,23 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		}
 
 		return objectMetadata;
+	}
+
+	/**
+	 * Get a user-metadata value from an S3 head-object metadata map in a
+	 * case-insensitive manner. The AWS SDK v2 returns user-metadata keys
+	 * lower-cased, so a direct case-sensitive lookup can miss attributes.
+	 *
+	 * @param s3Metadata The S3 user-metadata map (may be null).
+	 * @param attribute  The attribute name to look up.
+	 * @return The attribute value, or null if not found.
+	 */
+	private String getS3MetadataValue(Map<String, String> s3Metadata, String attribute) {
+		if (s3Metadata == null || attribute == null) {
+			return null;
+		}
+		return s3Metadata.entrySet().stream().filter(entry -> attribute.equalsIgnoreCase(entry.getKey()))
+				.map(Map.Entry::getValue).findFirst().orElse(null);
 	}
 
 	/**
