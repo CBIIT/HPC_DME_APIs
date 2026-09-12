@@ -1,6 +1,9 @@
 $kind: http-request
 url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}"
 method: GET
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection/myFile.txt'
 headers:
   Accept: application/json
 queryParams:
