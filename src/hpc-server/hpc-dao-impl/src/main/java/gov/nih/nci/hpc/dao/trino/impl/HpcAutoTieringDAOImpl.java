@@ -47,8 +47,8 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 			"where element_type = 'FILE' " +
 			"and parent_path LIKE ? " +
 			"and (user_tags['dme_access_time'] is null " +
-			"or TRY_CAST(user_tags['dme_access_time'] AS TIMESTAMP) < current_timestamp - INTERVAL '{inactivityMonths}' MONTH) " +
-			"and ctime < current_timestamp - INTERVAL '{archivedMonths}' MONTH";
+			"or with_timezone(TRY_CAST(user_tags['dme_access_time'] AS TIMESTAMP), '{timezone}') < current_timestamp - INTERVAL '{inactivityMonths}' MONTH) " +
+			"and with_timezone(ctime, '{timezone}') < current_timestamp - INTERVAL '{archivedMonths}' MONTH";
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -61,6 +61,12 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// Flag indicating whether Trino is available.
 	@Value("${hpc.dao.trino.available:true}")
 	private Boolean trinoAvailable = null;
+
+	// The timezone in which timestamp columns (e.g. ctime, dme_access_time) are stored in the
+	// external archive catalog. Used to compare against Trino's session-based current_timestamp
+	// independently of the Trino session timezone.
+	@Value("${hpc.dao.trino.timezone:UTC}")
+	private String trinoTimezone = null;
 
 	// The logger instance.
 	private static final Logger logger = LoggerFactory.getLogger(HpcAutoTieringDAOImpl.class.getName());
@@ -94,7 +100,8 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 		try {
 			return jdbcTemplate.query(
 					GET_FILES_FOR_AUTO_TIERING_SQL.replace("{inactivityMonths}", inactivityMonths.toString())
-							.replace("{archivedMonths}", archivedMonths.toString()),
+							.replace("{archivedMonths}", archivedMonths.toString())
+							.replace("{timezone}", trinoTimezone),
 					rowMapper, searchPath + "%");
 
 		} catch (DataAccessException e) {
