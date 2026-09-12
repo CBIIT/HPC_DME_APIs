@@ -4,7 +4,8 @@ method: DELETE
 url: "{{baseUrl}}{{basePath}}/dataObject/{{path}}"
 queryParams:
   - key: force
-    value: "true"
+    value: "false"
+    disabled: true
 pathVariables:
   - key: path
     value: NCI/myCollection/myFile.txt
