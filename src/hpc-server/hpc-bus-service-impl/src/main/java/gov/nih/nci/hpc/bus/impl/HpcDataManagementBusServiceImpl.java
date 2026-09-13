@@ -961,7 +961,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		String s3CollectionPath =  archiveObjectId + relativePath;
 		// Build the DirectoryScanRegistrationItem
-		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
+		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
+		registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
 		boolean externalArchiveFlag = true;
 		try{
@@ -5443,8 +5444,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 
-    private HpcBulkDataObjectRegistrationRequestDTO buildDirectoryScanRegistrationItem( String s3CollectionPath, String s3ArchiveConfigurationId, String basePath, String bucket) throws HpcException {
-	HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
+    private HpcBulkDataObjectRegistrationRequestDTO buildDirectoryScanRegistrationItem(HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO, String s3CollectionPath, String s3ArchiveConfigurationId, String basePath, String bucket) throws HpcException {
         HpcFileLocation directoryLocation = new HpcFileLocation();
         directoryLocation.setFileContainerId(bucket);
         directoryLocation.setFileId(s3CollectionPath);
