@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import os
 import sys
 import getpass
 import traceback
@@ -98,31 +99,79 @@ def parse_since_arg(since: str) -> str:
     return f"INTERVAL '{value}' {trino_unit}"
 
 
+def env_flag(name: str) -> bool:
+    """Return True if the given environment variable is set to a truthy value."""
+    return os.environ.get(name, "").strip().lower() in ("1", "true", "yes", "on")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="Query latest audit log entries per file from vast_audit_log_table."
+        description="Query latest audit log entries per file from vast_audit_log_table. "
+        "Every option can also be supplied via an environment variable (shown in each option's help); "
+        "a command-line flag always overrides the corresponding environment variable.",
     )
     parser.add_argument(
         "--since",
-        required=True,
-        help="How far back to search, e.g. 1h, 2d, 30m (seconds, minutes, hours, days).",
+        default=os.environ.get("DME_SINCE"),
+        help="How far back to search, e.g. 1h, 2d, 30m (seconds, minutes, hours, days). Env: DME_SINCE",
     )
-    parser.add_argument("--host", required=True, help="Trino coordinator host")
-    parser.add_argument("--port", type=int, default=8080, help="Trino coordinator port")
-    parser.add_argument("--user", required=True, help="Trino user")
-    parser.add_argument("--password", default=None, help="Trino password (if omitted, will prompt securely)")
-    parser.add_argument("--view-path", required=True, help="Only print/tag objects whose path starts with this prefix, e.g. /testdir/.")
-    parser.add_argument("--bucket", required=True, help="S3 bucket name to tag")
-    parser.add_argument("--object-id", required=True, help="Base path prefix for S3 object keys, e.g. AUTO-TIERING")
-    parser.add_argument("--s3-endpoint", required=True, help="Custom S3 endpoint URL, e.g. https://my-vast-s3.example.com")
-    parser.add_argument("--access-key", required=True, help="S3 access key ID")
-    parser.add_argument("--secret-key", required=True, help="S3 secret access key")
-    parser.add_argument("--dry-run", action="store_true", help="Do not modify tags; just log actions")
-    parser.add_argument("--insecure", action="store_true", help="Skip SSL certificate verification for Trino and S3 connections")
-    parser.add_argument("--stacktrace", action="store_true", help="Print full stack trace on errors")
+    parser.add_argument("--host", default=os.environ.get("DME_TRINO_HOST"),
+                        help="Trino coordinator host. Env: DME_TRINO_HOST")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("DME_TRINO_PORT", "8080")),
+                        help="Trino coordinator port. Env: DME_TRINO_PORT (default 8080)")
+    parser.add_argument("--user", default=os.environ.get("DME_TRINO_USER"),
+                        help="Trino user. Env: DME_TRINO_USER")
+    parser.add_argument("--password", default=os.environ.get("DME_TRINO_PASSWORD"),
+                        help="Trino password (if omitted, will prompt securely). Env: DME_TRINO_PASSWORD")
+    parser.add_argument("--view-path", default=os.environ.get("DME_VIEW_PATH"),
+                        help="Only print/tag objects whose path starts with this prefix, e.g. /testdir/. Env: DME_VIEW_PATH")
+    parser.add_argument("--bucket", default=os.environ.get("DME_S3_BUCKET"),
+                        help="S3 bucket name to tag. Env: DME_S3_BUCKET")
+    parser.add_argument("--object-id", default=os.environ.get("DME_OBJECT_ID"),
+                        help="Base path prefix for S3 object keys, e.g. AUTO-TIERING. Env: DME_OBJECT_ID")
+    parser.add_argument("--s3-endpoint", default=os.environ.get("DME_S3_ENDPOINT"),
+                        help="Custom S3 endpoint URL, e.g. https://my-vast-s3.example.com. Env: DME_S3_ENDPOINT")
+    parser.add_argument("--access-key", default=os.environ.get("DME_S3_ACCESS_KEY"),
+                        help="S3 access key ID. Env: DME_S3_ACCESS_KEY")
+    parser.add_argument("--secret-key", default=os.environ.get("DME_S3_SECRET_KEY"),
+                        help="S3 secret access key. Env: DME_S3_SECRET_KEY")
+    dry_run_group = parser.add_mutually_exclusive_group()
+    dry_run_group.add_argument("--dry-run", dest="dry_run", action="store_true", default=env_flag("DME_DRY_RUN"),
+                        help="Do not modify tags; just log actions. Env: DME_DRY_RUN")
+    dry_run_group.add_argument("--no-dry-run", dest="dry_run", action="store_false",
+                        help="Modify tags even if DME_DRY_RUN is set in the environment.")
+    insecure_group = parser.add_mutually_exclusive_group()
+    insecure_group.add_argument("--insecure", dest="insecure", action="store_true", default=env_flag("DME_INSECURE"),
+                        help="Skip SSL certificate verification for Trino and S3 connections. Env: DME_INSECURE")
+    insecure_group.add_argument("--no-insecure", dest="insecure", action="store_false",
+                        help="Verify SSL certificates even if DME_INSECURE is set in the environment.")
+    stacktrace_group = parser.add_mutually_exclusive_group()
+    stacktrace_group.add_argument("--stacktrace", dest="stacktrace", action="store_true", default=env_flag("DME_STACKTRACE"),
+                        help="Print full stack trace on errors. Env: DME_STACKTRACE")
+    stacktrace_group.add_argument("--no-stacktrace", dest="stacktrace", action="store_false",
+                        help="Do not print full stack trace on errors even if DME_STACKTRACE is set in the environment.")
 
 
     args = parser.parse_args(argv)
+
+    # Validate required configuration (each may come from a CLI flag or an environment variable).
+    required = {
+        "--since (DME_SINCE)": args.since,
+        "--host (DME_TRINO_HOST)": args.host,
+        "--user (DME_TRINO_USER)": args.user,
+        "--view-path (DME_VIEW_PATH)": args.view_path,
+        "--bucket (DME_S3_BUCKET)": args.bucket,
+        "--object-id (DME_OBJECT_ID)": args.object_id,
+        "--s3-endpoint (DME_S3_ENDPOINT)": args.s3_endpoint,
+        "--access-key (DME_S3_ACCESS_KEY)": args.access_key,
+        "--secret-key (DME_S3_SECRET_KEY)": args.secret_key,
+    }
+    missing = [name for name, value in required.items() if not value]
+    if missing:
+        parser.error(
+            "Missing required configuration (set via CLI flag or environment variable):\n  "
+            + "\n  ".join(missing)
+        )
 
     if args.insecure:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
