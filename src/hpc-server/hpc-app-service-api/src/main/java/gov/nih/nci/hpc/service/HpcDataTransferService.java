@@ -192,6 +192,7 @@ public interface HpcDataTransferService {
 	 *                                              data object
 	 * @param deepArchiveStatus                     The deep archive status of the
 	 *                                              data object
+	 * @param externalArchiveFlag 					If set to true, the file is in an external archive
 	 * @return A data object download response.
 	 * @throws HpcException on service failure.
 	 */
@@ -667,6 +668,7 @@ public interface HpcDataTransferService {
 	 *                                              used in the destination path,
 	 *                                              otherwise just the object name
 	 *                                              will be used.
+	 * @param externalArchiveFlag					If set to true, 
 	 * @return The submitted collection download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -676,7 +678,8 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException;
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException;
+
 
 	/**
 	 * Submit a request to download collections.
@@ -1101,6 +1104,15 @@ public interface HpcDataTransferService {
 	 * @throws HpcException on service failure.
 	 */
 	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, int priority) throws HpcException;
+
+	/**
+	 * Update collection download task archive link registration task ID.
+	 *
+	 * @param downloadTaskId               The download task ID.
+	 * @param archiveLinkRegistrationTaskId The archive link registration task ID.
+	 * @throws HpcException on service failure.
+	 */
+	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String downloadTaskId, String archiveLinkRegistrationTaskId) throws HpcException;
 
 	/**
 	 * Removes google access token retained for retries beyond the retention period.
