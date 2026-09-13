@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}"
+method: GET
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection/myFile.txt'
+headers:
+  Accept: application/json
+queryParams:
+  - key: includeAcl
+    value: "false"
+    disabled: true
+scripts:
+  - type: beforeRequest
+    code: ""
+    language: text/javascript
+order: 3705008982855129
