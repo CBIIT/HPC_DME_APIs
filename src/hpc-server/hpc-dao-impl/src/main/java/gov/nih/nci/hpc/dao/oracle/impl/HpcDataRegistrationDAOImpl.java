@@ -66,9 +66,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 
 	// SQL Queries.
 	private static final String UPSERT_BULK_DATA_OBJECT_REGISTRATION_TASK_SQL = "merge into HPC_BULK_DATA_OBJECT_REGISTRATION_TASK using dual on (ID = ?) "
-			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, CREATED = ?, UPLOAD_METHOD = ?, REGISTRATION_SIZE = ? "
-			+ "when not matched then insert (ID, USER_ID, UI_URL, STATUS, CREATED, UPLOAD_METHOD, REGISTRATION_SIZE) "
-			+ "values (?, ?, ?, ?, ?, ?, ?)";
+			+ "when matched then update set USER_ID = ?, UI_URL = ?, STATUS = ?, CREATED = ?, UPLOAD_METHOD = ?, REGISTRATION_SIZE = ?, EXTERNAL_ARCHIVE_FLAG = ? "
+			+ "when not matched then insert (ID, USER_ID, UI_URL, STATUS, CREATED, UPLOAD_METHOD, REGISTRATION_SIZE, EXTERNAL_ARCHIVE_FLAG) "
+			+ "values (?, ?, ?, ?, ?, ?, ?, ?)";
 
 	private static final String UPDATE_BULK_DATA_OBJECT_REGISTRATION_TASK_ITEMS_SQL = "update HPC_BULK_DATA_OBJECT_REGISTRATION_TASK set ITEMS = ? where ID = ?";
 
@@ -156,6 +156,8 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		String uploadMethodStr = rs.getString("UPLOAD_METHOD");
 		bulkDataObjectRegistrationTask.setUploadMethod(
 				!StringUtils.isEmpty(uploadMethodStr) ? HpcDataTransferUploadMethod.fromValue(uploadMethodStr) : null);
+		bulkDataObjectRegistrationTask.setExternalArchiveFlag(rs.getBoolean("EXTERNAL_ARCHIVE_FLAG"));
+
 		bulkDataObjectRegistrationTask.setRegistrationSize(rs.getLong("REGISTRATION_SIZE"));
 		return bulkDataObjectRegistrationTask;
 	};
@@ -222,12 +224,14 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 							? dataObjectListRegistrationTask.getUploadMethod().value()
 							: null,
 					dataObjectListRegistrationTask.getRegistrationSize(),
+					dataObjectListRegistrationTask.getExternalArchiveFlag(),
 					dataObjectListRegistrationTask.getId(), dataObjectListRegistrationTask.getUserId(),
 					dataObjectListRegistrationTask.getUiURL(), dataObjectListRegistrationTask.getStatus().value(),
 					dataObjectListRegistrationTask.getCreated(),
 					dataObjectListRegistrationTask.getUploadMethod() != null
 							? dataObjectListRegistrationTask.getUploadMethod().value() : null,
-					dataObjectListRegistrationTask.getRegistrationSize());
+					dataObjectListRegistrationTask.getRegistrationSize(),
+					dataObjectListRegistrationTask.getExternalArchiveFlag());
 
 			jdbcTemplate.update(UPDATE_BULK_DATA_OBJECT_REGISTRATION_TASK_ITEMS_SQL,
 					new Object[] { new SqlLobValue(toJSON(dataObjectListRegistrationTask.getItems()), lobHandler),

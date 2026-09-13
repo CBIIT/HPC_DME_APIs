@@ -456,12 +456,13 @@ public interface HpcDataManagementService {
 	 *                                       {task_id} in this URL will be replaced
 	 *                                       with actual task ID value.
 	 * @param dataObjectRegistrationRequests The data object registration requests.
+	 * @param externalArchiveFlag			 Indicates the data Objects are in an external archive
 	 * @return The task ID created to register the data objects and can be used to
 	 *         track status
 	 * @throws HpcException on service failure.
 	 */
 	public String registerDataObjects(String userId, String uiURL,
-			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests) throws HpcException;
+			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests, boolean externalArchiveFlag) throws HpcException;
 
 	/**
 	 * Get bulk object registration tasks.
