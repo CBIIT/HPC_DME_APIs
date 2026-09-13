@@ -3553,6 +3553,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			downloadStatus.setResult(taskStatus.getResult().getResult());
 			downloadStatus.setRetryTaskId(taskStatus.getResult().getRetryTaskId());
 			downloadStatus.setRetryUserId(taskStatus.getResult().getRetryUserId());
+			downloadStatus.setExternalArchiveFlag(taskStatus.getResult().getExternalArchiveFlag());
 			downloadStatus.setEffectiveTrasnsferSpeed(taskStatus.getResult().getEffectiveTransferSpeed() > 0
 					? taskStatus.getResult().getEffectiveTransferSpeed()
 					: null);
