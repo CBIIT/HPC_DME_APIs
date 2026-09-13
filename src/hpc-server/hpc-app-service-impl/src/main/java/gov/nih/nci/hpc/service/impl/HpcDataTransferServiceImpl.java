@@ -2171,6 +2171,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
 		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
 		taskResult.setDoc(downloadTask.getDoc());
+		taskResult.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
 		// averaging the effective transfer speed
