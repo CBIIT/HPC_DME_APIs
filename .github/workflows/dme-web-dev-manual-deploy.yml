@@ -154,6 +154,7 @@ jobs:
 
             mapfile -t matches < <(
               find artifacts -type f -path "*/${artifact_directory}/target/${file_pattern}" | sort
+              find artifacts -type f -name "${file_pattern}" | sort
             )
 
             if [ "${#matches[@]}" -ne 1 ]; then
