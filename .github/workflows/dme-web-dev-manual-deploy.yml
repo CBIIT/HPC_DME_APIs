@@ -38,9 +38,8 @@ jobs:
     name: Prepare selected server matrix
     runs-on:
       group: cbiit-global-runners
-      #labels: [self-hosted]
-      #labels: [nonprod-org-runner]
-      labels: [prod-org-runner]
+      labels: [nonprod-org-runner]
+      #labels: [prod-org-runner]
     outputs:
       matrix: ${{ steps.selected_servers.outputs.matrix }}
       use_specific_run: ${{ steps.check_build.outputs.use_specific_run }}
