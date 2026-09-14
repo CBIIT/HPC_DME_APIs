@@ -25,11 +25,6 @@ on:
         required: false
         type: boolean
         default: false
-      fsdsgl_dmeap07p_ncifcrf_gov:
-        description: "Deploy to fsdsgl-dmeap07p.ncifcrf.gov"
-        required: false
-        type: boolean
-        default: false  
 
 run-name: "Deploy DME WEB in Prod from build #${{ inputs.build_run_number || 'latest' }} to ${{ inputs.environment }}"
 
@@ -80,11 +75,6 @@ jobs:
           if [ "${{ inputs.fsdsgl_dmewb01p_ncifcrf_gov }}" = "true" ]; then
             add_server "fsdsgl-dmewb01p.ncifcrf.gov" "fsdsgl-dmewb01p.ncifcrf.gov"
           fi
-
-          if [ "${{ inputs.fsdsgl_dmeap08p_ncifcrf_gov }}" = "true" ]; then
-            add_server "fsdsgl-dmeap08p.ncifcrf.gov" "fsdsgl-dmeap08p.ncifcrf.gov"
-          fi
-
 
           matrix="${matrix}]}"
 
@@ -156,6 +146,7 @@ jobs:
 
             mapfile -t matches < <(
               find artifacts -type f -path "*/${artifact_directory}/target/${file_pattern}" | sort
+              find artifacts -type f -name "${file_pattern}" | sort
             )
 
             if [ "${#matches[@]}" -ne 1 ]; then
@@ -213,8 +204,9 @@ jobs:
 
           target_host="${{ matrix.host }}"
 
+          # future - "sudo systemctl stop '${REMOTE_TOMCAT}'"
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "sudo systemctl stop '${REMOTE_TOMCAT}'"
+            "sudo service '${REMOTE_TOMCAT}' stop"
           echo "Tomcat stopped on ${target_host}."
 
       - name: Remove applications directory
@@ -331,5 +323,6 @@ jobs:
 
           target_host="${{ matrix.host }}"
 
+          # future "set -e; sudo systemctl start '${REMOTE_TOMCAT}'; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "set -e; sudo systemctl start '${REMOTE_TOMCAT}'; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
+            "set -e; sudo service '${REMOTE_TOMCAT}' start; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
