@@ -20,6 +20,7 @@ on:
         required: true
         type: choice
         options:
+          - restart
           - stop
           - start    
 
@@ -29,7 +30,7 @@ on:
         type: boolean
         default: false    
 
-run-name: "${{ inputs.action == 'start' && 'Start' || 'Stop' }} Tomcat (DME ${{ inputs.environment }})"
+run-name: "${{ inputs.action == 'start' && 'Start' || inputs.action == 'restart' && 'Restart' || 'Stop' }} Tomcat (DME ${{ inputs.environment }})"
 
 jobs:
   prepare:
@@ -77,7 +78,7 @@ jobs:
           echo "Selected server matrix: ${matrix}"
 
   control_tomcat:
-    name: ${{ inputs.action == 'start' && 'Start' || 'Stop' }} Tomcat on ${{ matrix.name }}
+    name: ${{ inputs.action == 'start' && 'Start' || inputs.action == 'restart' && 'Restart' || 'Stop' }} Tomcat on ${{ matrix.name }}
     needs: prepare
     runs-on:
       group: cbiit-global-runners
@@ -124,7 +125,7 @@ jobs:
             "echo SSH connection OK"
 
       - name: Stop Tomcat 
-        if: inputs.action == 'stop'
+        if: inputs.action == 'stop' || inputs.action == 'restart'
         shell: bash
         run: |
           set -euo pipefail
@@ -137,7 +138,7 @@ jobs:
           echo "Tomcat stopped on ${target_host}."
 
       - name: Start Tomcat
-        if: inputs.action == 'start'
+        if: inputs.action == 'start' || inputs.action == 'restart'
         shell: bash
         run: |
           set -euo pipefail
