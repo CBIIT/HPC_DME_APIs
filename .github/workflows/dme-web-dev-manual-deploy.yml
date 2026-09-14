@@ -214,7 +214,7 @@ jobs:
 
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
             #"sudo systemctl stop '${REMOTE_TOMCAT}'"
-            "sudo service '${REMOTE_TOMCAT}' stop"
+            "sudo service ${REMOTE_TOMCAT} stop"
           echo "Tomcat stopped on ${target_host}."
 
       - name: Remove applications directory
@@ -333,4 +333,4 @@ jobs:
 
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
             #"set -e; sudo systemctl start '${REMOTE_TOMCAT}'; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
-            "set -e; sudo service '${REMOTE_TOMCAT}' start; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
+            "set -e; sudo service ${REMOTE_TOMCAT} start; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
