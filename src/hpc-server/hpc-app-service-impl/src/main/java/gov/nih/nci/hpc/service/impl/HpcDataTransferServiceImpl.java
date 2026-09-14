@@ -1769,7 +1769,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException {
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
 				googleCloudStorageDownloadDestination, asperaDownloadDestination, boxDownloadDestination, null,
@@ -1787,13 +1787,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.getCollectionPaths().addAll(collectionPaths);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
-		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		downloadTask.setStatus(externalArchiveFlag ? HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL : HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setDataSize(getTotalSizeOfCollectionPaths(collectionPaths));
-
+		downloadTask.setExternalArchiveFlag(externalArchiveFlag);
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
 		return downloadTask;
@@ -1806,7 +1806,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException {
 		// Validate the requested destination location. Note: we use the configuration
 		// ID of one data object path. At this time, there is no need to validate for
 		// all
@@ -1827,12 +1827,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.getDataObjectPaths().addAll(dataObjectPaths);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
-		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		downloadTask.setStatus(externalArchiveFlag ? HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL : HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setDataSize(getTotalSizeOfDataObjectPaths(dataObjectPaths));
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
+		downloadTask.setExternalArchiveFlag(externalArchiveFlag);
 
 		// Persist the request.
 		dataDownloadDAO.upsertCollectionDownloadTask(downloadTask);
