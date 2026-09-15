@@ -855,7 +855,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								if (collection == null && !downloadTask.getExternalArchiveFlag()) {
 									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
 								}
-
+								logger.info("External download of Collection with elements: " + gson.toJson(collection));
 								if (collection != null) {
 									// Download all files under this collection.
 									downloadItems = downloadCollection(collection,
@@ -922,14 +922,20 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getUserId(), downloadTask.getId(), downloadTask.getExternalArchiveFlag());
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
+								String pathPrefixForMetadata = "";
+								if (downloadTask.getExternalArchiveFlag()) {
+									pathPrefixForMetadata = downloadArchiveLinkBasePath;
+								}
 								downloadItems = new ArrayList<>();
 								for (String path : downloadTask.getCollectionPaths()) {
 									// Get the System generated metadata.
 									HpcSystemGeneratedMetadata metadata = metadataService
-											.getCollectionSystemGeneratedMetadata(path);
+											.getCollectionSystemGeneratedMetadata(pathPrefixForMetadata + path);
 
-									HpcCollection collection = dataManagementService.getFullCollection(path,
-											metadata.getLinkSourcePath());
+									HpcCollection collection = dataManagementService.getFullCollection(pathPrefixForMetadata + path,
+										metadata.getLinkSourcePath());
+ 									logger.info("External download of Collection list with elements: " + gson.toJson(collection));
+
 									if (collection == null) {
 										throw new HpcException("Collection not found",
 												HpcErrorType.INVALID_REQUEST_INPUT);
