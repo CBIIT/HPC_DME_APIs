@@ -936,7 +936,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										metadata.getLinkSourcePath());
  									logger.info("External download of Collection list with elements: " + gson.toJson(collection));
 
-									if (collection == null) {
+									if (collection == null && !downloadTask.getExternalArchiveFlag()) {
 										throw new HpcException("Collection not found",
 												HpcErrorType.INVALID_REQUEST_INPUT);
 									}
@@ -956,7 +956,51 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 									// Update the collection path on the items.
 									items.forEach(item -> item.setCollectionPath(path));
+									// Begin new code
+									if (downloadTask.getExternalArchiveFlag()) {
+										if (downloadItems != null && !downloadItems.isEmpty()) {
+											// Update the path on the items to remove the downloadArchiveLinkBasePath prefix.
+											for (HpcCollectionDownloadTaskItem item : downloadItems) {
+												item.setPath(item.getPath().replaceFirst(downloadArchiveLinkBasePath, ""));
+											}
+										}
+										logger.info("After First invocation downloadItems for collection list = " + gson.toJson(downloadItems));
+										HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(downloadTask.getPath());
+										HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+										String basePath = dataManagementConfiguration.getBasePath();
+										String posixPath = s3ArchiveConfiguration.getPosixPath();
+										String relativePath = downloadTask.getPath().substring(posixPath.length());
+										String downloadPath = basePath + relativePath;
+										// Get the System generated metadata.
+										metadata = metadataService
+											.getCollectionSystemGeneratedMetadata(downloadPath);
 
+										collection = dataManagementService.getFullCollection(downloadPath,
+											metadata.getLinkSourcePath());
+										logger.info("External download of Collection list with elements: " + gson.toJson(collection));
+
+										if (collection == null) {
+											throw new HpcException("Collection not found",
+													HpcErrorType.INVALID_REQUEST_INPUT);
+										}
+										List<HpcCollectionDownloadTaskItem> downloadExternalArchivedItems = downloadCollection(collection,
+												downloadTask.getGlobusDownloadDestination(),
+												downloadTask.getS3DownloadDestination(),
+												downloadTask.getGoogleDriveDownloadDestination(),
+												downloadTask.getGoogleCloudStorageDownloadDestination(),
+												downloadTask.getAsperaDownloadDestination(),
+												downloadTask.getBoxDownloadDestination(),
+												downloadTask.getAppendPathToDownloadDestination(),
+												downloadTask.getAppendCollectionNameToDownloadDestination(),
+												downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
+												excludedPaths, downloadTask.getExternalArchiveFlag());
+											// Combine both the items 1) download items from the external archive and 2) download items from the permanent archive (for files that already have been archived)
+											if(items != null && !items.isEmpty() && downloadExternalArchivedItems != null && !downloadExternalArchivedItems.isEmpty()) {
+												items.addAll(downloadExternalArchivedItems);
+											}
+											logger.info("After second invocation items for collection list = " + gson.toJson(items));
+									// End new code
+									}
 									downloadItems.addAll(items);
 								}
 							}
