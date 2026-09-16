@@ -799,14 +799,19 @@
             if (!subfolderMap[e.subfolder]) {
                 subfolderMap[e.subfolder] = {};
             }
-            subfolderMap[e.subfolder][e.bucketLabel] = formatBytes(e.dataSize || 0);
+            subfolderMap[e.subfolder][e.bucketLabel] = {
+                formatted: formatBytes(e.dataSize || 0),
+                bytes: e.dataSize || 0
+            };
         });
 
         var subfolders = Object.keys(subfolderMap).sort();
         var rows = subfolders.map(function (subfolder) {
             var row = { Subfolder: subfolder };
             bucketLabels.forEach(function (label) {
-                row[label] = subfolderMap[subfolder][label] || '0 B';
+                var data = subfolderMap[subfolder][label];
+                row[label] = data ? data.formatted : '0 B';
+                row[label + ' (Bytes)'] = data ? data.bytes : 0;
             });
             return row;
         });
@@ -815,6 +820,7 @@
             var emptyRow = { Subfolder: '' };
             bucketLabels.forEach(function (label) {
                 emptyRow[label] = '';
+                emptyRow[label + ' (Bytes)'] = '';
             });
             rows.push(emptyRow);
         }
