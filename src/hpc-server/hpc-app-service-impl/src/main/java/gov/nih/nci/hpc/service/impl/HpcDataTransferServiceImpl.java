@@ -1725,7 +1725,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException {
 
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
@@ -1748,11 +1748,13 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
-		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
+		downloadTask.setStatus(externalArchiveFlag ? HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL
+				: HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
+		downloadTask.setExternalArchiveFlag(externalArchiveFlag);
 		Long collectionSize = metadataService.getCollectionSizeForPath(dataManagementProxy.getAbsolutePath(path));
 		downloadTask.setDataSize(collectionSize != null ? collectionSize : 0L);
 		// Persist the request.
@@ -2169,6 +2171,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
 		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
 		taskResult.setDoc(downloadTask.getDoc());
+		taskResult.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
 		// averaging the effective transfer speed
@@ -2393,6 +2396,12 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			dataDownloadDAO.updateDataObjectsDownloadTaskPriority(taskId, priority);
 		}
 		
+	}
+
+	@Override
+	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String downloadTaskId, String archiveLinkRegistrationTaskId) throws HpcException {
+
+		dataDownloadDAO.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTaskId, archiveLinkRegistrationTaskId);
 	}
 
 	@Override
