@@ -291,7 +291,7 @@ jobs:
             pattern="${patterns[$key]}"
             echo "Backing up existing WARs for ${key} (pattern: ${pattern})"
             sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-              "cd '${DIST}' && find . -maxdepth 1 -type f -name '${pattern}' -exec mv {} {}_backup_${timestamp} \; && find . -maxdepth 1 -type f -name '${pattern}_backup_${timestamp}' -exec chown '${SSH_USER}:tomcat' {} +"
+              "cd '${DIST}' && find . -maxdepth 1 -type f -name '${pattern}' -exec mv {} {}_backup_${timestamp} \; && find . -maxdepth 1 -type f -name '${pattern}_backup_${timestamp}' -exec chown '${SSH_USER}:${SSH_USER}' {} +"
           done
 
 
@@ -319,7 +319,7 @@ jobs:
             "$migration_war" \
             "${SSH_USER}@${target_host}:${DIST}/${HPC_SCHEDULER_MIGRATION_WAR_NAME}"
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "cd '${DIST}' && chown '${SSH_USER}:tomcat' '${HPC_SERVER_WAR_NAME}' '${HPC_SCHEDULER_WAR_NAME}' '${HPC_SCHEDULER_MIGRATION_WAR_NAME}'"
+            "cd '${DIST}' && chown '${SSH_USER}:${SSH_USER}' '${HPC_SERVER_WAR_NAME}' '${HPC_SCHEDULER_WAR_NAME}' '${HPC_SCHEDULER_MIGRATION_WAR_NAME}'"
 
       - name: Create WAR symlinks
         shell: bash
