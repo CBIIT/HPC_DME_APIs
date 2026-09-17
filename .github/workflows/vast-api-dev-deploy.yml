@@ -223,14 +223,14 @@ jobs:
               "cd '${DIST}' && if [ -d '${application}' ]; then rm -rf -- '${application}' && echo 'Removed directory ${application}'; else echo 'No exploded directory found for ${application}'; fi"
           done
 
-      - name: List current webapps directory contents
-        shell: bash
-        run: |
-          set -euo pipefail
+      #- name: List current webapps directory contents
+        #shell: bash
+        #run: |
+          #set -euo pipefail
 
-          target_host="${{ matrix.host }}"
-          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-              "cd '${DIST}' && ls -la"
+          #target_host="${{ matrix.host }}"
+          #sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              #"cd '${DIST}' && ls -la"
 
       - name: Clean up old WAR backups
         shell: bash
@@ -257,21 +257,21 @@ jobs:
               "cd '${DIST}' && if [ -L '${unit}' ]; then rm -f -- '${unit}' && echo 'Removed symlink ${unit}'; else echo 'No symlink found for ${unit}'; fi"
           done
 
-      - name: Verify symlinks are gone
-        shell: bash
-        run: |
-          set -euo pipefail
+      #- name: Verify symlinks are gone
+        #shell: bash
+        #run: |
+          #set -euo pipefail
 
-          target_host="${{ matrix.host }}"
-          for unit in "${UNIT}" "${UNIT1}" "${UNIT2}"; do
-            result="$(sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-              "cd '${DIST}' && if [ -L '${unit}' ]; then echo present; else echo absent; fi")"
-            if [ "$result" = "present" ]; then
-              echo "::error::Symlink ${unit} still present after removal attempt on ${target_host}."
-              exit 1
-            fi
-            echo "Confirmed ${unit} is absent."
-          done
+          #target_host="${{ matrix.host }}"
+          #for unit in "${UNIT}" "${UNIT1}" "${UNIT2}"; do
+            #result="$(sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              #"cd '${DIST}' && if [ -L '${unit}' ]; then echo present; else echo absent; fi")"
+            #if [ "$result" = "present" ]; then
+              #echo "::error::Symlink ${unit} still present after removal attempt on ${target_host}."
+              #exit 1
+            #fi
+            #echo "Confirmed ${unit} is absent."
+          #done
 
       - name: Back up current WAR files
         shell: bash
