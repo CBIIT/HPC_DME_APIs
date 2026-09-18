@@ -6,7 +6,7 @@
  * <p>Distributed under the OSI-approved BSD 3-Clause License. See
  * http://ncip.github.com/HPC/LICENSE.txt for details.
  */
-package gov.nih.nci.hpc.integration.s3.impl;
+package gov.nih.nci.hpc.integration.s3.v1.impl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;

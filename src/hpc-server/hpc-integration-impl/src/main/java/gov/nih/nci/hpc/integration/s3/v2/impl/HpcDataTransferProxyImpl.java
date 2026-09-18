@@ -8,10 +8,15 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -35,6 +40,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
@@ -67,6 +78,7 @@ import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.BlockingInputStreamAsyncRequestBody;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.http.HttpStatusCode;
 import software.amazon.awssdk.services.s3.model.BucketLifecycleConfiguration;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
@@ -85,10 +97,12 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.MetadataDirective;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.RestoreObjectRequest;
 import software.amazon.awssdk.services.s3.model.RestoreRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.model.Tier;
 import software.amazon.awssdk.services.s3.model.Transition;
@@ -133,6 +147,11 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	@Value("${hpc.integration.s3.restoreNumDays}")
 	private int restoreNumDays = 2;
 
+	// Flag indicating whether SSL certificate checking is disabled. Intended for
+	// development/testing environments only.
+	@Value("${hpc.integration.s3.disableCertChecking:false}")
+	private Boolean disableCertChecking = false;
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -148,6 +167,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	// Date formatter to format files last-modified date
 	private DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+
+	// Lazily-initialized SSL socket factory that trusts all certificates. Used
+	// only when disableCertChecking is enabled.
+	private SSLSocketFactory trustAllSslSocketFactory = null;
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -309,10 +332,14 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HeadObjectResponse headObjectResponse = s3Connection.getClient(authenticatedToken)
 					.headObject(headObjectRequest).join();
 
+			// Note: The AWS SDK v2 returns user-metadata keys lower-cased, so the lookup below
+			// is performed case-insensitively (matching the SDK v1 getUserMetaDataOf() behavior).
+			// The metadata is only considered "already set" if every expected attribute is present
+			// with a non-blank value.
 			Map<String, String> s3Metadata = headObjectResponse.metadata();
 			boolean metadataAlreadySet = true;
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
-				if (!s3Metadata.containsKey(metadataEntry.getAttribute())) {
+				if (StringUtils.isBlank(getS3MetadataValue(s3Metadata, metadataEntry.getAttribute()))) {
 					metadataAlreadySet = false;
 					break;
 				}
@@ -566,11 +593,33 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			return false;
 
 		} catch (CompletionException e) {
+			if (isNoSuchLifecycleConfiguration(e.getCause())) {
+				// The bucket has no lifecycle configuration, so no tiering policy exists.
+				return false;
+			}
 			throw new HpcException(
 					"[S3] Failed to retrieve life cycle policy on bucket: " + archiveLocation.getFileContainerId()
 							+ "- " + e.getCause().getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
 		}
+	}
+
+	/**
+	 * Determine whether a failure represents a bucket that has no lifecycle
+	 * configuration.
+	 * <p>
+	 * AWS SDK v1 returned {@code null} when a bucket had no lifecycle configuration,
+	 * whereas AWS SDK v2 throws a 404 ({@code NoSuchLifecycleConfiguration})
+	 * instead. This is detected via the HTTP status code rather than by matching on
+	 * the error-code string. A missing bucket (also a 404) is a genuine error and is
+	 * therefore excluded.
+	 *
+	 * @param cause The cause of the failure (typically {@code CompletionException.getCause()}).
+	 * @return true if the cause indicates the bucket has no lifecycle configuration.
+	 */
+	private boolean isNoSuchLifecycleConfiguration(Throwable cause) {
+		return cause instanceof S3Exception s3Exception && !(s3Exception instanceof NoSuchBucketException)
+				&& s3Exception.statusCode() == HttpStatusCode.NOT_FOUND;
 	}
 
 	@Override
@@ -643,18 +692,24 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					.filter(builder -> builder.prefix(prefix)).status(ExpirationStatus.ENABLED).build());
 
 			// Retrieve the configuration
-			GetBucketLifecycleConfigurationResponse bucketLifeCycleConfigurationResponse = s3Connection
-					.getClient(authenticatedToken)
-					.getBucketLifecycleConfiguration(builder -> builder.bucket(archiveLocation.getFileContainerId()))
-					.join();
+			try {
+				GetBucketLifecycleConfigurationResponse bucketLifeCycleConfigurationResponse = s3Connection
+						.getClient(authenticatedToken)
+						.getBucketLifecycleConfiguration(builder -> builder.bucket(archiveLocation.getFileContainerId()))
+						.join();
 
-			// Add the existing rules to the list.
-			if (bucketLifeCycleConfigurationResponse != null) {
+				// Add the existing rules to the list.
 				for (LifecycleRule lifeCycleRule : bucketLifeCycleConfigurationResponse.rules()) {
 					// Rules existing in Cloudian is retrieved with the prefix
 					// set to the same value as filter.
 					// Removing since it fails if this value is provided.
 					lifeCycleRules.add(lifeCycleRule.toBuilder().prefix(null).build());
+				}
+			} catch (CompletionException e) {
+				// If the bucket has no lifecycle configuration yet, proceed with just the new
+				// rule. Otherwise, rethrow to be handled below.
+				if (!isNoSuchLifecycleConfiguration(e.getCause())) {
+					throw e;
 				}
 			}
 
@@ -854,7 +909,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				} else if (googleCloudStorageUploadSource != null) {
 					sourceInputStream = googleCloudStorageUploadSource.getSourceInputStream();
 				} else {
-					sourceInputStream = new URL(url).openStream();
+					sourceInputStream = openSourceInputStream(url);
 				}
 
 				HpcS3ProgressListener listener = new HpcS3ProgressListener(progressListener,
@@ -876,8 +931,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				streamUpload.completionFuture().join();
 
 			} catch (CompletionException | HpcException | IOException e) {
-				logger.error("[S3] Failed to upload from AWS S3 destination: " + e.getCause().getMessage(), e);
-				progressListener.transferFailed(e.getCause().getMessage());
+				Throwable cause = e.getCause() != null ? e.getCause() : e;
+				logger.error("[S3] Failed to " + sourceDestinationLogMessage + ": " + cause.getMessage(), e);
+				progressListener.transferFailed(cause.getMessage());
 
 			}
 
@@ -1047,6 +1103,84 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	}
 
 	/**
+	 * Get a user-metadata value from an S3 head-object metadata map in a
+	 * case-insensitive manner. The AWS SDK v2 returns user-metadata keys
+	 * lower-cased, so a direct case-sensitive lookup can miss attributes.
+	 *
+	 * @param s3Metadata The S3 user-metadata map (may be null).
+	 * @param attribute  The attribute name to look up.
+	 * @return The attribute value, or null if not found.
+	 */
+	private String getS3MetadataValue(Map<String, String> s3Metadata, String attribute) {
+		if (s3Metadata == null || attribute == null) {
+			return null;
+		}
+		return s3Metadata.entrySet().stream().filter(entry -> attribute.equalsIgnoreCase(entry.getKey()))
+				.map(Map.Entry::getValue).findFirst().orElse(null);
+	}
+
+	/**
+	 * Open an input stream to a source URL. If SSL certificate checking is disabled
+	 * (via hpc.integration.s3.disableCertChecking) and the URL is HTTPS, the
+	 * connection is configured to trust all certificates. This is intended for
+	 * development/testing environments only.
+	 *
+	 * @param sourceURL The source URL to open a stream to.
+	 * @return An input stream to the source URL.
+	 * @throws IOException on connection failure.
+	 */
+	private InputStream openSourceInputStream(String sourceURL) throws IOException {
+		URLConnection connection = new URL(sourceURL).openConnection();
+		if (Boolean.TRUE.equals(disableCertChecking) && connection instanceof HttpsURLConnection) {
+			logger.warn(
+					"SSL certificate checking is disabled for the S3 source stream connection. This is not recommended for production environments.");
+			HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
+			httpsConnection.setSSLSocketFactory(getTrustAllSslSocketFactory());
+			httpsConnection.setHostnameVerifier((hostname, session) -> true);
+		}
+
+		return connection.getInputStream();
+	}
+
+	/**
+	 * Get (and lazily create) an SSL socket factory that trusts all certificates.
+	 *
+	 * @return A trust-all SSL socket factory.
+	 * @throws IOException if the SSL context could not be initialized.
+	 */
+	private synchronized SSLSocketFactory getTrustAllSslSocketFactory() throws IOException {
+		if (trustAllSslSocketFactory == null) {
+			try {
+				TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+					@Override
+					public void checkClientTrusted(X509Certificate[] chain, String authType) {
+						// Trust all clients.
+					}
+
+					@Override
+					public void checkServerTrusted(X509Certificate[] chain, String authType) {
+						// Trust all servers.
+					}
+
+					@Override
+					public X509Certificate[] getAcceptedIssuers() {
+						return new X509Certificate[0];
+					}
+				} };
+
+				SSLContext sslContext = SSLContext.getInstance("TLS");
+				sslContext.init(null, trustAllCerts, new SecureRandom());
+				trustAllSslSocketFactory = sslContext.getSocketFactory();
+
+			} catch (NoSuchAlgorithmException | KeyManagementException e) {
+				throw new IOException("Failed to initialize trust-all SSL context", e);
+			}
+		}
+
+		return trustAllSslSocketFactory;
+	}
+
+	/**
 	 * Download a data object to a local file.
 	 *
 	 * @param authenticatedToken  An authenticated token.
@@ -1178,7 +1312,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		CompletableFuture<Void> s3TransferManagerDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
 				// Create source URL and open a connection to it.
-				InputStream sourceInputStream = new URL(sourceURL).openStream();
+				InputStream sourceInputStream = openSourceInputStream(sourceURL);
 				String sourceDestinationLogMessage = "download to " + destinationLocation.getFileContainerId() + ":"
 						+ destinationLocation.getFileId();
 				HpcS3ProgressListener listener = new HpcS3ProgressListener(progressListener,
