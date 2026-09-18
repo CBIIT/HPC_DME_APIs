@@ -33,6 +33,7 @@
 	<xsd:complexType name="HpcLastAccessBarChartEntry">
 		<xsd:sequence>
 			<xsd:element name="subfolder" type="xsd:string" />
+			<xsd:element name="poc" type="xsd:string" minOccurs="0" />
 			<xsd:element name="bucketLabel" type="xsd:string" />
 			<xsd:element name="bucketOrder" type="xsd:int" />
 			<xsd:element name="fileCount" type="xsd:long" />

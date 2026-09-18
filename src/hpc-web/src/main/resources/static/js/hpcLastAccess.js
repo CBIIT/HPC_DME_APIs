@@ -53,6 +53,43 @@
         return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
     }
 
+    function normalizePoc(poc) {
+        return (poc && String(poc).trim()) ? String(poc).trim() : 'N/A';
+    }
+
+    function updatePocSummary(entries) {
+        var summary = $('#barChartPocSummary');
+        if (!summary.length) {
+            return;
+        }
+
+        if (!entries || entries.length === 0 || currentBasePath === 'ALL') {
+            summary.hide().text('');
+            return;
+        }
+
+        summary.text('POC: ' + normalizePoc(entries[0].poc)).show();
+    }
+
+    function buildBarEntryLookup(entries) {
+        var subfolderMap = {};
+        (entries || []).forEach(function (e) {
+            if (!e || !e.subfolder || e.subfolder === 'h') {
+                return;
+            }
+            if (!subfolderMap[e.subfolder]) {
+                subfolderMap[e.subfolder] = { poc: normalizePoc(e.poc), buckets: {} };
+            } else if (!subfolderMap[e.subfolder].poc || subfolderMap[e.subfolder].poc === 'N/A') {
+                subfolderMap[e.subfolder].poc = normalizePoc(e.poc);
+            }
+			subfolderMap[e.subfolder][e.bucketLabel] = {
+			    formatted: formatBytes(e.dataSize || 0),
+			    bytes: e.dataSize || 0
+			};
+        });
+        return subfolderMap;
+    }
+
     // Returns inclusive date range based on stale bucket order.
     function getDateRangeForBucket(bucketOrder) {
         var now = new Date();
@@ -194,6 +231,7 @@
         }
         latestPieEntries = [];
         latestBarEntries = [];
+        $('#barChartPocSummary').hide().text('');
 
         // Clear pie canvas
         var pieCanvas = document.getElementById('stalePieChart');
@@ -354,6 +392,7 @@
     function renderBarChart(data) {
         var entries = (data && data.barChartEntries) ? data.barChartEntries : [];
         latestBarEntries = entries.slice();
+        updatePocSummary(entries);
 
         // Populate BUCKET_LABELS from the response
         entries.forEach(function (e) {
@@ -385,14 +424,21 @@
 
         // Collect unique subfolders (preserving insertion order)
         var subfolderSet = [];
+        var subfolderLabels = [];
         var seenSubs = {};
+        var subfolderPocs = {};
         entries.forEach(function (e) {
             if (e.subfolder && e.subfolder !== 'h' && !seenSubs[e.subfolder]) {
                 seenSubs[e.subfolder] = true;
                 subfolderSet.push(e.subfolder);
+                subfolderPocs[e.subfolder] = normalizePoc(e.poc);
             }
         });
         subfolderSet.sort();
+        subfolderLabels = subfolderSet.map(function (subfolder) {
+            var poc = subfolderPocs[subfolder];
+            return poc && poc !== 'N/A' ? subfolder + ' \u2014 ' + poc : subfolder;
+        });
 
         // Build a lookup: subfolder -> bucketOrder -> { fileCount, dataSize, label }
         var lookup = {};
@@ -425,7 +471,7 @@
         barChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: subfolderSet,
+                labels: subfolderLabels,
                 datasets: datasets
             },
             options: {
@@ -453,7 +499,7 @@
                                 var bucketOrder = responseBucketOrders[context.datasetIndex];
                                 var info = lookup[subfolder][bucketOrder];
                                 return context.dataset.label + ': ' + formatBytes(context.raw) +
-                                    ' (' + info.fileCount + ' files)';
+                                    ' (' + info.fileCount + ' files, POC: ' + normalizePoc(subfolderPocs[subfolder]) + ')';
                             }
                         }
                     }
@@ -649,6 +695,10 @@
         doc.setFontSize(10);
         doc.text('Path: ' + (currentPath || currentBasePath || ''), margin, y);
         y += 14;
+        if (currentBasePath && currentBasePath !== 'ALL' && latestBarEntries.length > 0) {
+            doc.text('POC: ' + normalizePoc(latestBarEntries[0].poc), margin, y);
+            y += 14;
+        }
         doc.text('Generated: ' + now.toLocaleString(), margin, y);
         y += 16;
 
@@ -693,23 +743,14 @@
                 return;
             }
 
-            var subfolderMap = {};
-            latestBarEntries.forEach(function (e) {
-                if (!e || !e.subfolder) {
-                    return;
-                }
-                if (!subfolderMap[e.subfolder]) {
-                    subfolderMap[e.subfolder] = {};
-                }
-                subfolderMap[e.subfolder][e.bucketLabel] = formatBytes(e.dataSize || 0);
-            });
+            var subfolderMap = buildBarEntryLookup(latestBarEntries);
 
             var subfolders = Object.keys(subfolderMap).sort();
             if (subfolders.length === 0) {
                 return;
             }
 
-            var columns = ['Subfolder'].concat(bucketLabels);
+            var columns = ['Subfolder', 'POC'].concat(bucketLabels);
             var tableWidth = pageWidth - (margin * 2);
             var colWidth = tableWidth / columns.length;
             var lineHeight = 11;
@@ -761,7 +802,10 @@
                     if (idx === 0) {
                         return subfolder;
                     }
-                    return subfolderMap[subfolder][col] || '0 B';
+                    if (idx === 1) {
+                        return subfolderMap[subfolder].poc || 'N/A';
+                    }
+                    return subfolderMap[subfolder].buckets[col] || '0 B';
                 });
                 drawRow(row, false);
             });
@@ -791,23 +835,11 @@
                 return latestBarEntries.some(function (e) { return e && e.bucketLabel === label; });
             });
 
-        var subfolderMap = {};
-        latestBarEntries.forEach(function (e) {
-            if (!e || !e.subfolder || e.subfolder === 'h') {
-                return;
-            }
-            if (!subfolderMap[e.subfolder]) {
-                subfolderMap[e.subfolder] = {};
-            }
-            subfolderMap[e.subfolder][e.bucketLabel] = {
-                formatted: formatBytes(e.dataSize || 0),
-                bytes: e.dataSize || 0
-            };
-        });
+        var subfolderMap = buildBarEntryLookup(latestBarEntries);
 
         var subfolders = Object.keys(subfolderMap).sort();
         var rows = subfolders.map(function (subfolder) {
-            var row = { Subfolder: subfolder };
+            var row = { Subfolder: subfolder, POC: subfolderMap[subfolder].poc || 'N/A' };
             bucketLabels.forEach(function (label) {
                 var data = subfolderMap[subfolder][label];
                 row[label] = data ? data.formatted : '0 B';
@@ -817,7 +849,7 @@
         });
 
         if (rows.length === 0) {
-            var emptyRow = { Subfolder: '' };
+            var emptyRow = { Subfolder: '', POC: '' };
             bucketLabels.forEach(function (label) {
                 emptyRow[label] = '';
                 emptyRow[label + ' (Bytes)'] = '';
