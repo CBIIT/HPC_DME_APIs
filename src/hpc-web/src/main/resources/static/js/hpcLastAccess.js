@@ -82,10 +82,10 @@
             } else if (!subfolderMap[e.subfolder].poc || subfolderMap[e.subfolder].poc === 'N/A') {
                 subfolderMap[e.subfolder].poc = normalizePoc(e.poc);
             }
-			subfolderMap[e.subfolder][e.bucketLabel] = {
-			    formatted: formatBytes(e.dataSize || 0),
-			    bytes: e.dataSize || 0
-			};
+            subfolderMap[e.subfolder].buckets[e.bucketLabel] = {
+                formatted: formatBytes(e.dataSize || 0),
+                bytes: e.dataSize || 0
+            };
         });
         return subfolderMap;
     }
@@ -805,7 +805,7 @@
                     if (idx === 1) {
                         return subfolderMap[subfolder].poc || 'N/A';
                     }
-                    return subfolderMap[subfolder].buckets[col] || '0 B';
+                    return (subfolderMap[subfolder].buckets[col] || {}).formatted || '0 B';
                 });
                 drawRow(row, false);
             });
@@ -841,7 +841,7 @@
         var rows = subfolders.map(function (subfolder) {
             var row = { Subfolder: subfolder, POC: subfolderMap[subfolder].poc || 'N/A' };
             bucketLabels.forEach(function (label) {
-                var data = subfolderMap[subfolder][label];
+                var data = subfolderMap[subfolder].buckets[label];
                 row[label] = data ? data.formatted : '0 B';
                 row[label + ' (Bytes)'] = data ? data.bytes : 0;
             });
