@@ -768,8 +768,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return responseDTO;
 	}
 
+		@Override
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest) throws HpcException {
+		return downloadDataObjectFromExternalSource(path, downloadRequest, securityService.getRequestInvoker().getNciAccount().getUserId(), null);
+	}
+
 	@Override
-	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest, String userId, String collectionDownloadTaskId)
 			throws HpcException {
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -820,7 +825,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Build temporary archive link path for external download
 		downloadArchiveLinkPath = downloadArchiveLinkBasePath + path;
-
 		// Serialize registration, task creation and failure cleanup per temporaryArchivelinkPath.
 		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath);
 		try {
@@ -840,7 +844,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				// Download Step
 				try {
 					boolean externalArchiveFlag = true;
-					downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
+					if(collectionDownloadTaskId == null){
+ 						downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
+					} else {
+						downloadResponse = downloadDataObjectFromExternalSource(downloadArchiveLinkPath, downloadRequest, userId, collectionDownloadTaskId);
+					}
 				} catch (HpcException e) {
 					logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
 					boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
