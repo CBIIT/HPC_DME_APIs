@@ -2276,7 +2276,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							path, dataObjectDownloadRequest, null, userId, null, false, collectionDownloadTaskId, externalArchiveFlag);
 				} else {
 					dataObjectDownloadResponse = dataManagementBusService.downloadDataObjectFromExternalSource(
-							path, dataObjectDownloadRequest, userId, collectionDownloadTaskId);
+							path.replaceFirst(downloadArchiveLinkBasePath, ""), dataObjectDownloadRequest, userId, collectionDownloadTaskId);
 				}
 
 			downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
