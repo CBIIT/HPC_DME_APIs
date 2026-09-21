@@ -181,6 +181,7 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
+import com.google.gson.Gson;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -249,6 +250,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -794,7 +796,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		downloadResponse = downloadExternal(path, downloadRequest, null, securityService.getRequestInvoker().getNciAccount().getUserId(), null, false, null);
+		downloadResponse = downloadDataObject(path, downloadRequest, true);
 
 		return downloadResponse;
 	}
@@ -1939,6 +1941,14 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcDataObjectDownloadResponseDTO downloadExternal(String path, HpcDownloadRequestDTO downloadRequest,
 			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
 			String collectionDownloadTaskId) throws HpcException {
+		logger.info("2172: downloadExternal called with path: " + path);
+		logger.info("2172: downloadExternal called with retryTaskId: " + retryTaskId);
+		logger.info("2172: downloadExternal called with userId: " + userId);
+		logger.info("2172: downloadExternal called with retryUserId: " + retryUserId);
+		logger.info("2172: downloadExternal called with completionEvent: " + completionEvent);
+		logger.info("2172: downloadExternal called with collectionDownloadTaskId: " + collectionDownloadTaskId);
+		logger.info("2172: downloadExternal called with downloadRequest: " + gson.toJson(downloadRequest));
+
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
