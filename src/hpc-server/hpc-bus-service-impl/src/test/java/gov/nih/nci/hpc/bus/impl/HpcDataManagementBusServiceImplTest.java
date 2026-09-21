@@ -599,7 +599,7 @@ class HpcDataManagementBusServiceImplTest {
 
         var s3ArchiveConfiguration = buildExternalDownloadConfiguration("dm-config", "s3-config", "/external",
                 "/base", "bucket-a", "archive-object-");
-        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(path)).thenReturn(s3ArchiveConfiguration);
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(anyString())).thenReturn(s3ArchiveConfiguration);
         when(dataManagementService.getDataManagementConfiguration("dm-config")).thenReturn(buildDataManagementConfiguration("/base"));
         when(dataManagementService.getDataObject(permanentArchiveLinkPath)).thenReturn(null);
         when(dataManagementService.getDataObject(temporaryArchiveLinkPath)).thenReturn(null);
