@@ -847,7 +847,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					if(collectionDownloadTaskId == null){
  						downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
 					} else {
-						downloadResponse = downloadDataObjectFromExternalSource(downloadArchiveLinkPath, downloadRequest, userId, collectionDownloadTaskId);
+ 						downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, null, userId,
+							 null, false, collectionDownloadTaskId, externalArchiveFlag);
 					}
 				} catch (HpcException e) {
 					logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
