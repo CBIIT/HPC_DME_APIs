@@ -145,6 +145,11 @@ def main(argv=None):
                         help="Skip SSL certificate verification for Trino and S3 connections. Env: DME_INSECURE")
     insecure_group.add_argument("--no-insecure", dest="insecure", action="store_false",
                         help="Verify SSL certificates even if DME_INSECURE is set in the environment.")
+    no_auth_group = parser.add_mutually_exclusive_group()
+    no_auth_group.add_argument("--no-auth", dest="no_auth", action="store_true", default=env_flag("DME_NO_AUTH"),
+                        help="Skip Trino authentication entirely (no password sent, no prompt). Env: DME_NO_AUTH")
+    no_auth_group.add_argument("--auth", dest="no_auth", action="store_false",
+                        help="Use Trino authentication even if DME_NO_AUTH is set in the environment.")
     stacktrace_group = parser.add_mutually_exclusive_group()
     stacktrace_group.add_argument("--stacktrace", dest="stacktrace", action="store_true", default=env_flag("DME_STACKTRACE"),
                         help="Print full stack trace on errors. Env: DME_STACKTRACE")
@@ -176,7 +181,14 @@ def main(argv=None):
     if args.insecure:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    password = args.password or getpass.getpass(prompt=f"Trino password for {args.user}: ")
+    # Prompt only when no password was provided at all. An explicitly set
+    # (even empty) DME_TRINO_PASSWORD / --password is used as-is, so insecure
+    # setups with an empty password run non-interactively (e.g. cron).
+    # When --no-auth is set, skip authentication entirely (no prompt).
+    if args.no_auth:
+        password = None
+    else:
+        password = args.password if args.password is not None else getpass.getpass(prompt=f"Trino password for {args.user}: ")
 
     interval_literal = parse_since_arg(args.since)
     where_view_path = ""
@@ -196,16 +208,19 @@ def main(argv=None):
     GROUP BY path.path
     """
 
-    conn = connect(
+    connect_kwargs = dict(
         host=args.host,
         port=args.port,
         user=args.user,
-        auth=BasicAuthentication(args.user, password),
         http_scheme="https",
         verify=(not args.insecure),
         catalog=CATALOG,
         schema=SCHEMA,
     )
+    if not args.no_auth:
+        connect_kwargs["auth"] = BasicAuthentication(args.user, password)
+
+    conn = connect(**connect_kwargs)
     cursor = conn.cursor()
 
     # Execute the query; cursor now holds (path, latest_time) rows

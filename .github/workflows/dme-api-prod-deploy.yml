@@ -1,0 +1,413 @@
+name: Deploy DME API Prod
+
+permissions:
+  contents: read
+  actions: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        type: choice
+        default: prod
+        options:
+          - prod
+      build_run_number:
+        description: "Build workflow run number that produced DME API artifacts"
+        required: false
+        type: string
+        default: "latest"
+
+      fsdsgl_dmeap01p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap01p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdsgl_dmeap02p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap02p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdmel_dsapi03p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi03p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false 
+      fsdmel_dsapi04p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi04p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdmel_dsapi05p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi05p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdmel_dsapi06p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi06p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false 
+      fsdsgl_dmeap07p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap07p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false  
+      fsdsgl_dmeap08p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap08p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+
+run-name: "Deploy DME API Migration in Prod from build #${{ inputs.build_run_number || 'latest' }} to ${{ inputs.environment }}"
+
+jobs:
+  prepare:
+    name: Prepare selected server matrix
+    runs-on:
+      group: cbiit-global-runners
+      #labels: [self-hosted]
+      #labels: [nonprod-org-runner]
+      labels: [prod-org-runner]
+    outputs:
+      matrix: ${{ steps.selected_servers.outputs.matrix }}
+      use_specific_run: ${{ steps.check_build.outputs.use_specific_run }}
+    steps:
+      - name: Check build run number input
+        id: check_build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          input="${{ inputs.build_run_number }}"
+
+          if [ -z "$input" ] || [ "$input" = "latest" ]; then
+            echo "No specific build_run_number provided; the download step will use the most recent successful build-prod-api.yml run automatically."
+            echo "use_specific_run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Using explicitly provided build_run_number: ${input}"
+            echo "use_specific_run=true" >> "$GITHUB_OUTPUT"
+          fi 
+
+      - name: Build selected server matrix
+        id: selected_servers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          matrix='{"include":['
+          separator=''
+
+          add_server() {
+            local name="$1"
+            local host="$2"
+            matrix="${matrix}${separator}{\"name\":\"${name}\",\"host\":\"${host}\"}"
+            separator=','
+          }
+
+          if [ "${{ inputs.fsdsgl_dmeap01p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap01p.ncifcrf.gov" "fsdsgl-dmeap01p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap02p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap02p.ncifcrf.gov" "fsdsgl-dmeap02p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi03p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi03p.ncifcrf.gov" "fsdmel-dsapi03p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi04p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi04p.ncifcrf.gov" "fsdmel-dsapi04p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi05p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi05p.ncifcrf.gov" "fsdmel-dsapi05p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi06p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi06p.ncifcrf.gov" "fsdmel-dsapi06p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap07p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap07p.ncifcrf.gov" "fsdsgl-dmeap07p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap08p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap08p.ncifcrf.gov" "fsdsgl-dmeap08p.ncifcrf.gov"
+          fi
+
+
+          matrix="${matrix}]}"
+
+          if [ "$matrix" = '{"include":[]}' ]; then
+            echo "Select at least one deployment server checkbox." >&2
+            exit 1
+          fi
+
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "Selected server matrix: ${matrix}"
+
+  deploy:
+    name: Deploy to ${{ matrix.name }}
+    needs: prepare
+    runs-on:
+      group: cbiit-global-runners
+      #labels: [self-hosted]
+      #labels: [nonprod-org-runner]
+      labels: [prod-org-runner]
+    environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    env:
+      #TOMCAT_HOME: /var/lib/tomcat
+      REMOTE_TOMCAT: tomcat
+      MAX_WAIT_TIME: 20
+      APP: hpc-server
+      APP1: hpc-scheduler
+      #APP2: hpc-scheduler-migration
+      DIST: /var/lib/tomcat/webapps
+      UNIT: hpc-server.war
+      UNIT1: hpc-scheduler.war
+      #UNIT2: hpc-scheduler-migration.war
+      LOG_DIR: /var/log/tomcat
+      LOG_DIR_BK: /opt/hpc-server
+      SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+      RUNNER_SSH_USER: githubuser
+    steps:
+      - name: Download build artifact (latest successful build)
+        if: needs.prepare.outputs.use_specific_run == 'false'
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: dme-api-prod-build.yml
+          workflow_conclusion: success
+          name: dme-prod-hpc-api-artifacts
+          path: artifacts
+      - name: Download build artifact (specific run)
+        if: needs.prepare.outputs.use_specific_run == 'true'
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: dme-api-prod-build.yml
+          run_number: ${{ inputs.build_run_number }}
+          name: dme-prod-hpc-api-artifacts
+          path: artifacts
+
+      - name: List downloaded artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Downloaded artifacts:"
+          find artifacts -type f | sort
+
+      - name: Set WAR file environment
+        id: wars
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          set_war_environment() {
+            local variable_prefix="$1"
+            local artifact_directory="$2"
+            local file_pattern="$3"
+            local -a matches
+
+            mapfile -t matches < <(
+              find artifacts -type f -path "*/${artifact_directory}/target/${file_pattern}" | sort
+            )
+
+            if [ "${#matches[@]}" -ne 1 ]; then
+              echo "Expected exactly one ${file_pattern} in ${artifact_directory}/target; found ${#matches[@]}." >&2
+              printf '%s\n' "${matches[@]}" >&2
+              exit 1
+            fi
+
+            local war_path="${matches[0]}"
+            local war_name
+            war_name="$(basename "$war_path")"
+
+            echo "${variable_prefix}_WAR_PATH=${war_path}" >> "$GITHUB_ENV"
+            echo "${variable_prefix}_WAR_NAME=${war_name}" >> "$GITHUB_ENV"
+            echo "${variable_prefix}_WAR_PATH=${war_path}"
+            echo "${variable_prefix}_WAR_NAME=${war_name}"
+          }
+
+          set_war_environment HPC_SERVER hpc-ws-rs-impl 'hpc-server-*.war'
+          set_war_environment HPC_SCHEDULER hpc-scheduler 'hpc-scheduler-[0-9]*.war'
+
+      - name: Set up SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          if [ -z "${SSH_USER:-}" ]; then
+            echo "DEPLOY_SSH_USER secret is required." >&2
+            exit 1
+          fi
+
+          echo "Target host: ${target_host}"
+          echo "Remote deploy user: ${SSH_USER}"
+          echo "Runner SSH user: ${RUNNER_SSH_USER}"
+
+          #sudo -iu "$RUNNER_SSH_USER" bash -lc 'mkdir -p ~/.ssh && chmod 700 ~/.ssh'
+
+          #echo "Scanning host key for ${target_host}..."
+          #sudo -iu "$RUNNER_SSH_USER" bash -lc "ssh-keyscan -T 15 -H '$target_host' >> ~/.ssh/known_hosts"
+
+          #echo "Testing SSH connection as ${RUNNER_SSH_USER}..."
+          sudo -iu "$RUNNER_SSH_USER" ssh -i"/home/${RUNNER_SSH_USER}/.ssh/id_rsa" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=no \
+            "${SSH_USER}@${target_host}" \
+            "echo SSH connection OK"
+
+      - name: Stop Tomcat 
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "sudo systemctl stop '${REMOTE_TOMCAT}'"
+          echo "Tomcat stopped on ${target_host}."
+
+      - name: Remove applications directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          target_host="${{ matrix.host }}"
+
+          for application in ROOT "${APP1}"; do
+            echo "Checking exploded directory: ${application}"
+            sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && if [ -d '${application}' ]; then rm -rf -- '${application}' && echo 'Removed directory ${application}'; else echo 'No exploded directory found for ${application}'; fi"
+          done
+
+      - name: List current webapps directory contents
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && ls -la"
+
+      - name: Clean up old WAR backups
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "set -e; cd '${DIST}'; \
+            rm -f hpc-server-[0-9]*.war_backup* hpc-server-[0-9]*.war.backup*; \
+            rm -f hpc-scheduler-[0-9]*.war_backup* hpc-scheduler-[0-9]*.war.backup*;"
+
+      - name: Remove existing WAR symlinks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          for unit in "${UNIT}" "${UNIT1}"; do
+            echo "Checking symlink: ${unit}"
+            sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && if [ -L '${unit}' ]; then rm -f -- '${unit}' && echo 'Removed symlink ${unit}'; else echo 'No symlink found for ${unit}'; fi"
+          done
+
+      - name: Verify symlinks are gone
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          for unit in "${UNIT}" "${UNIT1}"; do
+            result="$(sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && if [ -L '${unit}' ]; then echo present; else echo absent; fi")"
+            if [ "$result" = "present" ]; then
+              echo "::error::Symlink ${unit} still present after removal attempt on ${target_host}."
+              exit 1
+            fi
+            echo "Confirmed ${unit} is absent."
+          done
+
+      - name: Back up current WAR files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          timestamp=$(date +%Y%m%d.%H%M)
+
+          declare -A patterns=(
+            [hpc-server]="${APP}-*.war"
+            [hpc-scheduler]="${APP1}-[0-9]*.war"
+          )
+  
+          for key in "${APP}" "${APP1}"; do
+            pattern="${patterns[$key]}"
+            echo "Backing up existing WARs for ${key} (pattern: ${pattern})"
+            sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+              "cd '${DIST}' && find . -maxdepth 1 -type f -name '${pattern}' -exec mv {} {}_backup_${timestamp} \; && find . -maxdepth 1 -type f -name '${pattern}_backup_${timestamp}' -exec chown '${SSH_USER}:tomcat' {} +"
+          done
+
+
+      - name: Copy new WARs to deployment directory
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          server_war="${GITHUB_WORKSPACE}/${HPC_SERVER_WAR_PATH}"
+          scheduler_war="${GITHUB_WORKSPACE}/${HPC_SCHEDULER_WAR_PATH}"
+
+          sudo -iu "$RUNNER_SSH_USER" test -r "$server_war"
+          sudo -iu "$RUNNER_SSH_USER" test -r "$scheduler_war"
+
+          sudo -iu "$RUNNER_SSH_USER" scp -o IdentitiesOnly=yes -p \
+            "$server_war" \
+            "${SSH_USER}@${target_host}:${DIST}/${HPC_SERVER_WAR_NAME}"
+          sudo -iu "$RUNNER_SSH_USER" scp -o IdentitiesOnly=yes -p \
+            "$scheduler_war" \
+            "${SSH_USER}@${target_host}:${DIST}/${HPC_SCHEDULER_WAR_NAME}"
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "cd '${DIST}' && chown '${SSH_USER}:tomcat' '${HPC_SERVER_WAR_NAME}' '${HPC_SCHEDULER_WAR_NAME}'"
+
+      - name: Create WAR symlinks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "set -e; cd '${DIST}'; ln -s '${HPC_SERVER_WAR_NAME}' '${UNIT}'; ln -s '${HPC_SCHEDULER_WAR_NAME}' '${UNIT1}'"
+
+      - name: Archive Tomcat logs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+          backup_name="backup.$(date +%m-%d-%Y.%H%M%S)"
+
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "set -e; mkdir -p '${LOG_DIR_BK}/backuplogs/${backup_name}'; cd '${LOG_DIR}'; tar -czf '${LOG_DIR_BK}/backuplogs/${backup_name}/hpc-server.tgz' hpc-server/; echo 'Log files archived to ${LOG_DIR_BK}/backuplogs/${backup_name}'; rm -f hpc-server/hpc-server.log.*"
+
+      - name: Start Tomcat and wait for service
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "set -e; sudo systemctl start '${REMOTE_TOMCAT}'; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
