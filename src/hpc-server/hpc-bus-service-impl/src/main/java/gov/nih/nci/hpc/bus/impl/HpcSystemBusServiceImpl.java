@@ -2271,8 +2271,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		try {
 
 			HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = null;
-				dataObjectDownloadResponse = dataManagementBusService.downloadDataObject(
-						path, dataObjectDownloadRequest, null, userId, null, false, collectionDownloadTaskId, externalArchiveFlag);
+				if(!externalArchiveFlag) {
+					dataObjectDownloadResponse = dataManagementBusService.downloadDataObject(
+							path, dataObjectDownloadRequest, null, userId, null, false, collectionDownloadTaskId, externalArchiveFlag);
+				} else {
+					dataObjectDownloadResponse = dataManagementBusService.downloadDataObjectFromExternalSource(
+							path, dataObjectDownloadRequest, userId, collectionDownloadTaskId);
+				}
 
 			downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
