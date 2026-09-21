@@ -768,13 +768,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return responseDTO;
 	}
 
-		@Override
-	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest) throws HpcException {
-		return downloadDataObjectFromExternalSource(path, downloadRequest, securityService.getRequestInvoker().getNciAccount().getUserId(), null);
-	}
-
 	@Override
-	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest, String userId, String collectionDownloadTaskId)
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException {
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -786,8 +781,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
-		String downloadArchiveLinkPath = null;
-		String relativeFilePath = null;
 
 		// Find the matching S3 data transfer configuration for the external path
 		try {
@@ -800,77 +793,11 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		String basePath = dataManagementConfiguration.getBasePath();
-		String posixPath = s3ArchiveConfiguration.getPosixPath();
-		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
-		String archiveObjectId = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId();
 
-		try {
-			relativeFilePath = path.substring(posixPath.length());
-			if(StringUtils.isEmpty(relativeFilePath)) {
-				logger.warn("Path after POSIX prefix is empty for path: " + path);
-				throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-			}
-		} catch (HpcException e) {
-			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
-			throw new HpcException("Failed path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Check if a permanent archive link already exists for this file path in irods
-		String permanentArchiveLinkPath = basePath + relativeFilePath;
-		if(dataManagementService.getDataObject(permanentArchiveLinkPath) != null) {
-			throw new HpcException("Permanent or default Archive Link for " + relativeFilePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		// Build temporary archive link path for external download
-		downloadArchiveLinkPath = downloadArchiveLinkBasePath + path;
-		// Serialize registration, task creation and failure cleanup per temporaryArchivelinkPath.
-		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath);
-		try {
-			synchronized (externalArchivePathLock) {
-				// Registration Step
-				try {
-					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
-					if(temporaryArchiveLinkDoesNotExist) {
-						String s3Path = archiveObjectId + relativeFilePath;
-						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), s3Path, bucket);
-					}
-				} catch (HpcException e) {
-					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
-					throw new HpcException("Failed the Registration step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-
-				// Download Step
-				try {
-					boolean externalArchiveFlag = true;
-					if(collectionDownloadTaskId == null){
- 						downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, externalArchiveFlag);
-					} else {
- 						downloadResponse = downloadDataObject(downloadArchiveLinkPath, downloadRequest, null, userId,
-							 null, false, collectionDownloadTaskId, externalArchiveFlag);
-					}
-				} catch (HpcException e) {
-					logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
-					boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
-					if (archiveLinkDeleted) {
-						logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
-					} else {
-						logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
-					}
-					throw new HpcException("Failed to create download task for external download for path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-				}
-			}
-		} catch (HpcException e) {
-			logger.error("Failed external download coordination for path: " + path + ". " + e.getMessage(), e);
-			throw new HpcException("Failed the Registration/Download step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-		} finally {
-			HpcExternalArchiveLinkLockManager.deletePathLock(downloadArchiveLinkPath);
-		}
+		downloadResponse = downloadExternal(path, downloadRequest, null, securityService.getRequestInvoker().getNciAccount().getUserId(), null, false, null);
 
 		return downloadResponse;
 	}
-
 
 	@Override
 	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
@@ -1972,6 +1899,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Append path/collection-name is not applicable", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
+		if (externalArchiveFlag) {
+			 return downloadExternal(path, downloadRequest, retryTaskId, userId, retryUserId, completionEvent, collectionDownloadTaskId);
+		}
+
 		// Validate the following:
 		// 1. Path is not empty.
 		// 2. Data Object exists.
@@ -1985,11 +1916,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 						|| downloadRequest.getBoxDownloadDestination() != null,
 				false);
 
-		if (externalArchiveFlag) {
-			// Construct the user inputed path by replacing the downloadArchiveLinkBasePath with empty string
-			path = path.replaceFirst(downloadArchiveLinkBasePath, "");
-			logger.info("In downloadDataObject before download: path = " + path + ", externalArchiveFlag = " + externalArchiveFlag);
-		}
 
 		// Download the data object.
 		HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
@@ -2008,6 +1934,106 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
 				downloadResponse.getDownloadTaskId(), null, downloadResponse.getRestoreInProgress(),
 				metadata.getSourceSize());
+	}
+
+	public HpcDataObjectDownloadResponseDTO downloadExternal(String path, HpcDownloadRequestDTO downloadRequest,
+			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
+			String collectionDownloadTaskId) throws HpcException {
+		if (downloadRequest == null) {
+			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		// Validate that the downloadArchiveLinkBasePath property is configured, as it is required for saving the temporary archive links for external downloads.
+		if (StringUtils.isEmpty(downloadArchiveLinkBasePath)) {
+			logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
+			throw new HpcException("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		HpcDataObjectDownloadResponseDTO downloadResponseDTO = new HpcDataObjectDownloadResponseDTO();
+		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
+		String downloadArchiveLinkPath = null;
+		String relativeFilePath = null;
+
+		// Find the matching S3 data transfer configuration for the external path
+		try {
+			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
+			if(s3ArchiveConfiguration == null) {
+				logger.warn("No matching S3 archive configuration found for external download path: " + path);
+				throw new HpcException("No matching S3 archive configuration found for external download path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} catch (HpcException e) {
+			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+		String basePath = dataManagementConfiguration.getBasePath();
+		String posixPath = s3ArchiveConfiguration.getPosixPath();
+		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+		String archiveObjectId = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId();
+
+		try {
+			relativeFilePath = path.substring(posixPath.length());
+			if(StringUtils.isEmpty(relativeFilePath)) {
+				logger.warn("Path after POSIX prefix is empty for path: " + path);
+				throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} catch (HpcException e) {
+			logger.error("Failed Path validation for external download: " + e.getMessage(), e);
+			throw new HpcException("Failed path validation for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Check if a permanent archive link already exists for this file path in irods
+		String permanentArchiveLinkPath = basePath + relativeFilePath;
+		if(dataManagementService.getDataObject(permanentArchiveLinkPath) != null) {
+			throw new HpcException("Permanent or default Archive Link for " + relativeFilePath + " already exists. The Archive Link could have been created for a Migration.", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Build temporary archive link path for external download
+		downloadArchiveLinkPath = downloadArchiveLinkBasePath + path;
+		// Serialize registration, task creation and failure cleanup per temporaryArchivelinkPath.
+		Object externalArchivePathLock = HpcExternalArchiveLinkLockManager.getPathLock(downloadArchiveLinkPath);
+		try {
+			synchronized (externalArchivePathLock) {
+				// Registration Step
+				try {
+					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
+					if(temporaryArchiveLinkDoesNotExist) {
+						String s3Path = archiveObjectId + relativeFilePath;
+						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), s3Path, bucket);
+					}
+				} catch (HpcException e) {
+					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
+					throw new HpcException("Failed the Registration step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				HpcSystemGeneratedMetadata metadata = validateDataObjectDownloadRequest(downloadArchiveLinkPath,
+						downloadRequest.getGoogleDriveDownloadDestination() != null
+								|| downloadRequest.getGoogleCloudStorageDownloadDestination() != null
+								|| downloadRequest.getAsperaDownloadDestination() != null
+								|| downloadRequest.getBoxDownloadDestination() != null,
+						false);
+				// Download the data object.
+				HpcDataObjectDownloadResponse downloadResponse = dataTransferService.downloadDataObject(path,
+						metadata.getArchiveLocation(), downloadRequest.getGlobusDownloadDestination(),
+						downloadRequest.getS3DownloadDestination(), downloadRequest.getGoogleDriveDownloadDestination(),
+						downloadRequest.getGoogleCloudStorageDownloadDestination(),
+						downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
+						downloadRequest.getSynchronousDownloadFilter(), metadata.getDataTransferType(),
+						metadata.getConfigurationId(), metadata.getS3ArchiveConfigurationId(), retryTaskId, userId, retryUserId,
+						completionEvent, collectionDownloadTaskId,
+						metadata.getSourceSize() != null ? metadata.getSourceSize() : 0, metadata.getDataTransferStatus(),
+						metadata.getDeepArchiveStatus(),
+						true );
+				// Construct and return a DTO.
+				downloadResponseDTO = toDownloadResponseDTO(downloadResponse.getDestinationLocation(), downloadResponse.getDestinationFile(),
+						downloadResponse.getDownloadTaskId(), null, downloadResponse.getRestoreInProgress(),
+						metadata.getSourceSize());
+			}
+
+		} catch (HpcException e) {
+			logger.error("Failed external download coordination for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Failed the Registration/Download step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		} finally {
+			HpcExternalArchiveLinkLockManager.deletePathLock(downloadArchiveLinkPath);
+		}
+		return downloadResponseDTO;
 	}
 
 	@Override
