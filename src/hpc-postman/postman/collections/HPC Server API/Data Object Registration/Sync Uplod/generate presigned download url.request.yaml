@@ -1,0 +1,26 @@
+$kind: http-request
+name: Generate Pre-Signed Download URL
+method: POST
+url: "{{baseUrl}}{{basePath}}/dataObject/{{path}}/generateDownloadRequestURL"
+scripts:
+  - type: beforeRequest
+    code: "pm.variables.set('path', pm.collectionVariables.get('lastSyncUploadPath')); "
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      const json = pm.response.json();
+      const url = json.downloadRequestURL || json.downloadURL || json.presignedUrl || json.url || json.downloadUrl;
+      if (url) {
+          pm.collectionVariables.set('presignedDownloadUrl', url);
+      }
+    language: text/javascript
+order: 3599878279079710
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "expirationHours": 24
+    }
