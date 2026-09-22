@@ -984,7 +984,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public String registerDataObjects(String userId, String uiURL,
-			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests, boolean externalArchiveFlag) throws HpcException {
+			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests) throws HpcException {
 		// Input validation
 		if (StringUtils.isEmpty(userId)) {
 			throw new HpcException("Null / Empty userId in registration list request",
@@ -1004,7 +1004,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED);
 		bulkDataObjectRegistrationTask
 				.setUploadMethod(toDataTransferUploadMethod(dataObjectRegistrationRequests.values().iterator().next()));
-		bulkDataObjectRegistrationTask.setExternalArchiveFlag(externalArchiveFlag);
 
 		// Iterate through the individual data object registration requests and add them
 		// as items to the
