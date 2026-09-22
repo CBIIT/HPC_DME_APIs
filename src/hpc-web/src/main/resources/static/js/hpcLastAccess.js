@@ -57,15 +57,6 @@
         return (poc && String(poc).trim()) ? String(poc).trim() : 'N/A';
     }
 
-    function updatePocSummary(entries) {
-        var summary = $('#barChartPocSummary');
-        if (!summary.length) {
-            return;
-        }
-
-        summary.hide().text('');
-    }
-
     function buildBarEntryLookup(entries) {
         var subfolderMap = {};
         (entries || []).forEach(function (e) {
@@ -226,7 +217,6 @@
         }
         latestPieEntries = [];
         latestBarEntries = [];
-        $('#barChartPocSummary').hide().text('');
 
         // Clear pie canvas
         var pieCanvas = document.getElementById('stalePieChart');
@@ -387,7 +377,6 @@
     function renderBarChart(data) {
         var entries = (data && data.barChartEntries) ? data.barChartEntries : [];
         latestBarEntries = entries.slice();
-        updatePocSummary(entries);
         var showPocInBarChart = currentBasePath === 'ALL';
 
         // Populate BUCKET_LABELS from the response
