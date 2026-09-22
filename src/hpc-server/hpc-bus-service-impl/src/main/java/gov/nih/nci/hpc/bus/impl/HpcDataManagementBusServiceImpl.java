@@ -906,7 +906,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
 		boolean externalArchiveFlag = true;
 		try{
-			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, externalArchiveFlag, userId);
+			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, userId);
 		} catch (HpcException e) {
 			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1585,13 +1585,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	@Override
 	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
 			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException {
-		return registerDataObjects(bulkDataObjectRegistrationRequest, false, securityService.getRequestInvoker().getNciAccount().getUserId());
+		return registerDataObjects(bulkDataObjectRegistrationRequest, securityService.getRequestInvoker().getNciAccount().getUserId());
 	}
 
 	@Override
 	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
-			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, boolean externalArchiveFlag, String userId) throws HpcException {
-		// Input validation.
+			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, String userId) throws HpcException {
 		if (bulkDataObjectRegistrationRequest == null
 				|| (bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().isEmpty()
 						&& bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().isEmpty())) {
@@ -1627,25 +1626,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		validateDataObjectRegistrationDestinationPaths(
 				bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems());
-
-		if (externalArchiveFlag) {
-			// Validate and build the external archive link paths for the registration items.
-			try {
-				// If all links already exist as permanent archive link or there are no files in the path then return null response
-				bulkDataObjectRegistrationRequest = validatePermanentArchiveLinks(bulkDataObjectRegistrationRequest);
-				if (bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().isEmpty()) {
-					return null;
-				}
-				// If all links already exist or they are temporary archive links, then return the response DTO w/ no registration items to process.
-				bulkDataObjectRegistrationRequest = validateAndBuildTemporaryArchiveLinks(bulkDataObjectRegistrationRequest);
-				if (bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().isEmpty()) {
-					responseDTO.setTaskId(null);
-					return responseDTO;
-				}
-			} catch (Exception e) {
-				throw e;
-			}
-		}
 
 		// Break the DTO into a map of registration requests and ensure no duplication
 		// of registration paths.
@@ -1687,7 +1667,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Submit a data objects registration task and return a response DTO.
 		responseDTO.setTaskId(dataManagementService.registerDataObjects(userId,
-				bulkDataObjectRegistrationRequest.getUiURL(), dataObjectRegistrationRequests, externalArchiveFlag));
+				bulkDataObjectRegistrationRequest.getUiURL(), dataObjectRegistrationRequests));
 
 		return responseDTO;
 	}
