@@ -901,6 +901,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		// Build the DirectoryScanRegistrationItem
 		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
 		registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
+		registrationBulkRequestDTO.setDryRun(true);
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
 		boolean externalArchiveFlag = true;
 		try{
@@ -909,7 +910,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
 			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-		if(registrationResponseDTO == null) {
+		/*if(registrationResponseDTO == null) {
 			logger.info("All the archive links are Permanent Archive Links, we will skip Registration and complete download");
 			downloadTask.setExternalArchiveFlag(false);
 			downloadTask.setPath(basePath + relativePath);
@@ -928,7 +929,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		} else if(registrationResponseDTO.getTaskId() != null) {
 			logger.info("Successfully started the Registration step for external collection download for path: " + path);
 			dataTransferService.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTask.getId(), registrationResponseDTO.getTaskId());
-		}
+		}*/
 		return registrationResponseDTO;
 	}
 
