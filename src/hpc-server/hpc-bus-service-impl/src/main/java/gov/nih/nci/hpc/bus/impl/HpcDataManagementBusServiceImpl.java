@@ -110,6 +110,7 @@ import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.model.HpcStorageRecoveryConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcUser;
 import gov.nih.nci.hpc.domain.report.HpcReport;
 import gov.nih.nci.hpc.domain.report.HpcReportCriteria;
 import gov.nih.nci.hpc.domain.report.HpcReportEntry;
@@ -2017,7 +2018,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
 					if(temporaryArchiveLinkDoesNotExist) {
 						String s3Path = archiveObjectId + relativeFilePath;
-						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), s3Path, bucket);
+						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), s3Path, bucket, userId);
 					}
 				} catch (HpcException e) {
 					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
@@ -5483,7 +5484,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return uploadResponse;
 	}
 	
-	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String s3FilePath, String bucket) throws HpcException {
+	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String s3FilePath, String bucket, String userId) throws HpcException {
 		HpcFileLocation sourceLocation = new HpcFileLocation();
 		sourceLocation.setFileContainerId(bucket);
 		sourceLocation.setFileId(s3FilePath);
@@ -5493,7 +5494,20 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		registrationRequest.setArchiveLinkSource(uploadSource);
 		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
 		registrationRequest.setCreateParentCollections(true);
-		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(downloadArchiveLinkPath, registrationRequest, null);
+		HpcUser user = null;
+		try {
+			user = securityService.getUser(userId);
+		} catch (HpcException e) {
+			logger.error("Failed to get user: " + userId);
+		}
+		String userName = user != null ? user.getNciAccount().getFirstName() + " " + user.getNciAccount().getLastName()
+				: "UNKNOWN";
+
+
+		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(downloadArchiveLinkPath, registrationRequest, null, userId,
+				userName, s3ArchiveConfigurationId, true);
+
+		//HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(downloadArchiveLinkPath, registrationRequest, null);
 		if(registrationResponseDTO != null && registrationResponseDTO.getRegistered() == true){
 			logger.info("Registered the external download link for path: " + downloadArchiveLinkPath);
 		} else {
