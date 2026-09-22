@@ -2018,6 +2018,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Get the metadata for this data object.
 		HpcMetadataEntries metadataEntries = metadataService.getDataObjectMetadataEntries(path, false);
+		if(metadataEntries == null) {
+			throw new HpcException("Data object's metadata doesn't exist: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		HpcSystemGeneratedMetadata systemGeneratedMetadata = metadataService
 				.toSystemGeneratedMetadata(metadataEntries.getSelfMetadataEntries());
 
