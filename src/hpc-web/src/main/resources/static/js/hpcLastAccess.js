@@ -58,7 +58,7 @@
     }
 
     function buildBarEntryLookup(entries) {
-        var subfolderMap = {};
+        var subfolderMap = Object.create(null);
         (entries || []).forEach(function (e) {
             if (!e || !e.subfolder || e.subfolder === 'h') {
                 return;
