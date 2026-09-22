@@ -2018,7 +2018,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					boolean temporaryArchiveLinkDoesNotExist = dataManagementService.getDataObject(downloadArchiveLinkPath) == null;
 					if(temporaryArchiveLinkDoesNotExist) {
 						String s3Path = archiveObjectId + relativeFilePath;
-						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration.getId(), s3Path, bucket, userId);
+						registerArchiveLinkForExternalDownload(downloadArchiveLinkPath, s3ArchiveConfiguration, s3Path, bucket, userId);
 					}
 				} catch (HpcException e) {
 					logger.error("Failed the Registration step to download data object from external source: " + e.getMessage(), e);
@@ -5484,7 +5484,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return uploadResponse;
 	}
 	
-	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  String s3ArchiveConfigurationId, String s3FilePath, String bucket, String userId) throws HpcException {
+	private void registerArchiveLinkForExternalDownload(String downloadArchiveLinkPath,  HpcDataTransferConfiguration s3ArchiveConfiguration, String s3FilePath, String bucket, String userId) throws HpcException {
 		HpcFileLocation sourceLocation = new HpcFileLocation();
 		sourceLocation.setFileContainerId(bucket);
 		sourceLocation.setFileId(s3FilePath);
@@ -5492,7 +5492,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		uploadSource.setSourceLocation(sourceLocation);
 		HpcDataObjectRegistrationRequestDTO registrationRequest = new HpcDataObjectRegistrationRequestDTO();
 		registrationRequest.setArchiveLinkSource(uploadSource);
-		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfigurationId);
+		registrationRequest.setS3ArchiveConfigurationId(s3ArchiveConfiguration.getId());
 		registrationRequest.setCreateParentCollections(true);
 		HpcUser user = null;
 		try {
@@ -5505,7 +5505,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 
 		HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(downloadArchiveLinkPath, registrationRequest, null, userId,
-				userName, s3ArchiveConfigurationId, true);
+				userName, s3ArchiveConfiguration.getDataManagementConfigurationId(), true);
 
 		//HpcDataObjectRegistrationResponseDTO registrationResponseDTO = registerDataObject(downloadArchiveLinkPath, registrationRequest, null);
 		if(registrationResponseDTO != null && registrationResponseDTO.getRegistered() == true){
