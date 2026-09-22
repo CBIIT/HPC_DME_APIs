@@ -3,6 +3,7 @@ package gov.nih.nci.hpc.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Calendar;
 
@@ -32,7 +33,7 @@ class HpcDataManagementServiceImplTest {
 
 	@BeforeEach
 	void setUp() {
-		service = new HpcDataManagementServiceImpl();
+		service = createService();
 		setPrivateField("dataRegistrationDAO", dataRegistrationDAO);
 	}
 
@@ -98,6 +99,17 @@ class HpcDataManagementServiceImplTest {
 			field.set(service, value);
 		} catch (ReflectiveOperationException e) {
 			throw new RuntimeException("Failed to set field: " + fieldName, e);
+		}
+	}
+
+	private HpcDataManagementServiceImpl createService() {
+		try {
+			Constructor<HpcDataManagementServiceImpl> constructor = HpcDataManagementServiceImpl.class
+					.getDeclaredConstructor(String.class, String.class, String.class, String.class, int.class);
+			constructor.setAccessible(true);
+			return constructor.newInstance("", "", "", "", 0);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException("Failed to instantiate HpcDataManagementServiceImpl", e);
 		}
 	}
 }
