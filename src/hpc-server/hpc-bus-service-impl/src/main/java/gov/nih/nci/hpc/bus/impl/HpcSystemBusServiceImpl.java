@@ -769,18 +769,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			logger.info("External collection download task: [taskId={}] - started processing [{}]",
 					downloadTask.getId(), downloadTask.getType());
 			List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+			// 'Activate' the collection download request.
+			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
 			for (HpcDataObjectRegistrationItemDTO item : dataObjectRegistrationItems) {
 				logger.info("2172 item=" + gson.toJson(item));
 				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
 						downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
 						downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
 						downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
-						downloadTask.getId(), downloadTask.getExternalArchiveFlag());
+						downloadTask.getId(), true);
 				downloadItems.add(downloadItem);
 				logger.info("2172 External collection download downloadItem=[{}] - added download item for path [{}]", item.getPath(), gson.toJson(downloadItem));
 			}
-			// 'Activate' the collection download request.
-			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
 			// Add all download items to the task.
 			downloadTask.getItems().addAll(downloadItems);
 
@@ -2258,7 +2258,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		try {
 			HpcDataObjectDownloadResponseDTO dataObjectDownloadResponse = dataManagementBusService.downloadDataObject(
 					path, dataObjectDownloadRequest, null, userId, null, false, collectionDownloadTaskId, externalArchiveFlag);
-			logger.info("2172  downloadDataObject for path: " + path);
+			logger.info("2172  downloadDataObject for path: {} externalArchiveFlag: {}", path, externalArchiveFlag);
 			downloadItem.setDataObjectDownloadTaskId(dataObjectDownloadResponse.getTaskId());
 			downloadItem.setDestinationLocation(dataObjectDownloadResponse.getDestinationLocation());
 			downloadItem.setRestoreInProgress(dataObjectDownloadResponse.getRestoreInProgress());
