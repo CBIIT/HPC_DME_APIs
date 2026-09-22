@@ -783,6 +783,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}
 			// Add all download items to the task.
 			downloadTask.getItems().addAll(downloadItems);
+			dataTransferService.updateCollectionDownloadTask(downloadTask);
 
 			logger.info("2172  download task with items=", gson.toJson(downloadTask));
 	}
