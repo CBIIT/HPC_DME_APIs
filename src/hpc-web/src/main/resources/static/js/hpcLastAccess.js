@@ -63,12 +63,7 @@
             return;
         }
 
-        if (!entries || entries.length === 0 || currentBasePath === 'ALL') {
-            summary.hide().text('');
-            return;
-        }
-
-        summary.text('POC: ' + normalizePoc(entries[0].poc)).show();
+        summary.hide().text('');
     }
 
     function buildBarEntryLookup(entries) {
@@ -393,6 +388,7 @@
         var entries = (data && data.barChartEntries) ? data.barChartEntries : [];
         latestBarEntries = entries.slice();
         updatePocSummary(entries);
+        var showPocInBarChart = currentBasePath === 'ALL';
 
         // Populate BUCKET_LABELS from the response
         entries.forEach(function (e) {
@@ -437,7 +433,7 @@
         subfolderSet.sort();
         subfolderLabels = subfolderSet.map(function (subfolder) {
             var poc = subfolderPocs[subfolder];
-            return poc && poc !== 'N/A' ? subfolder + ' \u2014 ' + poc : subfolder;
+            return showPocInBarChart && poc && poc !== 'N/A' ? subfolder + ' \u2014 ' + poc : subfolder;
         });
 
         // Build a lookup: subfolder -> bucketOrder -> { fileCount, dataSize, label }
@@ -498,8 +494,12 @@
                                 var subfolder = subfolderSet[context.dataIndex];
                                 var bucketOrder = responseBucketOrders[context.datasetIndex];
                                 var info = lookup[subfolder][bucketOrder];
-                                return context.dataset.label + ': ' + formatBytes(context.raw) +
-                                    ' (' + info.fileCount + ' files, POC: ' + normalizePoc(subfolderPocs[subfolder]) + ')';
+                                var label = context.dataset.label + ': ' + formatBytes(context.raw) +
+                                    ' (' + info.fileCount + ' files';
+                                if (showPocInBarChart) {
+                                    label += ', POC: ' + normalizePoc(subfolderPocs[subfolder]);
+                                }
+                                return label + ')';
                             }
                         }
                     }
