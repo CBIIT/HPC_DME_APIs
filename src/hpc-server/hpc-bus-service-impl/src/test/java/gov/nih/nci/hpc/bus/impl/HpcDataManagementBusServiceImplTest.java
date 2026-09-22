@@ -504,6 +504,7 @@ class HpcDataManagementBusServiceImplTest {
         taskItem.setSize(123L);
         registrationItem.setTask(taskItem);
         result.getItems().add(registrationItem);
+        result.setTotalBytesTransferred(123L);
 
         Method method = HpcDataManagementBusServiceImpl.class.getDeclaredMethod("toBulkDataObjectRegistrationTaskDTO",
                 HpcBulkDataObjectRegistrationResult.class, boolean.class);
@@ -514,6 +515,7 @@ class HpcDataManagementBusServiceImplTest {
 
         assertEquals(1, taskDTO.getCompletedItems().size());
         assertEquals(123L, taskDTO.getCompletedItems().get(0).getSize());
+        assertEquals(123L, taskDTO.getTotalBytesTransferred());
     }
 
     @Test
@@ -526,6 +528,7 @@ class HpcDataManagementBusServiceImplTest {
         taskItem.setSize(123L);
         registrationItem.setTask(taskItem);
         task.getItems().add(registrationItem);
+        task.setTotalBytesTransferred(62L);
 
         Method method = HpcDataManagementBusServiceImpl.class.getDeclaredMethod("toBulkDataObjectRegistrationTaskDTO",
                 HpcBulkDataObjectRegistrationTask.class, boolean.class);
@@ -536,6 +539,7 @@ class HpcDataManagementBusServiceImplTest {
 
         assertEquals(1, taskDTO.getInProgressItems().size());
         assertEquals(123L, taskDTO.getInProgressItems().get(0).getSize());
+        assertEquals(62L, taskDTO.getTotalBytesTransferred());
     }
     
     @Test
