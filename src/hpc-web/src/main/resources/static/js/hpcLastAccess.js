@@ -739,7 +739,7 @@
                 return;
             }
 
-            var columns = ['Subfolder', 'POC'].concat(bucketLabels);
+            var columns = ['Collection', 'POC'].concat(bucketLabels);
             var tableWidth = pageWidth - (margin * 2);
             var colWidth = tableWidth / columns.length;
             var lineHeight = 11;
@@ -781,7 +781,7 @@
 
             ensureSpace(26);
             doc.setFontSize(11);
-            doc.text('Bar Data by Subfolder', margin, y);
+            doc.text('Bar Data by Collection', margin, y);
             y += 12;
 
             drawRow(columns, true);
@@ -828,7 +828,7 @@
 
         var subfolders = Object.keys(subfolderMap).sort();
         var rows = subfolders.map(function (subfolder) {
-            var row = { Subfolder: subfolder, POC: subfolderMap[subfolder].poc || 'N/A' };
+            var row = { Collection: subfolder, POC: subfolderMap[subfolder].poc || 'N/A' };
             bucketLabels.forEach(function (label) {
                 var data = subfolderMap[subfolder].buckets[label];
                 row[label] = data ? data.formatted : '0 B';
@@ -838,7 +838,7 @@
         });
 
         if (rows.length === 0) {
-            var emptyRow = { Subfolder: '', POC: '' };
+            var emptyRow = { Collection: '', POC: '' };
             bucketLabels.forEach(function (label) {
                 emptyRow[label] = '';
                 emptyRow[label + ' (Bytes)'] = '';
@@ -846,7 +846,7 @@
             rows.push(emptyRow);
         }
 
-        window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(rows), 'Subfolder Summary');
+        window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(rows), 'Collection Summary');
 
         var now = new Date();
         window.XLSX.writeFile(wb, 'last-access-report-' + formatDateYYYYMMDD(now) + '.xlsx');
