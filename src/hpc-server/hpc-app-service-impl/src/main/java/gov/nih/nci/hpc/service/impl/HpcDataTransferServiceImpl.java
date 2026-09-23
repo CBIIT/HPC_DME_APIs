@@ -1193,11 +1193,9 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 					try {
 						logger.info("Temporary Archive Link: {} being deleted", path);
 						HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
-						if(archiveLinkLocation != null) {
+						if(isValidFileLocation(archiveLinkLocation)) {
 							temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
 									configurationId, s3ConfigurationId);
-						} else{
-							logger.warn(" 2172: Temporary Archive Link: {} could not be deleted because the archive location is null", path);
 						}
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: "
