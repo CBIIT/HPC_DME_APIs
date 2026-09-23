@@ -920,26 +920,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				registrationItem.setPath(downloadPath);
 		}
 
-		/*if(registrationResponseDTO == null) {
-			logger.info("All the archive links are Permanent Archive Links, we will skip Registration and complete download");
-			downloadTask.setExternalArchiveFlag(false);
-			downloadTask.setPath(basePath + relativePath);
-			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
-			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
-			dataTransferService.updateCollectionDownloadTask(downloadTask);
-			registrationResponseDTO = new HpcBulkDataObjectRegistrationResponseDTO();
-			registrationResponseDTO.setTaskId(null);
-			return registrationResponseDTO;
-		} else if (registrationResponseDTO.getTaskId() == null  && CollectionUtils.isEmpty(registrationResponseDTO.getDataObjectRegistrationItems())) {
-			logger.info("All the archive links are Temporary Archive Links, we will skip Registration and complete download");
-			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
-			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
-			dataTransferService.updateCollectionDownloadTask(downloadTask);
-			return registrationResponseDTO;
-		} else if(registrationResponseDTO.getTaskId() != null) {
-			logger.info("Successfully started the Registration step for external collection download for path: " + path);
-			dataTransferService.updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(downloadTask.getId(), registrationResponseDTO.getTaskId());
-		}*/
 		return registrationResponseDTO;
 	}
 
@@ -4649,52 +4629,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		for (HpcDataObjectRegistrationItemDTO registrationItem : dataObjectRegistrationItems) {
 			validatePath(registrationItem.getPath());
 		}
-	}
-
-	private HpcBulkDataObjectRegistrationRequestDTO validatePermanentArchiveLinks(
-		HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException {
-		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService
-				.getS3ArchiveConfiguration(bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().get(0).getS3ArchiveConfigurationId());
-		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		Iterator<HpcDataObjectRegistrationItemDTO> iterator = bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().iterator();
-		while (iterator.hasNext()) {
-			// Validate if permanent archive link already exists. If it does, we generate error, remove the registration item and continue with the rest of the items.
-			HpcDataObjectRegistrationItemDTO registrationItem = (HpcDataObjectRegistrationItemDTO) iterator.next();
-			String s3Path = registrationItem.getArchiveLinkSource().getSourceLocation().getFileId();
-			String relativeFilePath = s3Path.substring(s3Path.indexOf('/'));
-			String permanentArchiveLink = dataManagementConfiguration.getBasePath() + relativeFilePath;
-			if(dataManagementService.getDataObject(permanentArchiveLink) != null) {
-				iterator.remove();
-				logger.error("Permanent or default Archive Link for {} already exists. The Archive Link could have been created for a Migration.", s3Path);
-			}
-		}
-		return bulkDataObjectRegistrationRequest;
-	}
-
-	private HpcBulkDataObjectRegistrationRequestDTO validateAndBuildTemporaryArchiveLinks(
-		HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException {
-		HpcDataTransferConfiguration s3ArchiveConfiguration = dataManagementService
-				.getS3ArchiveConfiguration(bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().get(0).getS3ArchiveConfigurationId());
-		Iterator<HpcDirectoryScanRegistrationItemDTO> iteratorDirectoryScan = bulkDataObjectRegistrationRequest.getDirectoryScanRegistrationItems().iterator();
-		while (iteratorDirectoryScan.hasNext()) {
-			HpcDirectoryScanRegistrationItemDTO directoryScanItem = iteratorDirectoryScan.next();
-			directoryScanItem.setBasePath(downloadArchiveLinkBasePath + s3ArchiveConfiguration.getPosixPath());
-		}
-		Iterator<HpcDataObjectRegistrationItemDTO> iterator = bulkDataObjectRegistrationRequest.getDataObjectRegistrationItems().iterator();
-		while (iterator.hasNext()) {
-			// Validate if permanent archive link already exists. If it does, we generate error, remove the registration item and continue with the rest of the items.
-			HpcDataObjectRegistrationItemDTO registrationItem = (HpcDataObjectRegistrationItemDTO) iterator.next();
-			String s3Path = registrationItem.getArchiveLinkSource().getSourceLocation().getFileId();
-			String relativeFilePath = s3Path.substring(s3Path.indexOf('/'));
-			String temporaryArchiveLinkPath = downloadArchiveLinkBasePath + s3ArchiveConfiguration.getPosixPath() + relativeFilePath;
-			if (dataManagementService.getDataObject(temporaryArchiveLinkPath) == null) {
-				registrationItem.setPath(temporaryArchiveLinkPath);
-			} else {
-				// The temporary archive link already exists, so we can skip this registration item.
-				iterator.remove();
-			}
-		}
-		return bulkDataObjectRegistrationRequest;
 	}
 
 	/**
