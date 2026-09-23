@@ -1051,16 +1051,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		if (registrationTask == null) {
 			throw new HpcException("Invalid data object list registration task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-        if (registrationTask.getExternalArchiveFlag()) {
-            // Find external download task with archive_link_registration_task_id matching the registration task id
-			String collectionDownloadTaskId = dataDownloadDAO.getCollectionDownloadTaskByRegistrationIdExternal(registrationTask.getId());
-			if (collectionDownloadTaskId != null && !collectionDownloadTaskId.isBlank()) {
-				dataDownloadDAO.updateCollectionDownloadTaskStatus(collectionDownloadTaskId, HpcCollectionDownloadTaskStatus.RECEIVED.toString());
-				dataDownloadDAO.setCollectionDownloadTaskInProcess(collectionDownloadTaskId, false);
-			} else {
-					return;
-			}
-        }
 
 		// Cleanup the DB record.
 		dataRegistrationDAO.deleteBulkDataObjectRegistrationTask(registrationTask.getId());
