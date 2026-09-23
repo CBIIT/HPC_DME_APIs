@@ -1329,17 +1329,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
-	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String id, String archiveLinkRegistrationTaskId) throws HpcException {
-		try {
-			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_ARCHIVE_LINK_REGISTRATION_TASK_ID_SQL, archiveLinkRegistrationTaskId, id);
-
-		} catch (DataAccessException e) {
-			throw new HpcException("Failed to update a collection download task archive link registration task ID with ID: " + id + " " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
-		}
-	}
-
-	@Override
 	public void updateCollectionDownloadTaskStatus(String id, String status) throws HpcException {
 		try {
 			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_STATUS_SQL, status, id);
