@@ -168,8 +168,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_PRIORITY_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set PRIORITY = ? where ID = ?";
 
-	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_ARCHIVE_LINK_REGISTRATION_TASK_ID_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set ARCHIVE_LINK_REGISTRATION_TASK_ID = ? where ID = ?";
-
 	private static final String UPDATE_COLLECTION_DOWNLOAD_TASK_STATUS_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set STATUS = ? where ID = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_SQL = "select * from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
@@ -252,8 +250,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String SET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "update HPC_COLLECTION_DOWNLOAD_TASK set CANCELLATION_REQUESTED = ? where ID = ?";
 
 	private static final String GET_COLLECTION_DOWNLOAD_TASK_CANCELLATION_REQUEST_SQL = "select CANCELLATION_REQUESTED from HPC_COLLECTION_DOWNLOAD_TASK where ID = ?";
-
-	private static final String GET_COLLECTION_DOWNLOAD_TASK_BY_REGISTRATION_ID_EXTERNAL_SQL = "select ID from HPC_COLLECTION_DOWNLOAD_TASK where ARCHIVE_LINK_REGISTRATION_TASK_ID = ? and EXTERNAL_ARCHIVE_FLAG = '1'";
 
 	private static final String GET_TOTAL_DOWNLOADS_SIZE_SQL = "select sum(DATA_SIZE) from HPC_DATA_OBJECT_DOWNLOAD_TASK where USER_ID = ? and DATA_TRANSFER_STATUS = ?";
 
@@ -1518,23 +1514,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 			return true;
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get cancellation request of: " + id + " " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
-		}
-	}
-
-	@Override
-	public String getCollectionDownloadTaskByRegistrationIdExternal(String registrationTaskId) throws HpcException {
-		try {
-			String downloadTaskId = jdbcTemplate
-					.queryForObject(GET_COLLECTION_DOWNLOAD_TASK_BY_REGISTRATION_ID_EXTERNAL_SQL, String.class, registrationTaskId);
-			return downloadTaskId != null ? downloadTaskId : null;
-
-		} catch (EmptyResultDataAccessException e) {
-			// If it can not find the collection download task, it is cancelled and removed
-			// from the table.
-			return null;
-		} catch (DataAccessException e) {
-			throw new HpcException("Failed to get collection download task by registration ID external of: " + registrationTaskId + " " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}
