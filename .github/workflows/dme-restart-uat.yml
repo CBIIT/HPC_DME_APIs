@@ -1,0 +1,150 @@
+name: Restart tomcat in UAT
+
+permissions:
+  contents: read
+  actions: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        type: choice
+        default: uat
+        options:
+          - uat
+
+      action:
+        description: "Action to perform on Tomcat"
+        required: true
+        type: choice
+        options:
+          - restart
+          - stop
+          - start    
+
+      fsdsgl_dmeap01t_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap01t.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false    
+
+run-name: "${{ inputs.action == 'start' && 'Start' || inputs.action == 'restart' && 'Restart' || 'Stop' }} Tomcat (DME ${{ inputs.environment }})"
+
+jobs:
+  prepare:
+    name: Prepare selected server matrix
+    runs-on:
+      group: cbiit-global-runners
+      labels: [nonprod-org-runner]
+      #labels: [prod-org-runner]
+    outputs:
+      matrix: ${{ steps.selected_servers.outputs.matrix }}
+    steps:
+
+      - name: Build selected server matrix
+        id: selected_servers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          matrix='{"include":['
+          separator=''
+
+          add_server() {
+            local name="$1"
+            local host="$2"
+            matrix="${matrix}${separator}{\"name\":\"${name}\",\"host\":\"${host}\"}"
+            separator=','
+          }
+
+          if [ "${{ inputs.fsdsgl_dmeap01d_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap01d.ncifcrf.gov" "fsdsgl-dmeap01d.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap02d_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap02d.ncifcrf.gov" "fsdsgl-dmeap02d.ncifcrf.gov"
+          fi
+
+          matrix="${matrix}]}"
+
+          if [ "$matrix" = '{"include":[]}' ]; then
+            echo "Select at least one deployment server checkbox." >&2
+            exit 1
+          fi
+
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "Selected server matrix: ${matrix}"
+
+  control_tomcat:
+    name: ${{ inputs.action == 'start' && 'Start' || inputs.action == 'restart' && 'Restart' || 'Stop' }} Tomcat on ${{ matrix.name }}
+    needs: prepare
+    runs-on:
+      group: cbiit-global-runners
+      labels: [nonprod-org-runner]
+      #labels: [prod-org-runner]
+    environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    env:
+      REMOTE_TOMCAT: tomcat
+      SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+      RUNNER_SSH_USER: githubuser
+    steps:
+
+      - name: Set up SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          if [ -z "${SSH_USER:-}" ]; then
+            echo "DEPLOY_SSH_USER secret is required." >&2
+            exit 1
+          fi
+
+          echo "Target host: ${target_host}"
+          echo "Remote deploy user: ${SSH_USER}"
+          echo "Runner SSH user: ${RUNNER_SSH_USER}"
+
+          #sudo -iu "$RUNNER_SSH_USER" bash -lc 'mkdir -p ~/.ssh && chmod 700 ~/.ssh'
+
+          #echo "Scanning host key for ${target_host}..."
+          #sudo -iu "$RUNNER_SSH_USER" bash -lc "ssh-keyscan -T 15 -H '$target_host' >> ~/.ssh/known_hosts"
+
+          #echo "Testing SSH connection as ${RUNNER_SSH_USER}..."
+          sudo -iu "$RUNNER_SSH_USER" ssh -i"/home/${RUNNER_SSH_USER}/.ssh/id_rsa" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=no \
+            "${SSH_USER}@${target_host}" \
+            "echo SSH connection OK"
+
+      - name: Stop Tomcat 
+        if: inputs.action == 'stop' || inputs.action == 'restart'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          #future - "sudo systemctl stop '${REMOTE_TOMCAT}'"
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "sudo service '${REMOTE_TOMCAT}' stop"
+          echo "Tomcat stopped on ${target_host}."
+
+      - name: Start Tomcat
+        if: inputs.action == 'start' || inputs.action == 'restart'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          # future - "set -e; sudo systemctl start '${REMOTE_TOMCAT}'; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "set -e; sudo service '${REMOTE_TOMCAT}' start; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
