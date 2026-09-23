@@ -84,7 +84,7 @@ jobs:
           input="${{ inputs.build_run_number }}"
 
           if [ -z "$input" ] || [ "$input" = "latest" ]; then
-            echo "No specific build_run_number provided; the download step will use the most recent successful build-prod-api.yml run automatically."
+            echo "No specific build_run_number provided; the download step will use the most recent successful dme-api-prod-build.yml run automatically."
             echo "use_specific_run=false" >> "$GITHUB_OUTPUT"
           else
             echo "Using explicitly provided build_run_number: ${input}"
@@ -275,8 +275,9 @@ jobs:
 
           target_host="${{ matrix.host }}"
 
+          #future - "sudo systemctl stop '${REMOTE_TOMCAT}'"
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "sudo systemctl stop '${REMOTE_TOMCAT}'"
+            "sudo service '${REMOTE_TOMCAT}' stop"
           echo "Tomcat stopped on ${target_host}."
 
       - name: Remove applications directory
@@ -417,5 +418,6 @@ jobs:
 
           target_host="${{ matrix.host }}"
 
+          # future - "set -e; sudo systemctl start '${REMOTE_TOMCAT}'; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
           sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
-            "set -e; sudo systemctl start '${REMOTE_TOMCAT}'; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
+            "set -e; sudo service '${REMOTE_TOMCAT}' start; echo 'Process check:'; ps -ef | grep -E tomcat || true" 

@@ -1,0 +1,210 @@
+name: Restart DME API Prod
+
+permissions:
+  contents: read
+  actions: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        type: choice
+        default: prod
+        options:
+          - prod
+      action:
+        description: "Action to perform on Tomcat"
+        required: true
+        type: choice
+        options:
+          - restart
+          - stop
+          - start
+
+      fsdsgl_dmeap01p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap01p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdsgl_dmeap02p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap02p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdmel_dsapi03p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi03p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false 
+      fsdmel_dsapi04p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi04p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdmel_dsapi05p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi05p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+      fsdmel_dsapi06p_ncifcrf_gov:
+        description: "Deploy to fsdmel-dsapi06p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false 
+      fsdsgl_dmeap07p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap07p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false  
+      fsdsgl_dmeap08p_ncifcrf_gov:
+        description: "Deploy to fsdsgl-dmeap08p.ncifcrf.gov"
+        required: false
+        type: boolean
+        default: false
+
+run-name: "${{ inputs.action == 'start' && 'Start' || inputs.action == 'restart' && 'Restart' || 'Stop' }} Tomcat (DME API ${{ inputs.environment }})"
+
+jobs:
+  prepare:
+    name: Prepare selected server matrix
+    runs-on:
+      group: cbiit-global-runners
+      #labels: [self-hosted]
+      #labels: [nonprod-org-runner]
+      labels: [prod-org-runner]
+    outputs:
+      matrix: ${{ steps.selected_servers.outputs.matrix }}
+    steps:
+      - name: Build selected server matrix
+        id: selected_servers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          matrix='{"include":['
+          separator=''
+
+          add_server() {
+            local name="$1"
+            local host="$2"
+            matrix="${matrix}${separator}{\"name\":\"${name}\",\"host\":\"${host}\"}"
+            separator=','
+          }
+
+          if [ "${{ inputs.fsdsgl_dmeap01p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap01p.ncifcrf.gov" "fsdsgl-dmeap01p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap02p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap02p.ncifcrf.gov" "fsdsgl-dmeap02p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi03p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi03p.ncifcrf.gov" "fsdmel-dsapi03p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi04p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi04p.ncifcrf.gov" "fsdmel-dsapi04p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi05p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi05p.ncifcrf.gov" "fsdmel-dsapi05p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdmel_dsapi06p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdmel-dsapi06p.ncifcrf.gov" "fsdmel-dsapi06p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap07p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap07p.ncifcrf.gov" "fsdsgl-dmeap07p.ncifcrf.gov"
+          fi
+
+          if [ "${{ inputs.fsdsgl_dmeap08p_ncifcrf_gov }}" = "true" ]; then
+            add_server "fsdsgl-dmeap08p.ncifcrf.gov" "fsdsgl-dmeap08p.ncifcrf.gov"
+          fi
+
+
+          matrix="${matrix}]}"
+
+          if [ "$matrix" = '{"include":[]}' ]; then
+            echo "Select at least one deployment server checkbox." >&2
+            exit 1
+          fi
+
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "Selected server matrix: ${matrix}"
+
+  control_tomcat:
+    name: ${{ inputs.action == 'start' && 'Start' || inputs.action == 'restart' && 'Restart' || 'Stop' }} Tomcat on ${{ matrix.name }}
+    needs: prepare
+    runs-on:
+      group: cbiit-global-runners
+      #labels: [self-hosted]
+      #labels: [nonprod-org-runner]
+      labels: [prod-org-runner]
+    environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    env:
+      REMOTE_TOMCAT: tomcat
+      SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+      RUNNER_SSH_USER: githubuser
+    steps:
+      - name: Set up SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          if [ -z "${SSH_USER:-}" ]; then
+            echo "DEPLOY_SSH_USER secret is required." >&2
+            exit 1
+          fi
+
+          echo "Target host: ${target_host}"
+          echo "Remote deploy user: ${SSH_USER}"
+          echo "Runner SSH user: ${RUNNER_SSH_USER}"
+
+          #sudo -iu "$RUNNER_SSH_USER" bash -lc 'mkdir -p ~/.ssh && chmod 700 ~/.ssh'
+
+          #echo "Scanning host key for ${target_host}..."
+          #sudo -iu "$RUNNER_SSH_USER" bash -lc "ssh-keyscan -T 15 -H '$target_host' >> ~/.ssh/known_hosts"
+
+          #echo "Testing SSH connection as ${RUNNER_SSH_USER}..."
+          sudo -iu "$RUNNER_SSH_USER" ssh -i"/home/${RUNNER_SSH_USER}/.ssh/id_rsa" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=no \
+            "${SSH_USER}@${target_host}" \
+            "echo SSH connection OK"
+
+      - name: Stop Tomcat 
+        if: inputs.action == 'stop' || inputs.action == 'restart'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          # future -"sudo systemctl stop '${REMOTE_TOMCAT}'"
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "sudo service '${REMOTE_TOMCAT}' stop"
+          echo "Tomcat stopped on ${target_host}."
+
+      - name: Start Tomcat
+        if: inputs.action == 'start' || inputs.action == 'restart'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_host="${{ matrix.host }}"
+
+          # future - "set -e; sudo systemctl start '${REMOTE_TOMCAT}'; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
+
+          sudo -iu "$RUNNER_SSH_USER" ssh -o IdentitiesOnly=yes "${SSH_USER}@${target_host}" \
+            "set -e; sudo service '${REMOTE_TOMCAT}' start; echo 'Process check:'; ps -ef | grep -E tomcat || true" 
