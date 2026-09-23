@@ -22,10 +22,14 @@
 	    			var container = document.getElementById('container');
 	    			var banner = document.getElementById('maintenance-banner');
 
-	    			if (container && banner) {
-	    				container.classList.add('has-maintenance-banner');
-	    				container.style.setProperty('--maintenance-banner-height', banner.offsetHeight + 'px');
-	    			}
+if (container && banner) {
+						var updateBannerHeight = function () {
+							container.classList.add('has-maintenance-banner');
+							container.style.setProperty('--maintenance-banner-height', banner.offsetHeight + 'px');
+						};
+						updateBannerHeight();
+						window.addEventListener('resize', updateBannerHeight);
+					}
 	    		}());
 	    	</script>
     
