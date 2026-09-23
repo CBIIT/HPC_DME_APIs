@@ -1912,13 +1912,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcDataObjectDownloadResponseDTO downloadExternal(String path, HpcDownloadRequestDTO downloadRequest,
 			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
 			String collectionDownloadTaskId) throws HpcException {
-		logger.info("2172: downloadExternal called with path: " + path);
-		logger.info("2172: downloadExternal called with retryTaskId: " + retryTaskId);
-		logger.info("2172: downloadExternal called with userId: " + userId);
-		logger.info("2172: downloadExternal called with retryUserId: " + retryUserId);
-		logger.info("2172: downloadExternal called with completionEvent: " + completionEvent);
-		logger.info("2172: downloadExternal called with collectionDownloadTaskId: " + collectionDownloadTaskId);
-		logger.info("2172: downloadExternal called with downloadRequest: " + gson.toJson(downloadRequest));
 
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
