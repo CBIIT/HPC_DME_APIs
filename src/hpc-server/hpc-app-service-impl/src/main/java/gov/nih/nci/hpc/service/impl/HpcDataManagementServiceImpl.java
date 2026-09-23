@@ -129,10 +129,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Autowired
 	private HpcDataRegistrationDAO dataRegistrationDAO = null;
 
-	// Data Download DAO.
-	@Autowired
-	private HpcDataDownloadDAO dataDownloadDAO = null;
-
 	// Bulk Update Audit DAO.
 	@Autowired
 	private HpcBulkUpdateAuditDAO bulkUpdateAuditDAO = null;
