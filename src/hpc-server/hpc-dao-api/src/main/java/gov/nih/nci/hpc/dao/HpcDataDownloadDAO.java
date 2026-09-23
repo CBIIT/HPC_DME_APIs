@@ -251,15 +251,6 @@ public interface HpcDataDownloadDAO {
 	public void updateCollectionDownloadTaskPriority(String id, int priority) throws HpcException;
 	
 	/**
-	 * Update a collection download task archive link registration task ID.
-	 *
-	 * @param id The collection download task ID.
-	 * @param archiveLinkRegistrationTaskId The archive link registration task ID.
-	 * @throws HpcException on database error.
-	 */
-	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String id, String archiveLinkRegistrationTaskId) throws HpcException;
-
-	/**
 	 * Update a collection download task status.
 	 *
 	 * @param id The collection download task ID.
