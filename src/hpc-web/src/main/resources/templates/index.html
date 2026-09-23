@@ -68,8 +68,30 @@ function enroll() {
 
 <body>
 
+	<section id="container">
 	<div th:fragment="header">
 		<header class="header white-bg">
+			<section id="maintenance-banner"
+				th:if="${downtimeMessage!= null}"
+				class="maintenance-alert-banner"
+				aria-label="Maintenance alert">
+				<div class="maintenance-alert">
+					<div class="maintenance-alert-body">
+						<span th:utext="${downtimeMessage}"></span>
+					</div>
+				</div>
+			</section>
+			<script th:if="${downtimeMessage!= null}">
+				(function () {
+					var container = document.getElementById('container');
+					var banner = document.getElementById('maintenance-banner');
+
+					if (container && banner) {
+						container.classList.add('has-maintenance-banner');
+						container.style.setProperty('--maintenance-banner-height', banner.offsetHeight + 'px');
+					}
+				}());
+			</script>
 			<div class="toggle-nav">
 				<div class="icon-reorder tooltips"
 					data-original-title="Toggle Navigation" data-placement="bottom"></div>
@@ -116,6 +138,7 @@ function enroll() {
 		</form>
 
 	</div>
+	</section>
 	<div th:insert="~{footer :: footer}"></div>
 
 </body>
