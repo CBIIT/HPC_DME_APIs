@@ -1035,6 +1035,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public void updateBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask)
 			throws HpcException {
+		registrationTask.setTotalBytesTransferred(calculateTotalBytesTransferred(registrationTask));
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(registrationTask);
 	}
 
@@ -1059,6 +1060,8 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		registrationResult.setCompleted(completed);
 		registrationResult.setUploadMethod(registrationTask.getUploadMethod());
 		registrationResult.setRegistrationSize(registrationTask.getRegistrationSize());
+		registrationTask.setTotalBytesTransferred(calculateTotalBytesTransferred(registrationTask));
+		registrationResult.setTotalBytesTransferred(registrationTask.getTotalBytesTransferred());
 		registrationResult.getItems().addAll(registrationTask.getItems());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
@@ -1090,6 +1093,29 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		// Persist to DB.
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
+	}
+
+	private Long calculateTotalBytesTransferred(HpcBulkDataObjectRegistrationTask registrationTask) {
+		long totalBytesTransferred = 0;
+		for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
+			HpcDataObjectRegistrationTaskItem task = item.getTask();
+			Long size = task.getSize();
+			if (size == null || size <= 0) {
+				continue;
+			}
+
+			if (Optional.ofNullable(item.getRequest()).map(HpcDataObjectRegistrationRequest::getLinkSourcePath)
+					.isPresent()) {
+				continue;
+			}
+
+			if (Boolean.TRUE.equals(task.getResult())) {
+				totalBytesTransferred += size;
+			} else if (task.getPercentComplete() != null && task.getPercentComplete() > 0) {
+				totalBytesTransferred += Math.round((double) task.getPercentComplete() / 100 * size);
+			}
+		}
+		return totalBytesTransferred > 0 ? totalBytesTransferred : null;
 	}
 
 	@Override
