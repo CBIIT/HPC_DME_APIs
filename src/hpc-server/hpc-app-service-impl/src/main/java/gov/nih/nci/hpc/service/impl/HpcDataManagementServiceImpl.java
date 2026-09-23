@@ -1096,10 +1096,15 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	private Long calculateTotalBytesTransferred(HpcBulkDataObjectRegistrationTask registrationTask) {
+		Long previousTotalBytesTransferred = registrationTask.getTotalBytesTransferred();
 		long totalBytesTransferred = 0;
+		boolean hasCalculatedBytes = false;
 		for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
 			HpcDataObjectRegistrationTaskItem task = item.getTask();
 			Long size = task.getSize();
+			if ((size == null || size <= 0) && item.getRequest() != null) {
+				size = item.getRequest().getRegistrationSize();
+			}
 			if (size == null || size <= 0) {
 				continue;
 			}
@@ -1111,11 +1116,19 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 			if (Boolean.TRUE.equals(task.getResult())) {
 				totalBytesTransferred += size;
+				hasCalculatedBytes = true;
 			} else if (task.getPercentComplete() != null && task.getPercentComplete() > 0) {
 				totalBytesTransferred += Math.round((double) task.getPercentComplete() / 100 * size);
+				hasCalculatedBytes = true;
 			}
 		}
-		return totalBytesTransferred > 0 ? totalBytesTransferred : null;
+		if (hasCalculatedBytes) {
+			return previousTotalBytesTransferred != null
+					? Math.max(previousTotalBytesTransferred, totalBytesTransferred)
+					: totalBytesTransferred;
+		}
+
+		return previousTotalBytesTransferred;
 	}
 
 	@Override
