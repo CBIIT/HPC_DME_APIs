@@ -796,8 +796,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				continue;
 			}
 
-			logger.info("2172 in processCollectionDownloadTasks() - downloadTask: {}", gson.toJson(downloadTask));
-
 			// We limit a user to one download (collection breakdown or processing) task at
 			// a time for the same collection
 			int tasksInProcessForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
