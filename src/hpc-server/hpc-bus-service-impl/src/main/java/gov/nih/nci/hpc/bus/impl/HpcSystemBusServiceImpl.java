@@ -744,37 +744,48 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)
 				.forEach(downloadTask -> {
 					try {
-						logger.info("External collection download task: [taskId={}] - started processing [{}]",
-								downloadTask.getId(), downloadTask.getType());
-						dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
-						HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
-								.registerCollectionFromExternalSource(downloadTask);
-						List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
-						// 'Activate' the collection download request.
-						downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
-						for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
-							HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
-									downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
-									downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
-									downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
-									downloadTask.getId(), true);
-							downloadItems.add(downloadItem);
-						}
+						processExternalDownloadTask(downloadTask);
+						// Add all download items to the task.
+						List<HpcCollectionDownloadTaskItem> downloadItems = processExternalDownloadTask(downloadTask);
 						// Add all download items to the task.
 						downloadTask.getItems().addAll(downloadItems);
 						dataTransferService.updateCollectionDownloadTask(downloadTask);
-
 					} catch (HpcException e) {
 						logger.error("Failed to process external collection download task: " + downloadTask.getId(), e);
-						try {
-							completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
-
-						} catch (HpcException ex) {
-							logger.error("Failed to complete collection download as failed {}",
-									downloadTask.getId(), ex);
-						}
 					}
 				});
+	}
+	
+	private List<HpcCollectionDownloadTaskItem> processExternalDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException {
+		try {
+			logger.info("External collection download task: [taskId={}] - started processing [{}]",
+					downloadTask.getId(), downloadTask.getType());
+			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
+			HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
+					.registerCollectionFromExternalSource(downloadTask);
+			List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+			// 'Activate' the collection download request.
+			downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
+			for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
+				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
+						downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
+						downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
+						downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
+						downloadTask.getId(), true);
+				downloadItems.add(downloadItem);
+			}
+			return downloadItems;
+		} catch (HpcException e) {
+			logger.error("Failed to process external collection download task: " + downloadTask.getId(), e);
+			try {
+				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
+
+			} catch (HpcException ex) {
+				logger.error("Failed to complete collection download as failed {}",
+						downloadTask.getId(), ex);
+			}
+			return Collections.emptyList();
+		}
 	}
 
 	@Override
