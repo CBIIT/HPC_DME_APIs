@@ -864,3 +864,15 @@ comment on column HPC_GLOBUS_TRANSFER_TASK.USER_ID is 'The user ID of the reques
 create index HPC_GLOBUS_TRANSFER_TASK_GLOBUS_ACCOUNT_IDX
     on irods.hpc_globus_transfer_task (globus_account);
     
+
+CREATE TABLE HPC_ARCHIVE_POC (
+    BASE_PATH VARCHAR2(50) NOT NULL,
+    DOC       VARCHAR2(50) NOT NULL,
+    POC       VARCHAR2(50) NOT NULL
+);
+
+comment on column HPC_ARCHIVE_POC.BASE_PATH is 'The base path of the archive';
+comment on column HPC_ARCHIVE_POC.DOC is 'The DOC that own this archive';
+comment on column HPC_ARCHIVE_POC.POC is 'The POC of this archive';
+
+    
