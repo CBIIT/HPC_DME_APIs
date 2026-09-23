@@ -1947,6 +1947,14 @@ div[data-role="editor-toolbar"] {
     top: calc(140px + var(--maintenance-banner-height, 64px));
 }
 
+#container.has-maintenance-banner #main-content-readonly {
+    top: calc(90px + var(--maintenance-banner-height, 64px));
+}
+
+#container.has-maintenance-banner .login-form {
+    margin-top: calc(200px + var(--maintenance-banner-height, 64px));
+}
+
 #main-content-readonly {
 	position: absolute;
     top: 90px;
@@ -5249,4 +5257,3 @@ img.softlink {
 	font-style: normal;
 	padding-left: 32px;
 }
-
