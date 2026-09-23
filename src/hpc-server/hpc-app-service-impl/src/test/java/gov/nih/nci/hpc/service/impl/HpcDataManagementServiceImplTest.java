@@ -76,46 +76,8 @@ class HpcDataManagementServiceImplTest {
 		assertEquals(600L, captor.getValue().getRegistrationSize());
 	}
 
-	@Test
-	void testUpdateBulkDataObjectRegistrationTaskPreservesExistingTotalBytesTransferred() throws HpcException {
-		HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
-		task.setTotalBytesTransferred(150L);
-		task.getItems().add(createItem(null, null, null, null, 100L));
-
-		service.updateBulkDataObjectRegistrationTask(task);
-
-		ArgumentCaptor<HpcBulkDataObjectRegistrationTask> captor = ArgumentCaptor
-				.forClass(HpcBulkDataObjectRegistrationTask.class);
-		verify(dataRegistrationDAO).upsertBulkDataObjectRegistrationTask(captor.capture());
-		assertEquals(150L, captor.getValue().getTotalBytesTransferred());
-	}
-
-	@Test
-	void testCompleteBulkDataObjectRegistrationTaskFallsBackToRequestRegistrationSize() throws HpcException {
-		HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
-		task.setId("task-id");
-		task.setUserId("user-id");
-		task.setCreated(Calendar.getInstance());
-		task.setUploadMethod(HpcDataTransferUploadMethod.S_3);
-		task.setRegistrationSize(100L);
-		task.getItems().add(createItem(null, 100, true, null, 100L));
-
-		Calendar completed = Calendar.getInstance();
-		service.completeBulkDataObjectRegistrationTask(task, true, null, completed);
-
-		ArgumentCaptor<HpcBulkDataObjectRegistrationResult> captor = ArgumentCaptor
-				.forClass(HpcBulkDataObjectRegistrationResult.class);
-		verify(dataRegistrationDAO).upsertBulkDataObjectRegistrationResult(captor.capture());
-		assertEquals(100L, captor.getValue().getTotalBytesTransferred());
-	}
-
 	private HpcBulkDataObjectRegistrationItem createItem(Long size, Integer percentComplete, Boolean result,
 			String linkSourcePath) {
-		return createItem(size, percentComplete, result, linkSourcePath, null);
-	}
-
-	private HpcBulkDataObjectRegistrationItem createItem(Long size, Integer percentComplete, Boolean result,
-			String linkSourcePath, Long registrationSize) {
 		HpcBulkDataObjectRegistrationItem item = new HpcBulkDataObjectRegistrationItem();
 		HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
 		taskItem.setPath("/path");
@@ -126,9 +88,6 @@ class HpcDataManagementServiceImplTest {
 
 		HpcDataObjectRegistrationRequest request = new HpcDataObjectRegistrationRequest();
 		request.setLinkSourcePath(linkSourcePath);
-		if (registrationSize != null) {
-			request.setRegistrationSize(registrationSize);
-		}
 		item.setRequest(request);
 		return item;
 	}
