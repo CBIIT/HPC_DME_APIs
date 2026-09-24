@@ -1325,17 +1325,6 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	}
 
 	@Override
-	public void updateCollectionDownloadTaskStatus(String id, String status) throws HpcException {
-		try {
-			jdbcTemplate.update(UPDATE_COLLECTION_DOWNLOAD_TASK_STATUS_SQL, status, id);
-
-		} catch (DataAccessException e) {
-			throw new HpcException("Failed to update a collection download task status with ID: " + id + " " + e.getMessage(),
-					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
-		}
-	}
-
-	@Override
 	public List<HpcCollectionDownloadTask> getCollectionDownloadTasksInProcess() throws HpcException {
 		try {
 			return jdbcTemplate.query(GET_COLLECTION_DOWNLOAD_TASKS_IN_PROCESS_SQL, collectionDownloadTaskRowMapper);
