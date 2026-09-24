@@ -271,6 +271,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				HpcDataTransferUploadStatus dataTransferStatus = dataTransferUploadReport.getStatus();
 				Calendar dataTransferCompleted = null;
+				logger.debug("Data transfer upload report: {} - status: {}, {} bytes transferred", path, dataTransferStatus, dataTransferUploadReport.getBytesTransferred());
 				switch (dataTransferStatus) {
 				case ARCHIVED:
 					// Data object is archived. Note: This is a configured filesystem archive.
