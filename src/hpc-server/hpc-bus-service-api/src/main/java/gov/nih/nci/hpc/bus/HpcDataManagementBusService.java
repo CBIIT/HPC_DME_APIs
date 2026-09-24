@@ -172,7 +172,7 @@ public interface HpcDataManagementBusService {
 	 * @return Registration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask)
+	public HpcBulkDataObjectRegistrationResponseDTO getFilesFromExternalSource(HpcCollectionDownloadTask downloadTask)
 			throws HpcException;
 
 			/**
