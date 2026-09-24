@@ -123,6 +123,12 @@ public class HpcUploadTaskController extends AbstractHpcController {
 						MiscUtil.addHumanReadableSize(dataSize, true));
 			}
 
+			String bytesTransferred = (uploadTask.getTask().getTotalBytesTransferred() != null 
+					&& uploadTask.getTask().getTotalBytesTransferred() > 0) 
+					? String.valueOf(uploadTask.getTask().getTotalBytesTransferred()) : "0";
+			model.addAttribute("bytesTransferred",
+						MiscUtil.addHumanReadableSize(bytesTransferred, true));
+
 		} catch (Exception e) {
 			model.addAttribute("error", "Failed to get registration status: " + e.getMessage());
 			return "redirect:/uploadtasks";
