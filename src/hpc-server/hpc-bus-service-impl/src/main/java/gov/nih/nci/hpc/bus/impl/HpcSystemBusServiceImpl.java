@@ -735,22 +735,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	@Override
 	@HpcExecuteAsSystemAccount
-	public void processExternalDownloadTasks() throws HpcException {
-		// Iterate through all the external download requests that were submitted (not
-		// processed yet).
-		dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL, false)
-				.forEach(downloadTask -> {
-					try {
-						downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
-						dataTransferService.updateCollectionDownloadTask(downloadTask);
-					} catch (HpcException e) {
-						logger.error("Failed to process external collection download task: " + downloadTask.getId(), e);
-					}
-				});
-	}
-
-	@Override
-	@HpcExecuteAsSystemAccount
 	public void processCollectionDownloadTasks() throws HpcException {
 		// Iterate through all the collection download requests that were submitted (not
 		// processed yet).

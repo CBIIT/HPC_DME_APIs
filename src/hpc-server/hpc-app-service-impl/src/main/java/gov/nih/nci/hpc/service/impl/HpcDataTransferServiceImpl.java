@@ -1750,8 +1750,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setPath(path);
 		downloadTask.setUserId(userId);
 		downloadTask.setType(HpcDownloadTaskType.COLLECTION);
-		//downloadTask.setStatus(externalArchiveFlag ? HpcCollectionDownloadTaskStatus.RECEIVED_EXTERNAL
-		//		: HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setStatus(HpcCollectionDownloadTaskStatus.RECEIVED);
 		downloadTask.setConfigurationId(configurationId);
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
