@@ -1114,6 +1114,9 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			} else if (task.getPercentComplete() != null && task.getPercentComplete() > 0) {
 				totalBytesTransferred += Math.round((double) task.getPercentComplete() / 100 * size);
 			}
+			logger.debug("Setting bytes transferred to: + totalBytesTransferred  " +
+					" from percentComplete " + task.getPercentComplete() +
+					" for task " + task.getPath());
 		}
 		return totalBytesTransferred > 0 ? totalBytesTransferred : null;
 	}
