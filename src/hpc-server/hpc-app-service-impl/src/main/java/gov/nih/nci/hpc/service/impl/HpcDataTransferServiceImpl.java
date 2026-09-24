@@ -1958,7 +1958,6 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 		downloadTask.setDoc(downloadTaskResult.getDoc());
 		downloadTask.getCollectionPaths().addAll(downloadTaskResult.getCollectionPaths());
 		downloadTask.setDataSize(getTotalSizeOfDataObjectItems(downloadTaskResult.getItems()));
-		downloadTask.setExternalArchiveFlag(downloadTaskResult.getExternalArchiveFlag());
 
 		// Set the configuration ID for collection(s) retry.
 		String configurationId = null;
