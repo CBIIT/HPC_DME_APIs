@@ -182,7 +182,6 @@ import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcReportService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
-import com.google.gson.Gson;
 
 /**
  * HPC Data Management Business Service Implementation.
@@ -251,7 +250,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
-	private Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -802,126 +800,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return downloadResponse;
 	}
 
-	@Override
-	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
-	        throws HpcException {
-		HpcCollectionDownloadResponseDTO responseDTO = null;
-		if (downloadRequest == null) {
-			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		// Validate that the downloadArchiveLinkBasePath property is configured, as it is required for saving the temporary archive links for external downloads.
-		if (StringUtils.isEmpty(downloadArchiveLinkBasePath)) {
-			logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
-			throw new HpcException("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath", HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
-		// Find the matching S3 data transfer configuration for the external path
-		try {
-			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
-			if(s3ArchiveConfiguration == null) {
-				logger.warn("No matching S3 archive configuration found for external download path: " + path);
-				throw new HpcException("No matching S3 archive configuration found for external download path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-			}
-		} catch (HpcException e) {
-			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
-			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
-			// Default to false - i.e. don't use the absolute data object path in the
-			// download destination.
-			downloadRequest.setAppendPathToDownloadDestination(false);
-		}
-
-		if (downloadRequest.getAppendCollectionNameToDownloadDestination() == null) {
-			// Default to false - i.e. don't use the collection name in the download
-			// destination.
-			downloadRequest.setAppendCollectionNameToDownloadDestination(false);
-		}
-
-		if (downloadRequest.getAppendPathToDownloadDestination()
-				&& downloadRequest.getAppendCollectionNameToDownloadDestination()) {
-			throw new HpcException("Both append indicators are set: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-
-		// Download Step
-		try {
-			// Submit a collection download task.
-			HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadCollection(path,
-					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
-					downloadRequest.getGoogleDriveDownloadDestination(),
-					downloadRequest.getGoogleCloudStorageDownloadDestination(),
-					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), securityService.getRequestInvoker().getNciAccount().getUserId(), dataManagementConfiguration.getId(),
-					downloadRequest.getAppendPathToDownloadDestination(),
-					downloadRequest.getAppendCollectionNameToDownloadDestination(), true);
-
-		// Create and return a DTO with the request receipt.
-		responseDTO = new HpcCollectionDownloadResponseDTO();
-		responseDTO.setTaskId(collectionDownloadTask.getId());
-		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
-
-		return responseDTO;
-
-		} catch (HpcException e) {
-			logger.error("Failed to create download task for external download path: " + path + '.' + e.getMessage(), e);
-			throw new HpcException("Failed to create download task for external download for path: " + path  + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-	}
-
-	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
-		logger.info("Registration invoked from ExternalDownload Task for a Collection. Download task id = " + downloadTask.getId());
-		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
-		String path = downloadTask.getPath().replace(downloadArchiveLinkBasePath, "");
-		String userId = downloadTask.getUserId();
-
-		// Find the matching S3 data transfer configuration for the external path
-		try {
-			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
-			if(s3ArchiveConfiguration == null) {
-				logger.warn("No matching S3 archive configuration found for external download path: " + path);
-				throw new HpcException("No matching S3 archive configuration found for external download path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-			}
-		} catch (HpcException e) {
-			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
-			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
-		String basePath = dataManagementConfiguration.getBasePath();
-		String posixPath = s3ArchiveConfiguration.getPosixPath();
-		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
-		String archiveObjectId = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId();
-		String relativePath = path.substring(posixPath.length());
-		if(StringUtils.isEmpty(relativePath)) {
-			logger.warn("Path after POSIX prefix is empty for path: " + path);
-			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		String s3CollectionPath =  archiveObjectId + relativePath;
-		// Build the DirectoryScanRegistrationItem
-		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
-		registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
-		registrationBulkRequestDTO.setDryRun(true);
-		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
-		boolean externalArchiveFlag = true;
-		try{
-			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, userId);
-		} catch (HpcException e) {
-			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
-			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		Iterator<HpcDataObjectRegistrationItemDTO> iterator = registrationResponseDTO.getDataObjectRegistrationItems().iterator();
-		while (iterator.hasNext()) {
-			HpcDataObjectRegistrationItemDTO registrationItem = (HpcDataObjectRegistrationItemDTO) iterator.next();
-			String s3Path = registrationItem.getArchiveLinkSource().getSourceLocation().getFileId();
-			String relativeFilePath = s3Path.substring(s3Path.indexOf('/'));
-			String downloadPath = s3ArchiveConfiguration.getPosixPath() + relativeFilePath;
-				registrationItem.setPath(downloadPath);
-		}
-
-		return registrationResponseDTO;
-	}
 
 	@Override
 	public HpcCollectionDownloadStatusDTO getCollectionDownloadStatus(String taskId) throws HpcException {
@@ -1061,6 +939,74 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			// Add an audit record of this deletion attempt.
 			dataManagementService.addAuditRecord(path, HpcAuditRequestType.DELETE_COLLECTION, metadataEntries, null,
 					null, deleted, null, message, null, totalSize, null);
+		}
+	}
+
+	@Override
+	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+	        throws HpcException {
+		HpcCollectionDownloadResponseDTO responseDTO = null;
+		if (downloadRequest == null) {
+			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		// Validate that the downloadArchiveLinkBasePath property is configured, as it is required for saving the temporary archive links for external downloads.
+		if (StringUtils.isEmpty(downloadArchiveLinkBasePath)) {
+			logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
+			throw new HpcException("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
+		// Find the matching S3 data transfer configuration for the external path
+		try {
+			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
+			if(s3ArchiveConfiguration == null) {
+				logger.warn("No matching S3 archive configuration found for external download path: " + path);
+				throw new HpcException("No matching S3 archive configuration found for external download path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} catch (HpcException e) {
+			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
+			// Default to false - i.e. don't use the absolute data object path in the
+			// download destination.
+			downloadRequest.setAppendPathToDownloadDestination(false);
+		}
+
+		if (downloadRequest.getAppendCollectionNameToDownloadDestination() == null) {
+			// Default to false - i.e. don't use the collection name in the download
+			// destination.
+			downloadRequest.setAppendCollectionNameToDownloadDestination(false);
+		}
+
+		if (downloadRequest.getAppendPathToDownloadDestination()
+				&& downloadRequest.getAppendCollectionNameToDownloadDestination()) {
+			throw new HpcException("Both append indicators are set: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+
+		// Download Step
+		try {
+			// Submit a collection download task.
+			HpcCollectionDownloadTask collectionDownloadTask = dataTransferService.downloadCollection(path,
+					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
+					downloadRequest.getGoogleDriveDownloadDestination(),
+					downloadRequest.getGoogleCloudStorageDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(), securityService.getRequestInvoker().getNciAccount().getUserId(), dataManagementConfiguration.getId(),
+					downloadRequest.getAppendPathToDownloadDestination(),
+					downloadRequest.getAppendCollectionNameToDownloadDestination(), true);
+
+		// Create and return a DTO with the request receipt.
+		responseDTO = new HpcCollectionDownloadResponseDTO();
+		responseDTO.setTaskId(collectionDownloadTask.getId());
+		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
+
+		return responseDTO;
+
+		} catch (HpcException e) {
+			logger.error("Failed to create download task for external download path: " + path + '.' + e.getMessage(), e);
+			throw new HpcException("Failed to create download task for external download for path: " + path  + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 	}
 
@@ -1650,6 +1596,66 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				bulkDataObjectRegistrationRequest.getUiURL(), dataObjectRegistrationRequests));
 
 		return responseDTO;
+	}
+
+	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
+		logger.info("Registration invoked from ExternalDownload Task for a Collection. Download task id = " + downloadTask.getId());
+		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
+		String path = downloadTask.getPath().replace(downloadArchiveLinkBasePath, "");
+		String userId = downloadTask.getUserId();
+
+		// Find the matching S3 data transfer configuration for the external path
+		try {
+			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
+			if(s3ArchiveConfiguration == null) {
+				logger.warn("No matching S3 archive configuration found for external download path: " + path);
+				throw new HpcException("No matching S3 archive configuration found for external download path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} catch (HpcException e) {
+			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+		String basePath = dataManagementConfiguration.getBasePath();
+		String posixPath = s3ArchiveConfiguration.getPosixPath();
+		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
+		String archiveObjectId = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId();
+		String relativePath = path.substring(posixPath.length());
+		if(StringUtils.isEmpty(relativePath)) {
+			logger.warn("Path after POSIX prefix is empty for path: " + path);
+			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		String s3CollectionPath =  archiveObjectId + relativePath;
+		// Build the DirectoryScanRegistrationItem
+		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
+		registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
+		// Set the registration request to dry run mode. We do not want to actually register the data objects at this stage.
+		// We only want the list of files in S3 for the external collection download.
+		registrationBulkRequestDTO.setDryRun(true);
+		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
+		try{
+			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, userId);
+		} catch (HpcException e) {
+			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		try {
+			// The registration items contain the S3 paths. We need to update them with the correct download paths based on the POSIX path.
+			Iterator<HpcDataObjectRegistrationItemDTO> iterator = registrationResponseDTO.getDataObjectRegistrationItems().iterator();
+			while (iterator.hasNext()) {
+				HpcDataObjectRegistrationItemDTO registrationItem = (HpcDataObjectRegistrationItemDTO) iterator.next();
+				String s3Path = registrationItem.getArchiveLinkSource().getSourceLocation().getFileId();
+				String relativeFilePath = s3Path.substring(s3Path.indexOf('/'));
+				String downloadPath = s3ArchiveConfiguration.getPosixPath() + relativeFilePath;
+				registrationItem.setPath(downloadPath);
+			}
+		} catch (Exception e) {
+			// Log the exception and continue. This should not prevent the method from returning the registration response.
+			logger.error("Failed to update registration items with correct download paths for path: " + path + ". " + e.getMessage(), e);
+		}
+
+		return registrationResponseDTO;
 	}
 
 	@Override
