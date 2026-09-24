@@ -331,6 +331,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				default:
 					// Transfer is still in progress.
+					int percentComplete = Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
+							/ systemGeneratedMetadata.getSourceSize());
+					logger.debug("Data transfer upload in progress: {} - {} bytes transferred, {} % complete", path, dataTransferUploadReport.getBytesTransferred(), percentComplete);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(),
 							Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
 									/ systemGeneratedMetadata.getSourceSize()));
