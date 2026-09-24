@@ -1599,9 +1599,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	}
 
 	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
-		logger.info("Registration invoked from ExternalDownload Task for a Collection. Download task id {}, path {} ", downloadTask.getId(), downloadTask.getPath());
+		logger.info("Getting the list of S3 file in the external Collection with download task id {}, path {} ", downloadTask.getId(), downloadTask.getPath());
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
-		String path = downloadTask.getPath().replace(downloadArchiveLinkBasePath, "");
+		String path = downloadTask.getPath();
 		String userId = downloadTask.getUserId();
 
 		// Find the matching S3 data transfer configuration for the external path
