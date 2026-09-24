@@ -765,6 +765,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
 					.registerCollectionFromExternalSource(downloadTask);
 			List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
+			logger.info("registrationResponseDTO={}", gson.toJson(registrationResponseDTO));
 			// 'Activate' the collection download request.
 			//downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
 			for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
@@ -871,6 +872,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 								if(downloadTask.getExternalArchiveFlag()) {
 									downloadItems = processExternalDownloadTask(downloadTask);
+									logger.info("downloadItems after processExternalDownloadTask ={}", gson.toJson(downloadItems));
 								} else {
 									// Get the System generated metadata.
 									HpcSystemGeneratedMetadata metadata = metadataService
