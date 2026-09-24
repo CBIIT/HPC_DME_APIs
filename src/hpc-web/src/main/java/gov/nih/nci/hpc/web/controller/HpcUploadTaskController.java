@@ -16,6 +16,8 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Controller;
@@ -57,6 +59,9 @@ import gov.nih.nci.hpc.web.util.MiscUtil;
 public class HpcUploadTaskController extends AbstractHpcController {
 	@Value("${gov.nih.nci.hpc.server.v2.bulkregistration}")
 	private String registrationServiceURL;
+
+	// The logger instance.
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	/**
 	 * Get operation to display registration task details and its metadata
@@ -123,14 +128,15 @@ public class HpcUploadTaskController extends AbstractHpcController {
 						MiscUtil.addHumanReadableSize(dataSize, true));
 			}
 
-			String bytesTransferred = (uploadTask.getTask().getTotalBytesTransferred() != null 
+			String totalBytesTransferred = (uploadTask.getTask().getTotalBytesTransferred() != null
 					&& uploadTask.getTask().getTotalBytesTransferred() > 0) 
 					? String.valueOf(uploadTask.getTask().getTotalBytesTransferred()) : "0";
-			model.addAttribute("bytesTransferred",
-						MiscUtil.addHumanReadableSize(bytesTransferred, true));
+			model.addAttribute("totalBytesTransferred",
+						MiscUtil.addHumanReadableSize(totalBytesTransferred, true));
 
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed to get registration status: " + e.getMessage());
+			model.addAttribute("error", "Failed to get registration details: " + e.getMessage());
+			logger.error("Failed to get registration details for task " + taskId, e);
 			return "redirect:/uploadtasks";
 		}
 		return "dataobjectsuploadtask";
