@@ -5145,7 +5145,13 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 
 		} catch (HpcException e) {
-			logger.error("Failed external download coordination for path: " + path + ". " + e.getMessage(), e);
+			logger.error("Failed to create download task for external download path: " + path + " with temporary archive link: " + downloadArchiveLinkPath + ". " + e.getMessage(), e);
+			boolean archiveLinkDeleted = deleteExternalArchiveLink(downloadArchiveLinkPath);
+			if (archiveLinkDeleted) {
+				logger.info("Deleted the temporary archive link for path: " + downloadArchiveLinkPath);
+			} else {
+				logger.info("Temporary archive link deletion skipped for path: " + downloadArchiveLinkPath + " since other active download tasks exist for the same path");
+			}
 			throw new HpcException("Failed the Registration/Download step for external download: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		} finally {
 			HpcExternalArchiveLinkLockManager.deletePathLock(downloadArchiveLinkPath);
