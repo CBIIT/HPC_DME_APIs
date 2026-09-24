@@ -1646,13 +1646,16 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			while (iterator.hasNext()) {
 				HpcDataObjectRegistrationItemDTO registrationItem = (HpcDataObjectRegistrationItemDTO) iterator.next();
 				String s3Path = registrationItem.getArchiveLinkSource().getSourceLocation().getFileId();
-				String relativeFilePath = s3Path.substring(s3Path.indexOf('/'));
+				if (!s3Path.startsWith(archiveObjectId)) {
+					throw new HpcException("Scanned S3 path does not start with the configured archive object prefix: " + s3Path, HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				String relativeFilePath = s3Path.substring(archiveObjectId.length());
 				String downloadPath = s3ArchiveConfiguration.getPosixPath() + relativeFilePath;
 				registrationItem.setPath(downloadPath);
 			}
 		} catch (Exception e) {
-			// Log the exception and continue. This should not prevent the method from returning the registration response.
 			logger.error("Failed to update registration items with correct download paths for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Failed to update registration items with correct download paths for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT, e);
 		}
 
 		return registrationResponseDTO;
