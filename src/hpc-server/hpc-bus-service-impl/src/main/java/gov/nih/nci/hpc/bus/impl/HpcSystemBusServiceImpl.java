@@ -2772,7 +2772,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 			// Obtain the list of files from S3 that need to be registered and downloaded in the collection
 			HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
-					.registerCollectionFromExternalSource(downloadTask);
+					.getFilesFromExternalSource(downloadTask);
 
 			List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 			// Initiate a download task for each data object in the collection.
