@@ -1654,8 +1654,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				registrationItem.setPath(downloadPath);
 			}
 		} catch (Exception e) {
-			// Log the exception and continue. This should not prevent the method from returning the registration response.
 			logger.error("Failed to update registration items with correct download paths for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Failed to update registration items with correct download paths for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT, e);
 		}
 
 		return registrationResponseDTO;
