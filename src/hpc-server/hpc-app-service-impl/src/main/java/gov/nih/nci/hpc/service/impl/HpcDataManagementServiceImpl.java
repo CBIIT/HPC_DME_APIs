@@ -1035,6 +1035,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public void updateBulkDataObjectRegistrationTask(HpcBulkDataObjectRegistrationTask registrationTask)
 			throws HpcException {
+		registrationTask.setTotalBytesTransferred(calculateTotalBytesTransferred(registrationTask));
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(registrationTask);
 	}
 
@@ -1059,6 +1060,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		registrationResult.setCompleted(completed);
 		registrationResult.setUploadMethod(registrationTask.getUploadMethod());
 		registrationResult.setRegistrationSize(registrationTask.getRegistrationSize());
+		registrationResult.setTotalBytesTransferred(calculateTotalBytesTransferred(registrationTask));
 		registrationResult.getItems().addAll(registrationTask.getItems());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
@@ -1090,6 +1092,37 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 		// Persist to DB.
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationResult(registrationResult);
+	}
+
+	private Long calculateTotalBytesTransferred(HpcBulkDataObjectRegistrationTask registrationTask) {
+		long totalBytesTransferred = 0;
+		for (HpcBulkDataObjectRegistrationItem item : registrationTask.getItems()) {
+			HpcDataObjectRegistrationTaskItem task = item.getTask();
+			Long size = task.getSize();
+			if (size == null || size <= 0) {
+				continue;
+			}
+
+			if (Optional.ofNullable(item.getRequest()).map(HpcDataObjectRegistrationRequest::getLinkSourcePath)
+					.isPresent()) {
+				continue;
+			}
+
+			//Successfully completed registration item, or in-progress registration item with bytes transferred.
+			long bytesTransferred = 0;
+			if (Boolean.TRUE.equals(task.getResult())) {
+				bytesTransferred = Optional.ofNullable(task.getBytesTransferred()).orElse(size);
+			} else if (task.getResult() == null && task.getBytesTransferred() != null) {
+				bytesTransferred = task.getBytesTransferred();
+			}
+			logger.debug("bytes transferred for {} in bulk task {} : {}",
+						task.getPath(), registrationTask.getId(), bytesTransferred);
+			totalBytesTransferred += bytesTransferred;
+
+		}
+		logger.debug("Total bytes transferred so far for task {} : {}",
+				registrationTask.getId(), totalBytesTransferred);
+		return totalBytesTransferred > 0 ? totalBytesTransferred : null;
 	}
 
 	@Override
