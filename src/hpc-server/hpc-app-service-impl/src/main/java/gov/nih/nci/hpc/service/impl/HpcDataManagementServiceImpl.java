@@ -1107,10 +1107,11 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 					.isPresent()) {
 				continue;
 			}
-
+			//Successfully completed registration item, or in-progress registration item with percent complete > 0.
 			if (Boolean.TRUE.equals(task.getResult())) {
 				totalBytesTransferred += size;
-			} else if (task.getPercentComplete() != null && task.getPercentComplete() > 0) {
+			} else if (task.getResult() == null &&
+					task.getPercentComplete() != null && task.getPercentComplete() > 0) {
 				long bytesTransferred = Math.round((double) task.getPercentComplete() / 100 * size);
 				logger.debug("Bytes transferred so far for {} in bulk task {} : {}, percent complete: {}",
 						task.getPath(), registrationTask.getId(), bytesTransferred, task.getPercentComplete()); 
