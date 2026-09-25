@@ -155,7 +155,7 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
-	 * Download a collection tree.
+	 * Download a collection tree stored in external source(S3)
 	 *
 	 * @param path            The collection path.
 	 * @param downloadRequest The download request DTO.
@@ -166,9 +166,9 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
-	 * Download a collection tree.
+	 * Get all files in a collection that reside in an external file system (S3) and are associated with the download task.
 	 *
-	 * @param path The collection path.
+	 * @param downloadTask The collection download task.
 	 * @return Registration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
