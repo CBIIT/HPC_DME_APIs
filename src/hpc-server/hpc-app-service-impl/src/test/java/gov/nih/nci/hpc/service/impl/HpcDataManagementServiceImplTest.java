@@ -1,6 +1,7 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Constructor;
@@ -103,7 +104,7 @@ class HpcDataManagementServiceImplTest {
 	}
 
 	@Test
-	void testUpdateBulkDataObjectRegistrationTaskFallsBackToPercentCompleteWhenBytesTransferredMissing()
+	void testUpdateBulkDataObjectRegistrationTaskIgnoresPercentCompleteWhenBytesTransferredMissing()
 			throws HpcException {
 		HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
 		task.getItems().add(createItem(200L, 25, null, null));
@@ -113,7 +114,7 @@ class HpcDataManagementServiceImplTest {
 		ArgumentCaptor<HpcBulkDataObjectRegistrationTask> captor = ArgumentCaptor
 				.forClass(HpcBulkDataObjectRegistrationTask.class);
 		verify(dataRegistrationDAO).upsertBulkDataObjectRegistrationTask(captor.capture());
-		assertEquals(50L, captor.getValue().getTotalBytesTransferred());
+		assertNull(captor.getValue().getTotalBytesTransferred());
 	}
 
 	private HpcBulkDataObjectRegistrationItem createItem(Long size, Integer percentComplete, Boolean result,
