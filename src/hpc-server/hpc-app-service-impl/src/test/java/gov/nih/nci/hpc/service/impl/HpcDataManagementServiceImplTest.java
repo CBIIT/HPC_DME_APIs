@@ -41,7 +41,7 @@ class HpcDataManagementServiceImplTest {
 	@Test
 	void testUpdateBulkDataObjectRegistrationTaskSetsTotalBytesTransferred() throws HpcException {
 		HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
-		task.getItems().add(createItem(100L, 100, true, null));
+		task.getItems().add(createItem(150L, 100, true, null));
 		task.getItems().add(createItem(200L, 25, null, null));
 		task.getItems().add(createItem(400L, 100, true, "/source/path"));
 		task.getItems().add(createItem(300L, null, false, null));
