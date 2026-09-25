@@ -1060,8 +1060,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		registrationResult.setCompleted(completed);
 		registrationResult.setUploadMethod(registrationTask.getUploadMethod());
 		registrationResult.setRegistrationSize(registrationTask.getRegistrationSize());
-		registrationTask.setTotalBytesTransferred(calculateTotalBytesTransferred(registrationTask));
-		registrationResult.setTotalBytesTransferred(registrationTask.getTotalBytesTransferred());
+		registrationResult.setTotalBytesTransferred(calculateTotalBytesTransferred(registrationTask));
 		registrationResult.getItems().addAll(registrationTask.getItems());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
@@ -1112,12 +1111,14 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			if (Boolean.TRUE.equals(task.getResult())) {
 				totalBytesTransferred += size;
 			} else if (task.getPercentComplete() != null && task.getPercentComplete() > 0) {
-				totalBytesTransferred += Math.round((double) task.getPercentComplete() / 100 * size);
+				long bytesTransferred = Math.round((double) task.getPercentComplete() / 100 * size);
+				logger.debug("Bytes transferred so far for {} in bulk task {} : {}, percent complete: {}",
+						task.getPath(), registrationTask.getId(), bytesTransferred, task.getPercentComplete()); 
+				totalBytesTransferred += bytesTransferred;
 			}
-			logger.debug("Setting bytes transferred to: + totalBytesTransferred  " +
-					" from percentComplete " + task.getPercentComplete() +
-					" for task " + task.getPath());
 		}
+		logger.debug("Total bytes transferred so far for task {} : {}",
+				registrationTask.getId(), totalBytesTransferred);
 		return totalBytesTransferred > 0 ? totalBytesTransferred : null;
 	}
 
