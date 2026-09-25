@@ -129,10 +129,10 @@ public interface HpcDataTransferService {
 	/**
 	 * Update a data object upload progress.
 	 *
-	 * @param dataObjectId    The data object ID.
-	 * @param percentComplete The upload completion %
+	 * @param dataObjectId      The data object ID.
+	 * @param bytesTransferred  The upload bytes transferred so far.
 	 */
-	public void updateDataObjectUploadProgress(String dataObjectId, int percentComplete);
+	public void updateDataObjectUploadProgress(String dataObjectId, long bytesTransferred);
 
 	/**
 	 * Get a data object upload progress.
@@ -142,6 +142,15 @@ public interface HpcDataTransferService {
 	 * @return The upload completion % if upload in progress, otherwise null.
 	 */
 	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata);
+
+	/**
+	 * Get a data object upload bytes transferred.
+	 *
+	 * @param systemGeneratedMetadata The system generated metadata for the data
+	 *                                object to check upload progress
+	 * @return The upload bytes transferred if upload in progress, otherwise null.
+	 */
+	public Long getDataObjectUploadBytesTransferred(HpcSystemGeneratedMetadata systemGeneratedMetadata);
 
 	/**
 	 * Download a data object file.

@@ -334,10 +334,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// Transfer is still in progress.
 					int percentComplete = Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
 							/ systemGeneratedMetadata.getSourceSize());
-					logger.debug("Data transfer upload in progress: {} - {} bytes transferred, {} % complete", path, dataTransferUploadReport.getBytesTransferred(), percentComplete);
+					logger.debug("Data transfer upload in progress: {} - {} bytes transferred, {} % complete", path,
+							dataTransferUploadReport.getBytesTransferred(), percentComplete);
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(),
-							Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
-									/ systemGeneratedMetadata.getSourceSize()));
+							dataTransferUploadReport.getBytesTransferred());
 					continue;
 				}
 
@@ -2924,6 +2924,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					registrationTask.setResult(false);
 					registrationTask.setMessage("Data object upload failed");
 					registrationTask.setCompleted(Calendar.getInstance());
+					registrationTask.setBytesTransferred(null);
 					return;
 				}
 
@@ -2936,11 +2937,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				if (metadata.getLinkSourcePath() != null) {
 					// Registration w/ link completed.
 					registrationTask.setResult(true);
+					registrationTask.setBytesTransferred(null);
 
 				} else if (HpcDataTransferUploadStatus.ARCHIVED.equals(metadata.getDataTransferStatus())) {
 					// Registration completed successfully for this item.
 					registrationTask.setResult(true);
 					registrationTask.setCompleted(metadata.getDataTransferCompleted());
+					registrationTask.setBytesTransferred(metadata.getSourceSize());
 					registrationTask.setPercentComplete(100);
 
 					// Calculate the effective transfer speed. Note: there is no transfer in
@@ -2958,10 +2961,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				} else if (HpcDataTransferUploadStatus.FAILED.equals(metadata.getDataTransferStatus())) {
 					registrationTask.setResult(false);
+					registrationTask.setBytesTransferred(null);
 					registrationTask.setPercentComplete(null);
 
 				} else {
-					// Registration still in progress. Update % complete.
+					// Registration still in progress. Update bytes transferred and % complete.
+					registrationTask.setBytesTransferred(dataTransferService.getDataObjectUploadBytesTransferred(metadata));
 					registrationTask.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadata));
 				}
 			}
