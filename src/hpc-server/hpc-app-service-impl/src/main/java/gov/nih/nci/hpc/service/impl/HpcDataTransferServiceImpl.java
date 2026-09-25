@@ -160,7 +160,7 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 			HpcDataTransferType.class);
 
 	// Map data object IDs to upload bytes transferred.
-	private Map<String, Long> dataObjectUploadBytesTransferred = new HashMap<>();
+private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concurrent.ConcurrentHashMap<>();
 
 	// System Accounts locator.
 	@Autowired
