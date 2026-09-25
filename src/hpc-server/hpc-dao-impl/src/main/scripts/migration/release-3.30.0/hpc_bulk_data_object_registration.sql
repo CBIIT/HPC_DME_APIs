@@ -6,7 +6,7 @@
 -- See http://ncip.github.com/HPC/LICENSE.txt for details.
 --
 --
--- @author <a href="mailto:rosenbergea@nih.gov">Sunita Menon</a>
+-- @author <a href="mailto:sunita.menon@nih.gov">Sunita Menon</a>
 --
 
 -- HPC_BULK_DATA_OBJECT_REGISTRATION_TASK

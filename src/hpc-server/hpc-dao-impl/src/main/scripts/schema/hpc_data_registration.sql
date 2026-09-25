@@ -19,8 +19,7 @@ CREATE TABLE public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"
   "UI_URL" text,
   "STATUS" text,
   "ITEMS" text,
-  "CREATED" timestamp,
-  "TOTAL_BYTES_TRANSFERRED" bigint
+  "CREATED" timestamp
 )
 WITH (
   OIDS=FALSE
@@ -40,8 +39,6 @@ COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."ITEMS" IS
                   'The list individual data object registrations included in this bulk registration request, in JSON format';
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."CREATED" IS 
                   'The data/time the bulk registration request was submitted';
-COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_TASK"."TOTAL_BYTES_TRANSFERRED" IS
-                  'Keep track of total bytes transferred for the bulk registration task';
 
 DROP TABLE IF EXISTS public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT";
 CREATE TABLE public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"
@@ -53,8 +50,7 @@ CREATE TABLE public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"
   "EFFECTIVE_TRANSFER_SPEED" integer,
   "ITEMS" text,
   "CREATED" timestamp NOT NULL,
-  "COMPLETED" timestamp NOT NULL,
-  "TOTAL_BYTES_TRANSFERRED" bigint
+  "COMPLETED" timestamp NOT NULL
 )
 WITH (
   OIDS=FALSE
@@ -78,8 +74,6 @@ COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."CREATED" IS
                   'The data/time the bulk registration request was submitted';
 COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."COMPLETED" IS 
                   'The data/time the bulk registration request was completed';
-COMMENT ON COLUMN public."HPC_BULK_DATA_OBJECT_REGISTRATION_RESULT"."TOTAL_BYTES_TRANSFERRED" IS
-                  'The total bytes transferred for the bulk registration task';
                   
 DROP TABLE IF EXISTS public."HPC_DATA_OBJECT_REGISTRATION_RESULT";
 CREATE TABLE public."HPC_DATA_OBJECT_REGISTRATION_RESULT"
