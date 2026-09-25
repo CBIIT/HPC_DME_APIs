@@ -113,7 +113,7 @@
 									<div class="col-md-12 form-group" th:if="${hpcBulkDataObjectRegistrationTaskDTO.getResult() == null}">
 										<label for="Name">Registration Completed:</label> <label id="regComplete">In Progress</label>
 									</div>
-									<div class="col-md-12 form-group" th:if="${totalBytesTransferred != null and !#strings.startsWith(totalBytesTransferred,'0')}">
+									<div class="col-md-12 form-group" th:if="${totalBytesTransferred != null}">
 										<label for="totalBytesTransferred">Bytes Transferred:</label>
 										<span th:text="${totalBytesTransferred}"></span>
 									</div>
