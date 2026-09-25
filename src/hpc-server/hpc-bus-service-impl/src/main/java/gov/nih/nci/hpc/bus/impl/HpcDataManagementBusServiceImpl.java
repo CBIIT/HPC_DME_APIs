@@ -1637,8 +1637,8 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		try{
 			registrationResponseDTO = registerDataObjects(registrationBulkRequestDTO, userId);
 		} catch (HpcException e) {
-			logger.error("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), e);
-			throw new HpcException("Failed the Registration step for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+			logger.error("Failed to obtain the list of files in S3 for external collection download for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Failed to obtain the list of files in S3 for external collection download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		try {
 			// The registration items contain the S3 paths. We need to update them with the correct download paths based on the POSIX path.
