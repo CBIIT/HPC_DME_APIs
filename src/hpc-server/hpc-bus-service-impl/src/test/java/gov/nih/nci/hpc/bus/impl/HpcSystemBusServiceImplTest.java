@@ -1,18 +1,25 @@
 package gov.nih.nci.hpc.bus.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
+import java.lang.reflect.Method;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
@@ -24,6 +31,8 @@ class HpcSystemBusServiceImplTest {
     private HpcMetadataService metadataService;
     @Mock
     private HpcDataTransferService dataTransferService;
+    @Mock
+    private HpcDataManagementService dataManagementService;
     @Mock
     private HpcNotificationService notificationService;
 
@@ -146,5 +155,31 @@ class HpcSystemBusServiceImplTest {
         
         assertFalse(service.canRemoveDeletedDataObject("somePath", "originalPath"));
     }
-    
+
+    @Test
+    void testUpdateRegistrationItemStatusSetsBytesTransferredAndPercentComplete() throws Exception {
+        HpcBulkDataObjectRegistrationItem item = new HpcBulkDataObjectRegistrationItem();
+        HpcDataObjectRegistrationTaskItem task = new HpcDataObjectRegistrationTaskItem();
+        task.setPath("/path/to/data");
+        item.setTask(task);
+
+        when(dataManagementService.getDataObject("/path/to/data")).thenReturn(new HpcDataObject());
+
+        HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
+        metadata.setObjectId("object-id");
+        metadata.setSourceSize(1000L);
+        metadata.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
+        when(metadataService.getDataObjectSystemGeneratedMetadata("/path/to/data")).thenReturn(metadata);
+        when(dataTransferService.getDataObjectUploadBytesTransferred(metadata)).thenReturn(55L);
+        when(dataTransferService.getDataObjectUploadProgress(metadata)).thenReturn(6);
+
+        Method method = HpcSystemBusServiceImpl.class.getDeclaredMethod("updateRegistrationItemStatus",
+                HpcBulkDataObjectRegistrationItem.class);
+        method.setAccessible(true);
+        method.invoke(service, item);
+
+        assertEquals(55L, item.getTask().getBytesTransferred());
+        assertEquals(6, item.getTask().getPercentComplete());
+    }
+     
 }

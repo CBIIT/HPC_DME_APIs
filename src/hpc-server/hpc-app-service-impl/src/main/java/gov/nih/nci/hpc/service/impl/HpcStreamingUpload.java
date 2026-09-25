@@ -105,7 +105,7 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 	public void transferCompleted(Long bytesTransferred) {
 		logger.info("AWS / 3rd Party S3 Provider / Google Drive / Google Cloud Storage upload completed for: {}", path);
 		deleteGoogleAccessToken();
-		dataTransferService.updateDataObjectUploadProgress(dataObjectId, 100);
+		dataTransferService.updateDataObjectUploadProgress(dataObjectId, bytesTransferred != null ? bytesTransferred : size);
 
 		// Note: Completing the upload process is handled by
 		// processDataTranferUploadStreamingInProgress() scheduled task.
@@ -135,8 +135,7 @@ public class HpcStreamingUpload implements HpcDataTransferProgressListener {
 
 	@Override
 	public void transferProgressed(long bytesTransferred) {
-		dataTransferService.updateDataObjectUploadProgress(dataObjectId,
-				Math.round(100 * (float) bytesTransferred / size));
+		dataTransferService.updateDataObjectUploadProgress(dataObjectId, bytesTransferred);
 	}
 
 	// ---------------------------------------------------------------------//
