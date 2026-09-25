@@ -533,6 +533,9 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 			if (taskItem.getEffectiveTransferSpeed() != null) {
 				jsonTask.put("effectiveTransferSpeed", taskItem.getEffectiveTransferSpeed().toString());
 			}
+			if (taskItem.getBytesTransferred() != null) {
+				jsonTask.put("bytesTransferred", taskItem.getBytesTransferred().toString());
+			}
 			if (taskItem.getPercentComplete() != null) {
 				jsonTask.put("percentComplete", taskItem.getPercentComplete().toString());
 			}
@@ -835,6 +838,11 @@ public class HpcDataRegistrationDAOImpl implements HpcDataRegistrationDAO {
 		Object effectiveTransferSpeed = jsonTask.get("effectiveTransferSpeed");
 		if (effectiveTransferSpeed != null) {
 			task.setEffectiveTransferSpeed(Integer.valueOf(effectiveTransferSpeed.toString()));
+		}
+
+		Object bytesTransferred = jsonTask.get("bytesTransferred");
+		if (bytesTransferred != null) {
+			task.setBytesTransferred(Long.valueOf(bytesTransferred.toString()));
 		}
 
 		Object percentComplete = jsonTask.get("percentComplete");
