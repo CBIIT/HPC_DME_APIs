@@ -76,14 +76,60 @@ class HpcDataManagementServiceImplTest {
 		assertEquals(600L, captor.getValue().getRegistrationSize());
 	}
 
+	@Test
+	void testUpdateBulkDataObjectRegistrationTaskUsesBytesTransferredWhenPercentCompleteIsZero() throws HpcException {
+		HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
+		task.getItems().add(createItem(1_000_000_000L, 0, null, null, 25_000_000L));
+
+		service.updateBulkDataObjectRegistrationTask(task);
+
+		ArgumentCaptor<HpcBulkDataObjectRegistrationTask> captor = ArgumentCaptor
+				.forClass(HpcBulkDataObjectRegistrationTask.class);
+		verify(dataRegistrationDAO).upsertBulkDataObjectRegistrationTask(captor.capture());
+		assertEquals(25_000_000L, captor.getValue().getTotalBytesTransferred());
+	}
+
+	@Test
+	void testUpdateBulkDataObjectRegistrationTaskPrefersBytesTransferredOverPercentComplete() throws HpcException {
+		HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
+		task.getItems().add(createItem(1_000L, 20, null, null, 5L));
+
+		service.updateBulkDataObjectRegistrationTask(task);
+
+		ArgumentCaptor<HpcBulkDataObjectRegistrationTask> captor = ArgumentCaptor
+				.forClass(HpcBulkDataObjectRegistrationTask.class);
+		verify(dataRegistrationDAO).upsertBulkDataObjectRegistrationTask(captor.capture());
+		assertEquals(5L, captor.getValue().getTotalBytesTransferred());
+	}
+
+	@Test
+	void testUpdateBulkDataObjectRegistrationTaskFallsBackToPercentCompleteWhenBytesTransferredMissing()
+			throws HpcException {
+		HpcBulkDataObjectRegistrationTask task = new HpcBulkDataObjectRegistrationTask();
+		task.getItems().add(createItem(200L, 25, null, null));
+
+		service.updateBulkDataObjectRegistrationTask(task);
+
+		ArgumentCaptor<HpcBulkDataObjectRegistrationTask> captor = ArgumentCaptor
+				.forClass(HpcBulkDataObjectRegistrationTask.class);
+		verify(dataRegistrationDAO).upsertBulkDataObjectRegistrationTask(captor.capture());
+		assertEquals(50L, captor.getValue().getTotalBytesTransferred());
+	}
+
 	private HpcBulkDataObjectRegistrationItem createItem(Long size, Integer percentComplete, Boolean result,
 			String linkSourcePath) {
+		return createItem(size, percentComplete, result, linkSourcePath, null);
+	}
+
+	private HpcBulkDataObjectRegistrationItem createItem(Long size, Integer percentComplete, Boolean result,
+			String linkSourcePath, Long bytesTransferred) {
 		HpcBulkDataObjectRegistrationItem item = new HpcBulkDataObjectRegistrationItem();
 		HpcDataObjectRegistrationTaskItem taskItem = new HpcDataObjectRegistrationTaskItem();
 		taskItem.setPath("/path");
 		taskItem.setSize(size);
 		taskItem.setPercentComplete(percentComplete);
 		taskItem.setResult(result);
+		taskItem.setBytesTransferred(bytesTransferred);
 		item.setTask(taskItem);
 
 		HpcDataObjectRegistrationRequest request = new HpcDataObjectRegistrationRequest();
