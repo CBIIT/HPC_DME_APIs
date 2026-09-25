@@ -1108,17 +1108,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 				continue;
 			}
 
+			//Successfully completed registration item, or in-progress registration item with bytes transferred.
+			long bytesTransferred = 0;
 			if (Boolean.TRUE.equals(task.getResult())) {
-				totalBytesTransferred += Optional.ofNullable(task.getBytesTransferred()).orElse(size);
+				bytesTransferred = Optional.ofNullable(task.getBytesTransferred()).orElse(size);
 			} else if (task.getResult() == null && task.getBytesTransferred() != null) {
-				totalBytesTransferred += task.getBytesTransferred();
-			} else if (task.getResult() == null &&
-					task.getPercentComplete() != null && task.getPercentComplete() > 0) {
-				long bytesTransferred = Math.round((double) task.getPercentComplete() / 100 * size);
-				logger.debug("Using legacy percent-based bytes transferred for {} in bulk task {} : {}, percent complete: {}",
-						task.getPath(), registrationTask.getId(), bytesTransferred, task.getPercentComplete());
-				totalBytesTransferred += bytesTransferred;
+				bytesTransferred = task.getBytesTransferred();
 			}
+			logger.debug("bytes transferred for {} in bulk task {} : {}",
+						task.getPath(), registrationTask.getId(), bytesTransferred);
+			totalBytesTransferred += bytesTransferred;
+
 		}
 		logger.debug("Total bytes transferred so far for task {} : {}",
 				registrationTask.getId(), totalBytesTransferred);
