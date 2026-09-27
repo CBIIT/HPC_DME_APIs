@@ -1269,6 +1269,8 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 		bulkDataObjectRegistrationTask
 				.setEffectiveTransferSpeed(v2BulkDataObjectRegistrationTask.getEffectiveTransferSpeed());
 		bulkDataObjectRegistrationTask.setPercentComplete(v2BulkDataObjectRegistrationTask.getPercentComplete());
+		bulkDataObjectRegistrationTask
+				.setTotalBytesTransferred(v2BulkDataObjectRegistrationTask.getTotalBytesTransferred());
 		bulkDataObjectRegistrationTask.setCreated(v2BulkDataObjectRegistrationTask.getCreated());
 		bulkDataObjectRegistrationTask.setCompleted(v2BulkDataObjectRegistrationTask.getCompleted());
 		v2BulkDataObjectRegistrationTask.getFailedItemsRequest().forEach(v2DataObjectRegistrationItem -> {
