@@ -8,7 +8,10 @@
  */
 package gov.nih.nci.hpc.dao.oracle.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,11 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 	// SQL built at init time.
 	private String pieChartSql;
 	private String barChartSql;
+	private static final String DEFAULT_POC = "N/A";
+	private static final String ALL_ARCHIVE_POC_SQL =
+			"select base_path, doc, poc from hpc_archive_poc where base_path is not null and poc is not null";
+	private static final String ARCHIVE_POC_BY_BASE_PATH_SQL =
+			"select base_path, doc, poc from hpc_archive_poc where poc is not null and (base_path = ? or base_path = ?)";
 
 	// Row mapper for pie chart entries.
 	private RowMapper<HpcLastAccessPieChartEntry> pieChartRowMapper = (rs, rowNum) -> {
@@ -229,11 +237,92 @@ public class HpcLastAccessDAOImpl implements HpcLastAccessDAO {
 		try {
 			String basePathFilter = (basePath != null && !basePath.trim().isEmpty()) ? basePath : null;
 			String currentPathFilter = (currentPath != null && !currentPath.trim().isEmpty()) ? currentPath : null;
-			return jdbcTemplate.query(barChartSql, barChartRowMapper,
+			List<HpcLastAccessBarChartEntry> entries = jdbcTemplate.query(barChartSql, barChartRowMapper,
 					basePathFilter, currentPathFilter, includeAWSBucket ? "/" : "%aws%");
+			enrichBarChartEntriesWithPoc(entries, basePathFilter);
+			return entries;
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to query last access bar chart data: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
+	}
+
+	private void enrichBarChartEntriesWithPoc(List<HpcLastAccessBarChartEntry> entries, String basePath) {
+		if (entries == null || entries.isEmpty()) {
+			return;
+		}
+
+		if (basePath == null) {
+			Map<String, String> pocByBasePath = getAllArchivePocsByBasePath();
+			for (HpcLastAccessBarChartEntry entry : entries) {
+				entry.setPoc(resolvePocForSubfolder(entry.getSubfolder(), pocByBasePath));
+			}
+		} else {
+			String poc = getArchivePocForBasePath(basePath);
+			for (HpcLastAccessBarChartEntry entry : entries) {
+				entry.setPoc(poc);
+			}
+		}
+	}
+
+	private Map<String, String> getAllArchivePocsByBasePath() {
+		Map<String, String> pocByBasePath = new HashMap<>();
+		List<Map<String, Object>> rows = jdbcTemplate.queryForList(ALL_ARCHIVE_POC_SQL);
+		for (Map<String, Object> row : rows) {
+			String normalizedBasePath = normalizeBasePath((String) row.get("BASE_PATH"));
+			String poc = normalizePoc((String) row.get("POC"));
+			if (normalizedBasePath != null && !pocByBasePath.containsKey(normalizedBasePath)) {
+				pocByBasePath.put(normalizedBasePath, poc);
+			}
+		}
+		return pocByBasePath;
+	}
+
+	private String getArchivePocForBasePath(String basePath) {
+		String normalizedBasePath = normalizeBasePath(basePath);
+		if (normalizedBasePath == null) {
+			return DEFAULT_POC;
+		}
+
+		String basePathWithLeadingSlash = basePath.startsWith("/") ? basePath : "/" + basePath;
+		String alternateBasePath = basePath.startsWith("/") ? basePath.substring(1) : basePath;
+		List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+				ARCHIVE_POC_BY_BASE_PATH_SQL, basePathWithLeadingSlash, alternateBasePath);
+		for (Map<String, Object> row : rows) {
+			String candidateBasePath = normalizeBasePath((String) row.get("BASE_PATH"));
+			if (normalizedBasePath.equals(candidateBasePath)) {
+				return normalizePoc((String) row.get("POC"));
+			}
+		}
+		return DEFAULT_POC;
+	}
+
+	private String resolvePocForSubfolder(String subfolder, Map<String, String> pocByBasePath) {
+		String normalizedSubfolder = normalizeBasePath(subfolder);
+		if (normalizedSubfolder == null) {
+			return DEFAULT_POC;
+		}
+		return pocByBasePath.getOrDefault(normalizedSubfolder, DEFAULT_POC);
+	}
+
+	private String normalizeBasePath(String basePath) {
+		if (basePath == null) {
+			return null;
+		}
+		String normalized = basePath.trim();
+		while (normalized.startsWith("/")) {
+			normalized = normalized.substring(1);
+		}
+		while (normalized.endsWith("/")) {
+			normalized = normalized.substring(0, normalized.length() - 1);
+		}
+		if (normalized.isEmpty()) {
+			return null;
+		}
+		return normalized.toLowerCase(Locale.ROOT);
+	}
+
+	private String normalizePoc(String poc) {
+		return poc != null && !poc.trim().isEmpty() ? poc.trim() : DEFAULT_POC;
 	}
 }

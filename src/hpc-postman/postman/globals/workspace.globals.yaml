@@ -1,2 +1,11 @@
 name: Globals
-values: []
+values:
+  - key: aws-region
+    value: ''
+    enabled: true
+  - key: aws-bucket
+    value: ''
+    enabled: true
+  - key: aws-folder
+    value: ''
+    enabled: true
