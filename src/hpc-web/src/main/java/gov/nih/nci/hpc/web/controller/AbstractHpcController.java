@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -72,6 +73,8 @@ public abstract class AbstractHpcController {
 	private String userGroupServiceURL;
 	@Value("${dme.max.allowed.download.size:3000000000000}")
 	protected Long maxAllowedDownloadSize;
+	@Value("${dme.downtime.message}")
+	String downtimeMessage;
 	
 	//Attribute constants
 	protected static final String ATTR_USER_LOGIN = "hpcLogin";
@@ -125,6 +128,14 @@ public abstract class AbstractHpcController {
 		return new HpcResponse("Error occurred", ex.toString());
 	}
 
+	@ModelAttribute("downtimeMessage")
+	public String getDowntimeMessage() {
+
+		if (StringUtils.isNotEmpty(downtimeMessage) && StringUtils.isNotBlank(downtimeMessage)) {
+			return downtimeMessage;
+		}
+		return null;
+	}
 
 	protected HpcDataManagementModelDTO getModelDTO(HttpSession session) {
 		String authToken = (String) session.getAttribute(ATTR_USER_TOKEN);

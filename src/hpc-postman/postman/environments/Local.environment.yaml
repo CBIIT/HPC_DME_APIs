@@ -12,3 +12,6 @@ values:
   - key: password
     value: '{{vault:password}}'
     enabled: true
+  - key: dataObjectPath
+    value: FNL_SF_Archive/eran-pi-lab/eran-project/eran-flowcell/eran-sample/eran-data-object-sync-
+    enabled: true

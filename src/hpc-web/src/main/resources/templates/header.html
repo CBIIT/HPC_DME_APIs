@@ -5,6 +5,34 @@
 		<!-- container section start -->
 		<header class="header" style="background-color: #2a72a5;">
 
+			<!-- Alert Banner -->
+	
+			<section id="maintenance-banner"
+	        th:if="${downtimeMessage!= null}"
+	        class="maintenance-alert-banner"
+	        aria-label="Maintenance alert">
+		       <div class="maintenance-alert">
+		           <div class="maintenance-alert-body">
+		               <span th:utext="${downtimeMessage}"></span>
+		           </div>
+		       </div>
+	    	</section>
+	    	<script th:if="${downtimeMessage!= null}">
+	    		(function () {
+	    			var container = document.getElementById('container');
+	    			var banner = document.getElementById('maintenance-banner');
+
+if (container && banner) {
+						var updateBannerHeight = function () {
+							container.classList.add('has-maintenance-banner');
+							container.style.setProperty('--maintenance-banner-height', banner.offsetHeight + 'px');
+						};
+						updateBannerHeight();
+						window.addEventListener('resize', updateBannerHeight);
+					}
+	    		}());
+	    	</script>
+    
 			<!--logo start-->
 			<div class="col order-first" style="background-color: #fff;">
 				<a href="#" aria-label="image link"> <img

@@ -74,7 +74,7 @@ public class HpcStagedFileUpload implements HpcDataTransferProgressListener {
 	@Override
 	public void transferCompleted(Long bytesTransferred) {
 		logger.info("Staged file upload completed for: {}", path);
-		dataTransferService.updateDataObjectUploadProgress(dataObjectId, 100);
+		dataTransferService.updateDataObjectUploadProgress(dataObjectId, bytesTransferred != null ? bytesTransferred : size);
 
 		// Note: Completing the upload process is handled by a scheduled task.
 	}
@@ -88,7 +88,6 @@ public class HpcStagedFileUpload implements HpcDataTransferProgressListener {
 
 	@Override
 	public void transferProgressed(long bytesTransferred) {
-		dataTransferService.updateDataObjectUploadProgress(dataObjectId,
-				Math.round(100 * (float) bytesTransferred / size));
+		dataTransferService.updateDataObjectUploadProgress(dataObjectId, bytesTransferred);
 	}
 }
