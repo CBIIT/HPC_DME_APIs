@@ -489,6 +489,30 @@ public class HpcDataTransferServiceImplTest {
 		dataTransferService = dataTransferServiceImpl;
 	}
 
+	@Test
+	public void testUpdateDataObjectUploadProgressTracksBytesTransferred() {
+		HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
+		metadata.setObjectId("object-id");
+		metadata.setSourceSize(1000L);
+		metadata.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
+
+		dataTransferService.updateDataObjectUploadProgress("object-id", 55L);
+
+		assertEquals(55L, dataTransferService.getDataObjectUploadBytesTransferred(metadata));
+		assertEquals(6, dataTransferService.getDataObjectUploadProgress(metadata));
+	}
+
+	@Test
+	public void testGetDataObjectUploadProgressReturnsZeroWhenSourceSizeMissing() {
+		HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
+		metadata.setObjectId("object-id");
+		metadata.setDataTransferStatus(HpcDataTransferUploadStatus.IN_PROGRESS_TO_ARCHIVE);
+
+		dataTransferService.updateDataObjectUploadProgress("object-id", 55L);
+
+		assertEquals(0, dataTransferService.getDataObjectUploadProgress(metadata));
+	}
+
 	private void setPrivateField(Object target, String fieldName, Object value) {
 		try {
 			Field field = HpcDataTransferServiceImpl.class.getDeclaredField(fieldName);

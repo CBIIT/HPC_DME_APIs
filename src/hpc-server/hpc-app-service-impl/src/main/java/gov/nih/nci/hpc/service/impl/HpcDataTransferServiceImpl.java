@@ -159,8 +159,8 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	private Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new EnumMap<>(
 			HpcDataTransferType.class);
 
-	// Map data object IDs to completion %.
-	private Map<String, Integer> dataObjectUploadPercentComplete = new HashMap<>();
+	// Map data object IDs to upload bytes transferred.
+private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concurrent.ConcurrentHashMap<>();
 
 	// System Accounts locator.
 	@Autowired
@@ -560,20 +560,36 @@ public class HpcDataTransferServiceImpl implements HpcDataTransferService {
 	}
 
 	@Override
-	public void updateDataObjectUploadProgress(String dataObjectId, int percentComplete) {
-		if (!StringUtils.isEmpty(dataObjectId) && percentComplete >= 0 && percentComplete <= 100) {
-			dataObjectUploadPercentComplete.put(dataObjectId, percentComplete);
+	public void updateDataObjectUploadProgress(String dataObjectId, long bytesTransferred) {
+		if (!StringUtils.isEmpty(dataObjectId) && bytesTransferred >= 0) {
+			dataObjectUploadBytesTransferred.put(dataObjectId, bytesTransferred);
 		}
 	}
 
 	@Override
 	public Integer getDataObjectUploadProgress(HpcSystemGeneratedMetadata systemGeneratedMetadata) {
+		if (systemGeneratedMetadata.getDataTransferStatus() != null
+				&& systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)) {
+			return null;
+		}
+
+		Long bytesTransferred = getDataObjectUploadBytesTransferred(systemGeneratedMetadata);
+		Long sourceSize = systemGeneratedMetadata.getSourceSize();
+		if (bytesTransferred == null || sourceSize == null || sourceSize <= 0) {
+			return 0;
+		}
+
+		return Math.min(100, Math.round(100 * (float) bytesTransferred / sourceSize));
+	}
+
+	@Override
+	public Long getDataObjectUploadBytesTransferred(HpcSystemGeneratedMetadata systemGeneratedMetadata) {
 		return systemGeneratedMetadata.getDataTransferStatus() != null
 				&& systemGeneratedMetadata.getDataTransferStatus().equals(HpcDataTransferUploadStatus.ARCHIVED)
 						? null
 						: Optional
-								.ofNullable(dataObjectUploadPercentComplete.get(systemGeneratedMetadata.getObjectId()))
-								.orElse(0);
+								.ofNullable(dataObjectUploadBytesTransferred.get(systemGeneratedMetadata.getObjectId()))
+								.orElse(0L);
 	}
 
 	@Override
