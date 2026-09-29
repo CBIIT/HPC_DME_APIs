@@ -509,6 +509,7 @@
 			<xsd:element name="totalBytesTransferred " type="xsd:long" minOccurs="0" />
 			<xsd:element name="priority" type="xsd:int" />
 			<xsd:element name="dataSize" type="xsd:long" minOccurs="0"/>
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
