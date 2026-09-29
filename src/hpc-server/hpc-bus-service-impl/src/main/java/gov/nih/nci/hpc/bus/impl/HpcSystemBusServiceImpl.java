@@ -809,7 +809,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
 								if(downloadTask.getExternalArchiveFlag()) {
-									downloadItems = processExternalDownloadTask(downloadTask);
+									try {
+										downloadItems = processExternalDownloadTask(downloadTask);
+									} catch (Exception e) {
+										throw new HpcException("Unable to find the collection or its associated data objects. " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+									}
 								} else {
 									// Get the System generated metadata.
 									HpcSystemGeneratedMetadata metadata = metadataService
