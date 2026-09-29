@@ -273,6 +273,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				HpcDataTransferUploadStatus dataTransferStatus = dataTransferUploadReport.getStatus();
 				Calendar dataTransferCompleted = null;
+				logger.debug("Data transfer upload report: {} - status: {}, {} bytes transferred", path, dataTransferStatus, dataTransferUploadReport.getBytesTransferred());
 				switch (dataTransferStatus) {
 				case ARCHIVED:
 					// Data object is archived. Note: This is a configured filesystem archive.
@@ -333,9 +334,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				default:
 					// Transfer is still in progress.
+					logger.debug("Data transfer upload in progress: {} - {} bytes transferred, {}", path,
+							dataTransferUploadReport.getBytesTransferred());
 					dataTransferService.updateDataObjectUploadProgress(systemGeneratedMetadata.getObjectId(),
-							Math.round(100 * (float) dataTransferUploadReport.getBytesTransferred()
-									/ systemGeneratedMetadata.getSourceSize()));
+							dataTransferUploadReport.getBytesTransferred());
 					continue;
 				}
 
@@ -2792,7 +2794,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			}
 			return downloadItems;
 		} catch (HpcException e) {
-			logger.error("Failed to process external collection download task: " + downloadTask.getId(), e);
+			logger.error("Failed to process external collection download task: " + downloadTask.getId() + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
 			try {
 				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
 
@@ -2971,6 +2973,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					registrationTask.setResult(false);
 					registrationTask.setMessage("Data object upload failed");
 					registrationTask.setCompleted(Calendar.getInstance());
+					registrationTask.setBytesTransferred(null);
 					return;
 				}
 
@@ -2983,11 +2986,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				if (metadata.getLinkSourcePath() != null) {
 					// Registration w/ link completed.
 					registrationTask.setResult(true);
+					registrationTask.setBytesTransferred(null);
 
 				} else if (HpcDataTransferUploadStatus.ARCHIVED.equals(metadata.getDataTransferStatus())) {
 					// Registration completed successfully for this item.
 					registrationTask.setResult(true);
 					registrationTask.setCompleted(metadata.getDataTransferCompleted());
+					registrationTask.setBytesTransferred(metadata.getSourceSize());
 					registrationTask.setPercentComplete(100);
 
 					// Calculate the effective transfer speed. Note: there is no transfer in
@@ -3005,10 +3010,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				} else if (HpcDataTransferUploadStatus.FAILED.equals(metadata.getDataTransferStatus())) {
 					registrationTask.setResult(false);
+					registrationTask.setBytesTransferred(null);
 					registrationTask.setPercentComplete(null);
 
 				} else {
-					// Registration still in progress. Update % complete.
+					// Registration still in progress. Update bytes transferred and % complete.
+					registrationTask.setBytesTransferred(dataTransferService.getDataObjectUploadBytesTransferred(metadata));
 					registrationTask.setPercentComplete(dataTransferService.getDataObjectUploadProgress(metadata));
 				}
 			}

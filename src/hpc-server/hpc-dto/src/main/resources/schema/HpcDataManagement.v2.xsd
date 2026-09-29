@@ -247,6 +247,8 @@
 			<xsd:element name="uploadMethod" 
 				type="hpc-domain-datatransfer:HpcDataTransferUploadMethod" />
 			<xsd:element name="registrationSize" type="xsd:long" />
+			<xsd:element name="totalBytesTransferred" type="xsd:long"
+				minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
 
