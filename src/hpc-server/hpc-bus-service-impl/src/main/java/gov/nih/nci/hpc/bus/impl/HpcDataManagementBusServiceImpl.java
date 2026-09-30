@@ -714,7 +714,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination(),
-					downloadRequest.getAppendCollectionNameToDownloadDestination());
+					downloadRequest.getAppendCollectionNameToDownloadDestination(), false);
 		} else {
 			// Submit a request to download a list of collections.
 
@@ -758,7 +758,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
 					securityService.getRequestInvoker().getNciAccount().getUserId(), configurationId,
 					downloadRequest.getAppendPathToDownloadDestination(),
-					downloadRequest.getAppendCollectionNameToDownloadDestination());
+					downloadRequest.getAppendCollectionNameToDownloadDestination(), false);
 		}
 
 		// Create and return a DTO with the request receipt.
@@ -1076,6 +1076,103 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
 
 		return responseDTO;
+	}
+
+	@Override
+	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
+			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException {
+
+		HpcBulkDataObjectDownloadResponseDTO responseDTO = null;
+		// Input validation.
+		if (downloadRequest == null) {
+			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		// Validate that the downloadArchiveLinkBasePath property is configured, as it is required for saving the temporary archive links for external downloads.
+		if (StringUtils.isEmpty(downloadArchiveLinkBasePath)) {
+			logger.warn("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath");
+			throw new HpcException("Download archive link base path is not configured as property: hpc.bus.downloadArchiveLinkBasePath", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		if (downloadRequest.getDataObjectPaths().isEmpty() && downloadRequest.getCollectionPaths().isEmpty()) {
+			throw new HpcException("No data object or collection paths", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (!downloadRequest.getDataObjectPaths().isEmpty() && !downloadRequest.getCollectionPaths().isEmpty()) {
+			throw new HpcException("Both data object and collection paths provided",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		if (downloadRequest.getAppendPathToDownloadDestination() == null) {
+			// Default to true - i.e. use the absolute data object path in the download
+			// destination.
+			downloadRequest.setAppendPathToDownloadDestination(true);
+		}
+		if (downloadRequest.getAppendCollectionNameToDownloadDestination() == null) {
+			// Default to false - i.e. use the collection name in the download destination.
+			downloadRequest.setAppendCollectionNameToDownloadDestination(false);
+		}
+		if (downloadRequest.getAppendPathToDownloadDestination()
+				&& downloadRequest.getAppendCollectionNameToDownloadDestination()) {
+			throw new HpcException("Both append indicators are set", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcCollectionDownloadTask collectionDownloadTask = null;
+		List<String> errors = new ArrayList<>();
+		String path = null;
+		if (!downloadRequest.getDataObjectPaths().isEmpty()) {
+			path = downloadRequest.getDataObjectPaths().iterator().next();
+		} else if (!downloadRequest.getCollectionPaths().isEmpty()) {
+			path = downloadRequest.getCollectionPaths().iterator().next();
+		}
+
+		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
+		// Find the matching S3 data transfer configuration for the external path
+		try {
+			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
+			if(s3ArchiveConfiguration == null) {
+				logger.warn("No matching S3 archive configuration found for external download path: " + path);
+				throw new HpcException("No matching S3 archive configuration found for external download path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} catch (HpcException e) {
+			logger.error("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), e);
+			throw new HpcException("Invalid S3 configuration for external download for path: " + path + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
+
+		// Download Step
+		try {
+			// Submit a collection download task.
+		if (!downloadRequest.getDataObjectPaths().isEmpty()) {
+			// Submit a data objects download task.
+			collectionDownloadTask = dataTransferService.downloadDataObjects(downloadRequest.getDataObjectPaths(),
+					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
+					downloadRequest.getGoogleDriveDownloadDestination(),
+					downloadRequest.getGoogleCloudStorageDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
+					securityService.getRequestInvoker().getNciAccount().getUserId(), dataManagementConfiguration.getId(),
+					downloadRequest.getAppendPathToDownloadDestination(),
+					downloadRequest.getAppendCollectionNameToDownloadDestination(), true);
+		} else {
+			// Submit a collections download task.
+			collectionDownloadTask = dataTransferService.downloadCollections(downloadRequest.getCollectionPaths(),
+					downloadRequest.getGlobusDownloadDestination(), downloadRequest.getS3DownloadDestination(),
+					downloadRequest.getGoogleDriveDownloadDestination(),
+					downloadRequest.getGoogleCloudStorageDownloadDestination(),
+					downloadRequest.getAsperaDownloadDestination(), downloadRequest.getBoxDownloadDestination(),
+					securityService.getRequestInvoker().getNciAccount().getUserId(), dataManagementConfiguration.getId(),
+					downloadRequest.getAppendPathToDownloadDestination(),
+					downloadRequest.getAppendCollectionNameToDownloadDestination(), true);
+		}
+		// Create and return a DTO with the request receipt.
+		responseDTO.setTaskId(collectionDownloadTask.getId());
+		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
+
+		return responseDTO;
+
+		} catch (HpcException e) {
+			logger.error("Failed to create download task for external download path: " + path + '.' + e.getMessage(), e);
+			throw new HpcException("Failed to create download task for external download for path: " + path  + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 	}
 
 	@Override

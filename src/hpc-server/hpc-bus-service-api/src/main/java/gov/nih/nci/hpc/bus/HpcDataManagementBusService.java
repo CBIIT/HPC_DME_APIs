@@ -175,7 +175,7 @@ public interface HpcDataManagementBusService {
 	public HpcBulkDataObjectRegistrationResponseDTO getFilesFromExternalSource(HpcCollectionDownloadTask downloadTask)
 			throws HpcException;
 
-			/**
+	/**
 	 * Download data objects or collections. Note: API doesn't support mixed, so
 	 * user expected to provide a list of data objects or a list of collections, not
 	 * both.
@@ -187,6 +187,17 @@ public interface HpcDataManagementBusService {
 	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollections(
 			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
 
+	/**
+	 * Download data objects or collections from an external source (S3). Note: API doesn't support mixed, so
+	 * user expected to provide a list of data objects or a list of collections, not
+	 * both.
+	 *
+	 * @param downloadRequest The download request DTO.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
+			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
 	/**
 	 * Get collection download task status.
 	 *
