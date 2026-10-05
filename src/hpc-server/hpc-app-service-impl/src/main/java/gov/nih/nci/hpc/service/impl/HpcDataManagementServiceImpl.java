@@ -25,10 +25,11 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,7 +42,6 @@ import gov.nih.nci.hpc.dao.HpcBulkUpdateAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataManagementAuditDAO;
 import gov.nih.nci.hpc.dao.HpcDataRegistrationDAO;
 import gov.nih.nci.hpc.dao.HpcMetadataDAO;
-import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcAuditRequestType;
 import gov.nih.nci.hpc.domain.datamanagement.HpcBulkDataObjectRegistrationTaskStatus;
 import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
@@ -58,7 +58,6 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDeepArchiveStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.error.HpcDomainValidationResult;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.error.HpcRequestRejectReason;
@@ -73,6 +72,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
@@ -128,10 +128,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	// Data Registration DAO.
 	@Autowired
 	private HpcDataRegistrationDAO dataRegistrationDAO = null;
-
-	// Data Download DAO.
-	@Autowired
-	private HpcDataDownloadDAO dataDownloadDAO = null;
 
 	// Bulk Update Audit DAO.
 	@Autowired
@@ -984,7 +980,7 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 
 	@Override
 	public String registerDataObjects(String userId, String uiURL,
-			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests, boolean externalArchiveFlag) throws HpcException {
+			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests) throws HpcException {
 		// Input validation
 		if (StringUtils.isEmpty(userId)) {
 			throw new HpcException("Null / Empty userId in registration list request",
@@ -1004,12 +1000,10 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		bulkDataObjectRegistrationTask.setStatus(HpcBulkDataObjectRegistrationTaskStatus.RECEIVED);
 		bulkDataObjectRegistrationTask
 				.setUploadMethod(toDataTransferUploadMethod(dataObjectRegistrationRequests.values().iterator().next()));
-		bulkDataObjectRegistrationTask.setExternalArchiveFlag(externalArchiveFlag);
 
 		// Iterate through the individual data object registration requests and add them
 		// as items to the
 		// list registration task.
-		long totalRegistrationSize = 0L;
 		for (String path : dataObjectRegistrationRequests.keySet()) {
 			HpcDataObjectRegistrationRequest registrationRequest = dataObjectRegistrationRequests.get(path);
 			// Validate registration request.
@@ -1019,16 +1013,13 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			HpcBulkDataObjectRegistrationItem registrationItem = new HpcBulkDataObjectRegistrationItem();
 			HpcDataObjectRegistrationTaskItem reqistrationTask = new HpcDataObjectRegistrationTaskItem();
 			reqistrationTask.setPath(path);
-			reqistrationTask.setSize(registrationRequest.getRegistrationSize());
 			registrationItem.setTask(reqistrationTask);
 			registrationItem.setRequest(registrationRequest);
 
 			bulkDataObjectRegistrationTask.getItems().add(registrationItem);
-			totalRegistrationSize += registrationRequest.getRegistrationSize();
 		}
 
 		// Persist the registration request.
-		bulkDataObjectRegistrationTask.setRegistrationSize(totalRegistrationSize);
 		dataRegistrationDAO.upsertBulkDataObjectRegistrationTask(bulkDataObjectRegistrationTask);
 		return bulkDataObjectRegistrationTask.getId();
 	}
@@ -1052,16 +1043,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		if (registrationTask == null) {
 			throw new HpcException("Invalid data object list registration task", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
-        if (registrationTask.getExternalArchiveFlag()) {
-            // Find external download task with archive_link_registration_task_id matching the registration task id
-			String collectionDownloadTaskId = dataDownloadDAO.getCollectionDownloadTaskByRegistrationIdExternal(registrationTask.getId());
-			if (collectionDownloadTaskId != null && !collectionDownloadTaskId.isBlank()) {
-				dataDownloadDAO.updateCollectionDownloadTaskStatus(collectionDownloadTaskId, HpcCollectionDownloadTaskStatus.RECEIVED.toString());
-				dataDownloadDAO.setCollectionDownloadTaskInProcess(collectionDownloadTaskId, false);
-			} else {
-					return;
-			}
-        }
 
 		// Cleanup the DB record.
 		dataRegistrationDAO.deleteBulkDataObjectRegistrationTask(registrationTask.getId());
@@ -1075,7 +1056,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 		registrationResult.setCreated(registrationTask.getCreated());
 		registrationResult.setCompleted(completed);
 		registrationResult.setUploadMethod(registrationTask.getUploadMethod());
-		registrationResult.setRegistrationSize(registrationTask.getRegistrationSize());
 		registrationResult.getItems().addAll(registrationTask.getItems());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
@@ -1203,31 +1183,17 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	}
 
 	@Override
-	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path) throws HpcException  {
+	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path) throws HpcException  {
 		HpcDataTransferConfiguration dataTransferConfiguration = null;
-		int longestMatchingPosixPathLength = -1;
-		try{
-			if (StringUtils.isEmpty(path)) {
-				return null;
-			}
-			// Return the most specific matching external S3 archive configuration whose mounted
-			// POSIX path matches the requested external path on a path boundary.
-			for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
-				String dataTransferConfigurationId = dataManagementConfiguration.getS3UploadConfigurationId();
-				if (dataTransferConfigurationId != null) {
-					HpcDataTransferConfiguration dataTransferConfigurationCandidate = dataManagementConfigurationLocator.getS3ArchiveConfiguration(dataTransferConfigurationId);
-					if (dataTransferConfigurationCandidate != null && dataTransferConfigurationCandidate.getExternalStorage() &&
-							StringUtils.isNotEmpty(dataTransferConfigurationCandidate.getPosixPath()) &&
-							isMatchingPosixPath(path, dataTransferConfigurationCandidate.getPosixPath()) &&
-							dataTransferConfigurationCandidate.getPosixPath().length() > longestMatchingPosixPathLength) {
-						dataTransferConfiguration = dataTransferConfigurationCandidate;
-						longestMatchingPosixPathLength = dataTransferConfigurationCandidate.getPosixPath().length();
-					}
+		for (HpcDataManagementConfiguration dataManagementConfiguration : dataManagementConfigurationLocator.values()) {
+			String dataTransferConfigurationId = dataManagementConfiguration.getS3UploadConfigurationId();
+			if (dataTransferConfigurationId != null) {
+				HpcDataTransferConfiguration dataTransferConfigurationCandidate = dataManagementConfigurationLocator.getS3ArchiveConfiguration(dataTransferConfigurationId);
+				if (dataTransferConfigurationCandidate != null && dataTransferConfigurationCandidate.getPosixPath() != null && path.startsWith(dataTransferConfigurationCandidate.getPosixPath())) {
+					dataTransferConfiguration = dataTransferConfigurationCandidate;
+					break;
 				}
 			}
-		} catch (Exception e) {
-			logger.error("Error finding matching S3 configuration for path: {}", path, e);
-			throw new HpcException("Error finding matching S3 configuration for path", HpcErrorType.INVALID_REQUEST_INPUT, e);
 		}
 		return dataTransferConfiguration;
 	}
@@ -1256,13 +1222,6 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 	@Override
 	public HpcDataManagementConfiguration getDataManagementConfiguration(String id) {
 		return dataManagementConfigurationLocator.get(id);
-	}
-
-	@Override
-	public List<HpcDataManagementConfiguration> getAutoTieringDataManagementConfigurations() {
-		return dataManagementConfigurationLocator.values().stream()
-				.filter(config -> !StringUtils.isEmpty(config.getS3AutoTieringConfigurationId()))
-				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -1653,12 +1612,5 @@ public class HpcDataManagementServiceImpl implements HpcDataManagementService {
 			}
 
 		}
-	}
-
-	private boolean isMatchingPosixPath(String path, String posixPath) {
-		if (!path.startsWith(posixPath)) {
-			return false;
-		}
-		return path.length() == posixPath.length() || path.charAt(posixPath.length()) == '/';
 	}
 }
