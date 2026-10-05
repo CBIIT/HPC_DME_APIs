@@ -10,56 +10,42 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.lang.reflect.Field;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import gov.nih.nci.hpc.dao.HpcDataDownloadDAO;
-import gov.nih.nci.hpc.dao.HpcGlobusTransferTaskDAO;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
-import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
-import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3DownloadDestination;
-import gov.nih.nci.hpc.domain.datatransfer.HpcSetArchiveObjectMetadataResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcStreamingUploadSource;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
-import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
-import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
-import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
-import gov.nih.nci.hpc.integration.HpcTransferAcceptanceResponse;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
-import gov.nih.nci.hpc.service.HpcMetadataService;
-import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
 
 /**
@@ -67,7 +53,7 @@ import gov.nih.nci.hpc.service.HpcDataTransferService;
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-@ExtendWith(MockitoExtension.class)
+@RunWith(MockitoJUnitRunner.class)
 public class HpcDataTransferServiceImplTest {
 
 	// ---------------------------------------------------------------------//
@@ -77,6 +63,10 @@ public class HpcDataTransferServiceImplTest {
 	// The app service under test.
 	// @InjectMocks
 	private HpcDataTransferService dataTransferService = null;
+
+	// Expected exception rule.
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	// Mocks.
 	@Mock
@@ -89,13 +79,7 @@ public class HpcDataTransferServiceImplTest {
 	private HpcSystemAccountLocator systemAccountLocatorMock = null;
 	@Mock
 	private HpcDataDownloadDAO dataDownloadDAOMock = null;
-	@Mock
-	private HpcGlobusTransferTaskDAO globusTransferDAOMock = null;
-	@Mock
-	private HpcMetadataService metadataServiceMock = null;
-	@Mock
-	private HpcNotificationService notificationServiceMock = null;
-    
+
 	// ---------------------------------------------------------------------//
 	// Unit Tests
 	// ---------------------------------------------------------------------//
@@ -109,10 +93,11 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testUploadDataObjectNoSourceOrAttachment() throws HpcException {
-		HpcException ex = assertThrows(HpcException.class, () ->
-				dataTransferService.uploadDataObject(null, null, null, null, null, null, false, null, null, null, null,
-						"testObjectId", null, null, null, null));
-		assertTrue(ex.getMessage().contains("No data transfer source or data attachment provided or upload URL requested"));
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("No data transfer source or data attachment provided or upload URL requested");
+
+		dataTransferService.uploadDataObject(null, null, null, null, null, null, false, null, null, null, null,
+				"testObjectId", null, null, null, null);
 	}
 
 	/**
@@ -124,11 +109,12 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testUploadDataObjectInvalidS3UploadSource() throws HpcException {
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid S3 upload source");
+
 		HpcStreamingUploadSource s3UploadSource = new HpcStreamingUploadSource();
-		HpcException ex = assertThrows(HpcException.class, () ->
-				dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null,
-						null, null, "dataObjectId", null, null, null, null));
-		assertTrue(ex.getMessage().contains("Invalid S3 upload source"));
+		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null, null,
+				null, "dataObjectId", null, null, null, null);
 	}
 
 	/**
@@ -164,18 +150,18 @@ public class HpcDataTransferServiceImplTest {
 		pathAttributes.setExists(true);
 		pathAttributes.setIsDirectory(false);
 		pathAttributes.setSize(123456789L);
-		when(dataTransferProxyMock.getPathAttributes(any(), eq(sourceLocation), eq(true)))
+		when(dataTransferProxyMock.getPathAttributes(anyObject(), same(sourceLocation), eq(true)))
 				.thenReturn(pathAttributes);
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getArchiveDataTransferType(any()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getArchiveDataTransferType(anyObject()))
 				.thenReturn(HpcDataTransferType.S_3);
-		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(any(), any()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
-		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(any())).thenReturn(new HpcIntegratedSystemAccount());
-		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("token");
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(new HpcDataTransferConfiguration());
-		when(dataManagementConfigurationLocatorMock.get(any())).thenReturn(dmc);
+		when(dataManagementConfigurationLocatorMock.get(anyObject())).thenReturn(dmc);
 		Mockito.lenient().when(dataManagementServiceMock.getDataManagementConfiguration("testConfigId")).thenReturn(dmc);
 		// Run the test.
 		dataTransferService.uploadDataObject(null, s3UploadSource, null, null, null, null, false, null, null, null,
@@ -191,9 +177,10 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testGenerateDownloadRequestURLNullDataTransferType() throws HpcException {
-		HpcException ex = assertThrows(HpcException.class, () ->
-				dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), null, 2000, "", ""));
-		assertTrue(ex.getMessage().contains("Invalid generate download URL request"));
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid generate download URL request");
+
+		dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), null, 2000, "", "");
 	}
 
 	/**
@@ -205,10 +192,11 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testGenerateDownloadRequestURLInvalidArchiveLocation() throws HpcException {
-		HpcException ex = assertThrows(HpcException.class, () ->
-				dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(),
-						HpcDataTransferType.S_3, 1000, "", ""));
-		assertTrue(ex.getMessage().contains("Invalid generate download URL request"));
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid generate download URL request");
+
+		dataTransferService.generateDownloadRequestURL("", "user-id", new HpcFileLocation(), HpcDataTransferType.S_3,
+				1000, "", "");
 	}
 
 	/**
@@ -220,19 +208,19 @@ public class HpcDataTransferServiceImplTest {
 	@Test
 	public void testGenerateDownloadRequestURL() throws HpcException {
 		// Mock setup.
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(new HpcDataTransferConfiguration());
-		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(any(), any()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
-		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(any())).thenReturn(new HpcIntegratedSystemAccount());
-		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("token");
 		HpcDataManagementConfiguration testConfiguration = new HpcDataManagementConfiguration();
 		testConfiguration.setDoc("testDoc");
-		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(any(), any()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
 		Mockito.lenient().when(dataManagementServiceMock.getDataManagementConfiguration("testConfigId")).thenReturn(testConfiguration);
-		Mockito.lenient().when(dataTransferProxyMock.generateDownloadRequestURL(any(), any(), any(), any()))
+		Mockito.lenient().when(dataTransferProxyMock.generateDownloadRequestURL(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("https://downloadURL");
 		HpcFileLocation archiveLocation = new HpcFileLocation();
 		archiveLocation.setFileContainerId("test");
@@ -254,12 +242,10 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testDownloadDataObjectNullDataTransferType() throws HpcException {
-
-		HpcException ex = assertThrows(HpcException.class, () ->
-				dataTransferService.downloadDataObject("", null, null, null, null, null, null, null, null, null, null,
-						null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null, false));
-		assertTrue(ex.getMessage().contains("Invalid data transfer request"));
-
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid data transfer request");
+		dataTransferService.downloadDataObject("", null, null, null, null, null, null, null, null, null, null, null, "",
+				"", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null, false);
 	}
 
 	/**
@@ -271,13 +257,10 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	@Test
 	public void testDownloadDataObjectInvalidArchiveLocation() throws HpcException {
-
-		HpcException ex = assertThrows(HpcException.class, () ->
-				dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null, null, null,
-						null, null, null, null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null,
-						false));
-		assertTrue(ex.getMessage().contains("Invalid data transfer request"));
-
+		expectedException.expect(HpcException.class);
+		expectedException.expectMessage("Invalid data transfer request");
+		dataTransferService.downloadDataObject("", new HpcFileLocation(), null, null, null, null, null, null, null,
+				null, null, null, "", "", "", false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null, false);
 	}
 
 	/**
@@ -298,15 +281,15 @@ public class HpcDataTransferServiceImplTest {
 		baseDownloadSource.setFileLocation(baseDownloadSourceFileLocation);
 		HpcDataTransferConfiguration dataTransferConfig = new HpcDataTransferConfiguration();
 		dataTransferConfig.setBaseDownloadSource(baseDownloadSource);
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(dataTransferConfig);
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
+		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(anyObject(), anyObject(), anyObject()))
 				.thenReturn(dataTransferConfig);
 
-		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(any(), any()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject(), anyObject()))
 				.thenReturn(new HpcIntegratedSystemAccount());
-		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(any())).thenReturn(new HpcIntegratedSystemAccount());
-		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any()))
+		Mockito.lenient().when(systemAccountLocatorMock.getSystemAccount(anyObject())).thenReturn(new HpcIntegratedSystemAccount());
+		Mockito.lenient().when(dataTransferProxyMock.authenticate(anyObject(), anyObject(), anyObject(), anyObject()))
 				.thenReturn("token");
 
 		// Prepare test data.
@@ -329,7 +312,7 @@ public class HpcDataTransferServiceImplTest {
 
 		HpcPathAttributes pathAttributes = new HpcPathAttributes();
 		pathAttributes.setIsAccessible(true);
-		Mockito.lenient().when(dataTransferProxyMock.getPathAttributes(any(), eq(destinationLocation), eq(false)))
+		Mockito.lenient().when(dataTransferProxyMock.getPathAttributes(anyObject(), same(destinationLocation), eq(false)))
 				.thenReturn(pathAttributes);
 
 		// Run the test.
@@ -345,132 +328,12 @@ public class HpcDataTransferServiceImplTest {
 		assertEquals(downloadResponse.getDestinationLocation().getFileId(), destinationLocation.getFileId());
 	}
 
-
-	public void testDeleteTemporaryArchiveLinkDeferredWhenOtherActiveDownloadsExist() throws HpcException {
-		String path = "/test/external/archive/link-deferred";
-
-		when(dataDownloadDAOMock.getDownloadTasksCountForExternalArchiveByPath(path)).thenReturn(2);
-
-		boolean deleted = dataTransferService.deleteTemporaryArchiveLink(path, "dm-config", "s3-config");
-
-		assertFalse(deleted);
-		verify(dataDownloadDAOMock).getDownloadTasksCountForExternalArchiveByPath(path);
-		verify(metadataServiceMock, never()).getDataObjectSystemGeneratedMetadata(any());
-		verify(dataManagementServiceMock, never()).delete(any(), eq(false));
-		verify(notificationServiceMock, never()).sendNotification(any());
-	}
-
-	/**
-	 * {@link HpcDataTransferService#deleteTemporaryArchiveLink(String, String, String)}
-	 */
-	/*
-	 * Test scenario: No other active download tasks exist and the archive link cleanup succeeds.
-	 * Expected: temporary archive link is deleted and the method returns true.
-	 */
-	@Test
-	public void testDeleteTemporaryArchiveLinkSuccess() throws HpcException {
-		String path = "/test/external/archive/link-success";
-
-		HpcFileLocation fileLocation = new HpcFileLocation();
-		fileLocation.setFileContainerId("test-container");
-		fileLocation.setFileId("test-file-id");
-
-		HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
-		metadata.setArchiveLocation(fileLocation);
-		when(metadataServiceMock.getDataObjectSystemGeneratedMetadata(path)).thenReturn(metadata);
-		when(dataDownloadDAOMock.getDownloadTasksCountForExternalArchiveByPath(path)).thenReturn(0);
-
-		HpcDataTransferConfiguration dataTransferConfiguration = new HpcDataTransferConfiguration();
-		dataTransferConfiguration.setId("s3-config");
-		dataTransferConfiguration.setArchiveProvider(HpcIntegratedSystem.AWS);
-		dataTransferConfiguration.setUrlOrRegion("test-region");
-		dataTransferConfiguration.setEncryptionAlgorithm("test-algorithm");
-		dataTransferConfiguration.setEncryptionKey("test-key");
-		dataTransferConfiguration.setStorageClass("STANDARD");
-		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration("dm-config", "s3-config",
-				HpcDataTransferType.S_3)).thenReturn(dataTransferConfiguration);
-
-		HpcIntegratedSystemAccount systemAccount = new HpcIntegratedSystemAccount();
-		systemAccount.setUsername("test-s3-account");
-		systemAccount.setIntegratedSystem(HpcIntegratedSystem.AWS);
-		when(systemAccountLocatorMock.getSystemAccount(HpcIntegratedSystem.AWS)).thenReturn(systemAccount);
-		when(dataTransferProxyMock.authenticate(eq(systemAccount), eq("test-region"), eq("test-algorithm"),
-				eq("test-key"))).thenReturn("test-token");
-
-		HpcSetArchiveObjectMetadataResponse clearMetadataResponse = new HpcSetArchiveObjectMetadataResponse();
-		clearMetadataResponse.setMetadataClearStatus(true);
-		when(dataTransferProxyMock.clearDataObjectMetadata("test-token", fileLocation, "STANDARD"))
-				.thenReturn(clearMetadataResponse);
-
-		boolean deleted = dataTransferService.deleteTemporaryArchiveLink(path, "dm-config", "s3-config");
-
-		assertTrue(deleted);
-		verify(dataDownloadDAOMock).getDownloadTasksCountForExternalArchiveByPath(path);
-		verify(metadataServiceMock).getDataObjectSystemGeneratedMetadata(path);
-		verify(dataTransferProxyMock).clearDataObjectMetadata("test-token", fileLocation, "STANDARD");
-		verify(dataManagementServiceMock).delete(path, false);
-		verify(notificationServiceMock, never()).sendNotification(any());
-	}
-
-	/**
-	 * {@link HpcDataTransferService#deleteTemporaryArchiveLink(String, String, String)}
-	 */
-	/*
-	 * Test scenario: Metadata cleanup is rejected by the archive proxy.
-	 * Expected: HpcException is thrown and a notification is sent.
-	 */
-	@Test
-	public void testDeleteTemporaryArchiveLinkFailureSendsNotification() throws HpcException {
-		String path = "/test/external/archive/link-failure";
-
-		HpcFileLocation fileLocation = new HpcFileLocation();
-		fileLocation.setFileContainerId("test-container");
-		fileLocation.setFileId("test-file-id");
-
-		HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
-		metadata.setArchiveLocation(fileLocation);
-		when(metadataServiceMock.getDataObjectSystemGeneratedMetadata(path)).thenReturn(metadata);
-		when(dataDownloadDAOMock.getDownloadTasksCountForExternalArchiveByPath(path)).thenReturn(0);
-
-		HpcDataTransferConfiguration dataTransferConfiguration = new HpcDataTransferConfiguration();
-		dataTransferConfiguration.setId("s3-config");
-		dataTransferConfiguration.setArchiveProvider(HpcIntegratedSystem.AWS);
-		dataTransferConfiguration.setUrlOrRegion("test-region");
-		dataTransferConfiguration.setEncryptionAlgorithm("test-algorithm");
-		dataTransferConfiguration.setEncryptionKey("test-key");
-		dataTransferConfiguration.setStorageClass("STANDARD");
-		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration("dm-config", "s3-config",
-				HpcDataTransferType.S_3)).thenReturn(dataTransferConfiguration);
-
-		HpcIntegratedSystemAccount systemAccount = new HpcIntegratedSystemAccount();
-		systemAccount.setUsername("test-s3-account");
-		systemAccount.setIntegratedSystem(HpcIntegratedSystem.AWS);
-		when(systemAccountLocatorMock.getSystemAccount(HpcIntegratedSystem.AWS)).thenReturn(systemAccount);
-		when(dataTransferProxyMock.authenticate(eq(systemAccount), eq("test-region"), eq("test-algorithm"),
-				eq("test-key"))).thenReturn("test-token");
-
-		HpcSetArchiveObjectMetadataResponse clearMetadataResponse = new HpcSetArchiveObjectMetadataResponse();
-		clearMetadataResponse.setMetadataClearStatus(false);
-		when(dataTransferProxyMock.clearDataObjectMetadata("test-token", fileLocation, "STANDARD"))
-				.thenReturn(clearMetadataResponse);
-
-		HpcException exception = assertThrows(HpcException.class,
-				() -> dataTransferService.deleteTemporaryArchiveLink(path, "dm-config", "s3-config"));
-
-		assertTrue(exception.getMessage().contains("Failed to delete data object after download from external archive for path: " + path));
-		verify(notificationServiceMock).sendNotification(any(HpcException.class));
-		verify(dataManagementServiceMock, never()).delete(any(), eq(false));
-	}
-
-	
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
 
-	@BeforeEach
+	@Before
 	public void init() throws HpcException {
-		HpcRequestContext.setRequestInvoker(new HpcRequestInvoker());
-
 		Map<HpcDataTransferType, HpcDataTransferProxy> dataTransferProxies = new HashMap<>();
 		dataTransferProxies.put(HpcDataTransferType.GLOBUS, dataTransferProxyMock);
 		dataTransferProxies.put(HpcDataTransferType.S_3, dataTransferProxyMock);
@@ -481,215 +344,7 @@ public class HpcDataTransferServiceImplTest {
 		dataTransferServiceImpl.setSystemAccountLocator(systemAccountLocatorMock);
 		dataTransferServiceImpl.setDataDownloadDAO(dataDownloadDAOMock);
 		dataTransferServiceImpl.setDataManagementService(dataManagementServiceMock);
-		dataTransferServiceImpl.setGlobusTransferDAO(globusTransferDAOMock);
-		setPrivateField(dataTransferServiceImpl, "metadataService", metadataServiceMock);
-		setPrivateField(dataTransferServiceImpl, "notificationService", notificationServiceMock);
-		setPrivateField(dataTransferServiceImpl, "downloadArchiveLinkBasePath", "/download/archive");
 
 		dataTransferService = dataTransferServiceImpl;
-	}
-
-	private void setPrivateField(Object target, String fieldName, Object value) {
-		try {
-			Field field = HpcDataTransferServiceImpl.class.getDeclaredField(fieldName);
-			field.setAccessible(true);
-			field.set(target, value);
-		} catch (ReflectiveOperationException e) {
-			throw new RuntimeException("Failed to set field: " + fieldName, e);
-		}
-	}
-
-	// ---------------------------------------------------------------------//
-	// Fair-Access (HPCDATAMGM-2148) Unit Tests
-	// ---------------------------------------------------------------------//
-
-	/**
-	 * Fair-access: requester is NOT in the Globus queue.
-	 * Expected: user is eligible; execution proceeds past the eligibility gate
-	 * (evidenced by getAuthenticatedToken being invoked).
-	 */
-	@Test
-	public void testFairAccess_UserNotInQueue_IsEligible() throws HpcException {
-		// Arrange
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
-				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated(true)).thenReturn(Collections.emptyList());
-
-		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
-		account.setUsername("test-globus-account");
-		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
-		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
-		HpcTransferAcceptanceResponse response = new HpcTransferAcceptanceResponse() {
-			@Override
-			public boolean canAcceptTransfer() {
-				return false;
-			}
-		};
-		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
-
-		// Act
-		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
-
-		// Assert – eligible users proceed past the fair-access gate (method returns false
-		// only because acceptsTransferRequests rejects, not because of eligibility).
-		assertFalse(result);
-		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
-	}
-
-	/**
-	 * Fair-access: requester IS in the Globus queue but slots used (1) is at or
-	 * below the fair-share quota (2 accounts / 2 users = 1).
-	 * Expected: user is eligible; execution proceeds past the eligibility gate.
-	 */
-	@Test
-	public void testFairAccess_UserBelowFairShare_IsEligible() throws HpcException {
-		// Arrange
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
-				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated(true)).thenReturn(Arrays.asList("userA", "userB"));
-		when(globusTransferDAOMock.getGlobusRequestCountByUser("userA", true)).thenReturn(1); // 1 slot used
-		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(2); // 2 users
-		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(2); // quota = 2/2 = 1
-
-		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
-		account.setUsername("test-globus-account");
-		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
-		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
-		HpcTransferAcceptanceResponse response = new HpcTransferAcceptanceResponse() {
-			@Override
-			public boolean canAcceptTransfer() {
-				return false;
-			}
-		};
-		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
-
-		// Act
-		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
-
-		// Assert – user at the exact fair-share limit (1 <= 1) is eligible.
-		assertFalse(result);
-		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
-	}
-
-	/**
-	 * Fair-access: requester IS in the Globus queue with slots used (2) exactly
-	 * equal to the fair-share quota (4 accounts / 2 users = 2).
-	 * The algorithm uses strict greater-than, so equal is still eligible.
-	 * Expected: user is eligible; execution proceeds past the eligibility gate.
-	 */
-	@Test
-	public void testFairAccess_UserAtExactFairShareBoundary_IsEligible() throws HpcException {
-		// Arrange
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
-				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated(true)).thenReturn(Arrays.asList("userA", "userB"));
-		when(globusTransferDAOMock.getGlobusRequestCountByUser("userA", true)).thenReturn(2); // 2 slots used
-		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(2); // 2 users
-		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(4); // quota = 4/2 = 2
-
-		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
-		account.setUsername("test-globus-account");
-		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
-		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
-		HpcTransferAcceptanceResponse response = new HpcTransferAcceptanceResponse() {
-			@Override
-			public boolean canAcceptTransfer() {
-				return false;
-			}
-		};
-		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
-
-		// Act
-		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
-
-		// Assert – 2 == 2 is NOT greater-than, so user is still eligible.
-		assertFalse(result);
-		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
-	}
-
-	/**
-	 * Fair-access: requester IS in the Globus queue and has used more slots (2)
-	 * than their fair share (4 accounts / 4 users = 1).
-	 * Expected: user is ineligible; continueDataObjectDownloadTask returns false
-	 * immediately without reaching getAuthenticatedToken.
-	 */
-	@Test
-	public void testFairAccess_UserExceedsFairShare_IsIneligible() throws HpcException {
-		// Arrange
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
-				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated(true))
-				.thenReturn(Arrays.asList("userA", "userB", "userC", "userD"));
-		when(globusTransferDAOMock.getGlobusRequestCountByUser("userA", true)).thenReturn(2); // 2 slots used
-		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(4); // 4 users
-		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(4); // quota = 4/4 = 1
-
-		// Act
-		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
-
-		// Assert – user exceeds fair share (2 > 1); must be rejected early.
-		assertFalse(result);
-		verify(systemAccountLocatorMock, never()).getSystemAccount(any(HpcDataTransferType.class), any());
-	}
-
-	/**
-	 * Fair-access: requester IS in the Globus task table but getUserCountByDataTransferType
-	 * returns 0 (race condition where the task was completed between queries).
-	 * Expected: no ArithmeticException; user is treated as eligible.
-	 */
-	@Test
-	public void testFairAccess_ZeroUsersInQueue_NoDivisionByZero() throws HpcException {
-		// Arrange
-		Mockito.lenient().when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration(any(), any(), any()))
-				.thenReturn(new HpcDataTransferConfiguration());
-		when(globusTransferDAOMock.getGlobusUsersAllocated(true)).thenReturn(Arrays.asList("userA"));
-		when(globusTransferDAOMock.getGlobusRequestCountByUser("userA", true)).thenReturn(1);
-		when(dataDownloadDAOMock.getUserCountByDataTransferType(HpcDataTransferType.GLOBUS)).thenReturn(0); // edge case
-		when(systemAccountLocatorMock.getSystemAccountCount("config1")).thenReturn(2);
-
-		HpcIntegratedSystemAccount account = new HpcIntegratedSystemAccount();
-		account.setUsername("test-globus-account");
-		when(systemAccountLocatorMock.getSystemAccount(any(HpcDataTransferType.class), any())).thenReturn(account);
-		Mockito.lenient().when(dataTransferProxyMock.authenticate(any(), any(), any(), any())).thenReturn("mock-token");
-		HpcTransferAcceptanceResponse response = new HpcTransferAcceptanceResponse() {
-			@Override
-			public boolean canAcceptTransfer() {
-				return false;
-			}
-		};
-		when(dataTransferProxyMock.acceptsTransferRequests(any())).thenReturn(response);
-
-		// Act – must not throw ArithmeticException
-		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
-
-		// Assert – zero-user guard treats the user as eligible; execution proceeds.
-		assertFalse(result);
-		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
-	}
-
-	/**
-	 * Build a minimal Globus data-object download task for fair-access tests.
-	 */
-	private HpcDataObjectDownloadTask buildGlobusDownloadTask(String userId, String configId) {
-		HpcDataObjectDownloadTask task = new HpcDataObjectDownloadTask();
-		task.setId("task-" + userId);
-		task.setUserId(userId);
-		task.setConfigurationId(configId);
-		task.setDataTransferType(HpcDataTransferType.GLOBUS);
-		task.setDestinationType(HpcDataTransferType.GLOBUS);
-
-		HpcFileLocation archiveLocation = new HpcFileLocation();
-		archiveLocation.setFileContainerId("testContainer");
-		archiveLocation.setFileId("testFile");
-		task.setArchiveLocation(archiveLocation);
-
-		HpcGlobusDownloadDestination dest = new HpcGlobusDownloadDestination();
-		HpcFileLocation destLoc = new HpcFileLocation();
-		destLoc.setFileContainerId("destContainer");
-		destLoc.setFileId("destFile");
-		dest.setDestinationLocation(destLoc);
-		task.setGlobusDownloadDestination(dest);
-
-		return task;
 	}
 }

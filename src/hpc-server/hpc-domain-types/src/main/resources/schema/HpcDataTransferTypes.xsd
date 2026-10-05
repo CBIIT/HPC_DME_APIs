@@ -50,7 +50,6 @@
 			<xsd:enumeration value="URL_MULTI_PART" />
 			<xsd:enumeration value="FILE_SYSTEM" />
 			<xsd:enumeration value="ARCHIVE_LINK" />
-			<xsd:enumeration value="LEGACY" />
 		</xsd:restriction>
 	</xsd:simpleType>
 
@@ -73,6 +72,7 @@
 			<xsd:enumeration value="CANCELED" />
 			<xsd:enumeration value="RESTORE_REQUESTED" />
 			<xsd:enumeration value="GLOBUS_BUNCHING" />
+			<xsd:enumeration value="RECEIVED_EXTERNAL" />
 		</xsd:restriction>
 	</xsd:simpleType>
 	
@@ -354,7 +354,7 @@
 			<xsd:element name="size" type="xsd:long" />
 			<xsd:element name="sudoPassword" type="xsd:string" />
 			<xsd:element name="retryUserId" type="xsd:string" />
-			<xsd:element name="externalArchiveFlag" type="xsd:boolean" minOccurs="0" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -461,7 +461,6 @@
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
 			<xsd:element name="googleCloudStorageDestination"
 				type="hpc-domain-datatransfer:HpcGoogleDownloadDestination" />
-			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -509,9 +508,7 @@
 			<xsd:element name="doc" type="xsd:string" />
 			<xsd:element name="totalBytesTransferred " type="xsd:long" minOccurs="0" />
 			<xsd:element name="priority" type="xsd:int" />
-			<xsd:element name="dataSize" type="xsd:long" minOccurs="0"/>
-			<xsd:element name="externalArchiveFlag" type="xsd:boolean" minOccurs="0" />
-			<xsd:element name="archiveLinkRegistrationTaskId" type="xsd:string" minOccurs="0" />
+			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -570,8 +567,6 @@
 			<xsd:element name="items"
 				type="hpc-domain-datatransfer:HpcCollectionDownloadTaskItem"
 				minOccurs="0" maxOccurs="unbounded" />
-			<xsd:element name="dataSize" type="xsd:long" minOccurs="0" />
-			<xsd:element name="externalArchiveFlag" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 

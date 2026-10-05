@@ -16,7 +16,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import gov.nih.nci.hpc.domain.datamanagement.HpcListObjectsEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
 import gov.nih.nci.hpc.domain.datatransfer.HpcAddArchiveObjectMetadataResponse;
@@ -192,7 +191,6 @@ public interface HpcDataTransferService {
 	 *                                              data object
 	 * @param deepArchiveStatus                     The deep archive status of the
 	 *                                              data object
-	 * @param externalArchiveFlag 					If set to true, the file is in an external archive
 	 * @return A data object download response.
 	 * @throws HpcException on service failure.
 	 */
@@ -204,7 +202,6 @@ public interface HpcDataTransferService {
 			HpcSynchronousDownloadFilter synchronousDownloadFilter, HpcDataTransferType dataTransferType,
 			String configurationId, String s3ArchiveConfigurationId, String retryTaskId, String userId,
 			String retryUserId, boolean completionEvent, String collectionDownloadTaskId, long size,
-
 			HpcDataTransferUploadStatus downloadDataObject, HpcDeepArchiveStatus deepArchiveStatus, boolean externalArchiveFlag) throws HpcException;
 
 	/**
@@ -459,15 +456,6 @@ public interface HpcDataTransferService {
 			throws HpcException;
 
 	/**
-	 * Get the count of data object download tasks associated with an external archive path.
-	 *
-	 * @param path The external archive path
-	 * @return The count of data object download tasks.
-	 * @throws HpcException on service failure.
-	 */
-	public int getDownloadTasksCountForExternalArchiveByPath(String path) throws HpcException;
-
-	/**
 	 * Get next data object download task to process given data transfer status and
 	 * data transfer type.
 	 *
@@ -535,18 +523,6 @@ public interface HpcDataTransferService {
 			HpcStreamingUploadSource s3UploadSource, HpcStreamingUploadSource googleDriveUploadSource,
 			HpcStreamingUploadSource googleCloudStorageUploadSource, HpcUploadSource fileSystemUploadSource,
 			File sourceFile, String configurationId) throws HpcException;
-
-
-	/**
-	 * Delete temporary archive link only when there are no active downloads.
-	 *
-	 * @param path              The archive path of the temporary link.
-	 * @param configurationId   The data management configuration ID.
-	 * @param s3ConfigurationId (Optional) The S3 archive configuration ID.
-	 * @return True if the temporary archive link was deleted, or false otherwise.
-	 * @throws HpcException on service failure.
-	 */
-	public boolean deleteTemporaryArchiveLink(String path, String configurationId, String s3ConfigurationId) throws HpcException;
 
 	/**
 	 * Complete an async (Globus / S3 / Google Drive) data object download task : 1.
@@ -626,6 +602,15 @@ public interface HpcDataTransferService {
 			HpcDataTransferType dataTransferType, boolean inProcess) throws HpcException;
 
 	/**
+	 * Update a data object download task.
+	 *
+	 * @param downloadTask     The download task to update
+	 * @throws HpcException on service failure.
+	 */
+	public void changeDataObjectDownloadTaskExternalStatus(HpcDataObjectDownloadTask downloadTask)
+			throws HpcException;
+
+	/**
 	 * Update a data object download task. % Complete is calculated and any change
 	 * on the task object will be persisted.
 	 *
@@ -668,7 +653,8 @@ public interface HpcDataTransferService {
 	 *                                              used in the destination path,
 	 *                                              otherwise just the object name
 	 *                                              will be used.
-	 * @param externalArchiveFlag					If set to true, 
+	 * @param externalArchiveFlag                  	Indicates if the collection contains data objects in an external archive.
+	 *
 	 * @return The submitted collection download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -679,48 +665,6 @@ public interface HpcDataTransferService {
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
 			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException;
-
-	/**
-	 * Submit a request to download a collection.
-	 *
-	 * @param path                                  The collection path.
-	 * @param globusDownloadDestination             The user requested Glopbus
-	 *                                              download destination.
-	 * @param s3DownloadDestination                 The user requested S3 download
-	 *                                              destination.
-	 * @param googleDriveDownloadDestination        The user requested Google Drive
-	 *                                              download destination.
-	 * @param googleCloudStorageDownloadDestination The user requested Google Cloud
-	 *                                              Storage download destination.
-	 * @param asperaDownloadDestination             The user requested Aspera
-	 *                                              download destination.
-	 * @param boxDownloadDestination                The user requested Box download
-	 *                                              destination.
-	 * @param userId                                The user ID submitting the
-	 *                                              download request.
-	 * @param configurationId                       The configuration ID (needed to
-	 *                                              determine the archive connection
-	 *                                              config).
-	 * @param appendPathToDownloadDestination       If true, the (absolute) object
-	 *                                              path will be used in the
-	 *                                              destination path, otherwise just
-	 *                                              the object name will be used.
-	 * @param appendCollectionNameToDownloadDestination       If true, the collection name
-	 *                                              (containing this object) will be
-	 *                                              used in the destination path,
-	 *                                              otherwise just the object name
-	 *                                              will be used.
-	 * @param type                                  The type of download task: COLLECTION, COLLECTION_LIST, or DATAOBJECT_LIST
-	 * @return The submitted collection download task.
-	 * @throws HpcException on service failure.
-	 */
-	public HpcCollectionDownloadTask downloadExternal(String path,
-			HpcGlobusDownloadDestination globusDownloadDestination, HpcS3DownloadDestination s3DownloadDestination,
-			HpcGoogleDownloadDestination googleDriveDownloadDestination,
-			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
-			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
-			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination, HpcDownloadTaskType type) throws HpcException;
 
 	/**
 	 * Submit a request to download collections.
@@ -768,7 +712,7 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException;
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException;
 
 	/**
 	 * Submit a request to download data objects.
@@ -1147,27 +1091,9 @@ public interface HpcDataTransferService {
 	public void updateDownloadTaskPriority(String taskId, HpcDownloadTaskType taskType, int priority) throws HpcException;
 
 	/**
-	 * Update collection download task archive link registration task ID.
-	 *
-	 * @param downloadTaskId               The download task ID.
-	 * @param archiveLinkRegistrationTaskId The archive link registration task ID.
-	 * @throws HpcException on service failure.
-	 */
-	public void updateCollectionDownloadTaskArchiveLinkRegistrationTaskId(String downloadTaskId, String archiveLinkRegistrationTaskId) throws HpcException;
-
-	/**
 	 * Removes google access token retained for retries beyond the retention period.
 	 *
 	 * @throws HpcException on service failure.
 	 */
 	public void removeGoogleAccessTokens() throws HpcException;
-
-	/**
-	 * List directory (non-recursive) and return a list of all folder and files
-	 *
-	 * @param fileLocation The path to get the listing for.
-	 * @return The list of HpcListObjectsEntry.
-	 * @throws HpcException on service failure.
-	 */
-	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException;
 }
