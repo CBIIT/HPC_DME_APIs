@@ -197,6 +197,14 @@ public class HpcScheduledTasksImpl {
 		execute("startBoxDataObjectDownloadTasks()", systemBusService::startBoxDataObjectDownloadTasks, logger);
 	}
 
+	/**
+	 * Start Data Object Download Tasks that are in RECEIVED_EXTERNAL state for Archive Link transfer.
+	 */
+	@Scheduled(cron = "${hpc.scheduler.cron.startArchiveLinkDataObjectDownloadTasks.delay}")
+	private void startArchiveLinkDataObjectDownloadTasks() {
+		execute("startArchiveLinkDataObjectDownloadTasks()", systemBusService::startArchiveLinkDataObjectDownloadTasks, logger);
+	}
+
 	/** Complete In-Progress Data Object Download Tasks. */
 	@Scheduled(cron = "${hpc.scheduler.cron.completeInProgressDataObjectDownloadTasks.delay}")
 	private void completeInProgressDataObjectDownloadTasksTask() {

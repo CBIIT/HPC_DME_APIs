@@ -28,6 +28,7 @@ import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationStatus;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationTask;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
+import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectRegistrationResult;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
@@ -456,13 +457,12 @@ public interface HpcDataManagementService {
 	 *                                       {task_id} in this URL will be replaced
 	 *                                       with actual task ID value.
 	 * @param dataObjectRegistrationRequests The data object registration requests.
-	 * @param externalArchiveFlag			 Indicates the data Objects are in an external archive
 	 * @return The task ID created to register the data objects and can be used to
 	 *         track status
 	 * @throws HpcException on service failure.
 	 */
 	public String registerDataObjects(String userId, String uiURL,
-			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests, boolean externalArchiveFlag) throws HpcException;
+			Map<String, HpcDataObjectRegistrationRequest> dataObjectRegistrationRequests) throws HpcException;
 
 	/**
 	 * Get bulk object registration tasks.
@@ -580,18 +580,6 @@ public interface HpcDataManagementService {
 	public String findDataManagementConfigurationId(String path);
 
 	/**
-	 * Returns HpcDataTransferConfiguration for the given external path. This is searched by
-	 * matching the posix path of HpcDataTransferConfiguration to the start of a given path. If any configuration 
-	 * is found where its posix path matches the beginning of the provided path, that configuration is returned.
-	 *
-	 * @param path The external path to find a data transfer configuration for.
-	 * @return HpcDataTransferConfiguration if a matching configuration is found, null otherwise.
-	 * @throws HpcException on service failure.
-	 */
-
-	public HpcDataTransferConfiguration getS3ArchiveConfigurationForExternalPath(String path)  throws HpcException;
-
-	/**
 	 * Get data management configuration ID by base path.
 	 *
 	 * @param basePath The base path to get the config for.
@@ -608,13 +596,12 @@ public interface HpcDataManagementService {
 	public HpcDataManagementConfiguration getDataManagementConfiguration(String id);
 
 	/**
-	 * Get all Data Management Configurations that have auto-tiering enabled.
-	 * A configuration is considered to have auto-tiering enabled if it has a
-	 * non-null s3AutoTieringArchiveConfigurationId.
+	 * Returns HpcDataTransferConfiguration for the given external path
 	 *
-	 * @return List of data management configurations with auto-tiering enabled.
+	 * @return HpcDataTransferConfiguration
 	 */
-	public List<HpcDataManagementConfiguration> getAutoTieringDataManagementConfigurations();
+
+	public HpcDataTransferConfiguration findDataTransferConfigurationForExternalPath(String path)  throws HpcException;
 
 	/**
 	 * Add a data object registration request result to the DB.

@@ -46,13 +46,9 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationStatusDTO;
-import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
-import gov.nih.nci.hpc.dto.datamanagement.v2.HpcListObjectsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
-import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -135,15 +131,6 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
-     * Get Full Collection children including any sub collection and data objects that extend beyond the first page.
-     *
-     * @param path   The collection's path.
-     * @return A Collection DTO.
-     * @throws HpcException on service failure.
-     */
-	public HpcCollectionDTO getFullCollection(String path) throws HpcException;
-
-	/**
 	 * Download a collection tree.
 	 *
 	 * @param path            The collection path.
@@ -166,16 +153,6 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
-	 * Download a collection tree.
-	 *
-	 * @param path The collection path.
-	 * @return Registration Response DTO.
-	 * @throws HpcException on service failure.
-	 */
-	public HpcBulkDataObjectRegistrationResponseDTO registerCollectionFromExternalSource(HpcCollectionDownloadTask downloadTask)
-			throws HpcException;
-
-	/**
 	 * Download data objects or collections. Note: API doesn't support mixed, so
 	 * user expected to provide a list of data objects or a list of collections, not
 	 * both.
@@ -188,7 +165,7 @@ public interface HpcDataManagementBusService {
 			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
 
 	/**
-	 * Download data objects or collections from an external source. Note: API doesn't support mixed, so
+	 * Download data objects or collections from external source. Note: API doesn't support mixed, so
 	 * user expected to provide a list of data objects or a list of collections, not
 	 * both.
 	 *
@@ -432,17 +409,6 @@ public interface HpcDataManagementBusService {
 			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException;
 
 	/**
-	 * Bulk Data object registration.
-	 *
-	 * @param bulkDataObjectRegistrationRequest The bulk registration request.
-	 * @param externalArchiveFlag      If true, the data objects are in an external archive and the registration will be handled differently.
-	 * @return A registration response DTO.
-	 * @throws HpcException on service failure.
-	 */
-	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
-			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, boolean externalArchiveFlag, String userId) throws HpcException;
-
-	/**
 	 * Get data objects registration task status.
 	 *
 	 * @param taskId The registration task ID.
@@ -513,17 +479,16 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
-	 * Download Data Object. In this overloaded method, the request invoker will be
+	 * Download Data Object from External Source. In this overloaded method, the request invoker will be
 	 * notified (if subscribed) when the download is complete. To specify a
 	 * different user-id and turn off notification, use the other overloaded method.
 	 *
 	 * @param path            The data object path.
 	 * @param downloadRequest The download request DTO.
-	 * @param externalArchiveFlag      If true, the data object is in an external archive and the download will be handled differently.
 	 * @return Download ResponseDTO
 	 * @throws HpcException on service failure.
 	 */
-	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest, boolean externalArchiveFlag)
+	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
 			throws HpcException;
 
 	/**
@@ -547,44 +512,6 @@ public interface HpcDataManagementBusService {
 	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
 			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
 			String collectionDownloadTaskId) throws HpcException;
-
-
-
-	/**
-	 * Download Data Object.
-	 *
-	 * @param path                     The data object path.
-	 * @param downloadRequest          The download request DTO.
-	 * @param retryTaskId              The previous task ID if this is a retry
-	 *                                 request
-	 * @param userId                   The user submitting the request.
-	 * @param retryUserId              The user retrying the request if this is a
-	 *                                 retry request
-	 * @param completionEvent          If true, an event will be added when async
-	 *                                 download is complete.
-	 * @param collectionDownloadTaskId (Optional) The collection download task ID if
-	 *                                 this request is part of a collection download
-	 *                                 task
-	 * @param externalArchiveFlag      If true, the data object is in an external archive
-	 * @return Download ResponseDTO
-	 * @throws HpcException on service failure.
-	 */
-	public HpcDataObjectDownloadResponseDTO downloadDataObject(String path, HpcDownloadRequestDTO downloadRequest,
-			String retryTaskId, String userId, String retryUserId, boolean completionEvent,
-			String collectionDownloadTaskId, boolean externalArchiveFlag) throws HpcException;
-
-	/**
-	 * Download Data Object from External Source. In this overloaded method, the request invoker will be
-	 * notified (if subscribed) when the download is complete. To specify a
-	 * different user-id and turn off notification, use the other overloaded method.
-	 *
-	 * @param path            The data object path.
-	 * @param downloadRequest The download request DTO.
-	 * @return Download ResponseDTO
-	 * @throws HpcException on service failure.
-	 */
-	public HpcDataObjectDownloadResponseDTO downloadDataObjectFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
-			throws HpcException;
 
 	/**
 	 * Get Data object download task status.
@@ -754,25 +681,4 @@ public interface HpcDataManagementBusService {
 	 */
 	public void updateDownloadTask(HpcDownloadTaskUpdateRequestDTO downloadTaskUpdateRequest) throws HpcException;
 
-	/**
-	 * List objects directly under the external path. Non-recursive listing.
-	 *
-	 * @param externalPath The external path.
-	 * @return A response DTO containing the list of objects directly under the path. 
-	 * @throws HpcException on service failure.
-	 */
-	public HpcListObjectsResponseDTO listObjects(String externalPath) throws HpcException;
-	
-	/**
-	 * Calculate Total size of each external path requested in the request.
-	 *
-	 * @param calculateTotalSizeRequest The request containing the external paths to 
-	 * calculate the total size.
-	 * @return A response DTO containing the total size for each external path requested.
-	 * @throws HpcException on service failure.
-	 */
-	public HpcCalculateTotalSizeResponseDTO calculateTotalSize(
-			HpcCalculateTotalSizeRequestDTO calculateTotalSizeRequest) throws HpcException;
-
-	
 }
