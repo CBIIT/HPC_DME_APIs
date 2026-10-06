@@ -857,7 +857,7 @@ public class HpcDataManagementRestServiceImpl extends HpcRestServiceImpl impleme
 			gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectDownloadRequestDTO downloadRequest) {
 		HpcBulkDataObjectDownloadResponseDTO downloadResponse = null;
 		try {
-			downloadResponse = dataManagementBusService.downloadDataObjectsOrCollections(downloadRequest);
+			downloadResponse = dataManagementBusService.downloadDataObjectsOrCollectionsFromExternalSource(downloadRequest);
 
 		} catch (HpcException e) {
 			return errorResponse(e);

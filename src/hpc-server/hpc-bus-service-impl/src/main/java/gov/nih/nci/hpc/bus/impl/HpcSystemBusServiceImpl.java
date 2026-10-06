@@ -843,7 +843,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								}
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
-								downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
+								if(downloadTask.getExternalArchiveFlag()) {
+									try {
+										downloadItems = processExternalDownloadTask(downloadTask);
+									} catch (Exception e) {
+										throw new HpcException("Unable to find the collection or its associated data objects. " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+									}
+								} else {
+									downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
 										downloadTask.getGlobusDownloadDestination(),
 										downloadTask.getS3DownloadDestination(),
 										downloadTask.getGoogleDriveDownloadDestination(),
@@ -853,6 +860,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getAppendPathToDownloadDestination(),
 										downloadTask.getAppendCollectionNameToDownloadDestination(),
 										downloadTask.getUserId(), downloadTask.getId(), downloadTask.getExternalArchiveFlag());
+								}
 
 							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
 								downloadItems = new ArrayList<>();
@@ -2784,13 +2792,24 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// Initiate a download task for each data object in the collection.
 			// The download task for a single data object in an external archive will first register
 			// an archive link before initiating the download.
-			for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
-				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
-						downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
-						downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
-						downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
-						downloadTask.getId(), downloadTask.getExternalArchiveFlag());
-				downloadItems.add(downloadItem);
+			if (downloadTask.getType() == HpcDownloadTaskType.COLLECTION || (downloadTask.getType() == HpcDownloadTaskType.COLLECTION_LIST)) {
+				for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
+					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
+							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
+							downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
+							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
+							downloadTask.getId(), downloadTask.getExternalArchiveFlag());
+					downloadItems.add(downloadItem);
+				}
+			} else if(downloadTask.getType() == HpcDownloadTaskType.DATA_OBJECT_LIST) {
+				for (String item : downloadTask.getDataObjectPaths()) {
+					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item,
+							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
+							downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
+							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
+							downloadTask.getId(), downloadTask.getExternalArchiveFlag());
+					downloadItems.add(downloadItem);
+				}
 			}
 			return downloadItems;
 		} catch (HpcException e) {

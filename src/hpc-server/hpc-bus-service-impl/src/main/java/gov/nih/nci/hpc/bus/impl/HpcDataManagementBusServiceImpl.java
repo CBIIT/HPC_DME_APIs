@@ -1082,7 +1082,6 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
 			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException {
 
-		HpcBulkDataObjectDownloadResponseDTO responseDTO = null;
 		// Input validation.
 		if (downloadRequest == null) {
 			throw new HpcException("Null download request", HpcErrorType.INVALID_REQUEST_INPUT);
@@ -1118,10 +1117,12 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCollectionDownloadTask collectionDownloadTask = null;
 		List<String> errors = new ArrayList<>();
 		String path = null;
-		if (!downloadRequest.getDataObjectPaths().isEmpty()) {
+		if (downloadRequest.getDataObjectPaths() != null && !downloadRequest.getDataObjectPaths().isEmpty()) {
 			path = downloadRequest.getDataObjectPaths().iterator().next();
-		} else if (!downloadRequest.getCollectionPaths().isEmpty()) {
+		} else if (downloadRequest.getCollectionPaths() != null && !downloadRequest.getCollectionPaths().isEmpty()) {
 			path = downloadRequest.getCollectionPaths().iterator().next();
+		} else {
+			throw new HpcException("No data object or collection paths", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
@@ -1164,9 +1165,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					downloadRequest.getAppendCollectionNameToDownloadDestination(), true);
 		}
 		// Create and return a DTO with the request receipt.
+		HpcBulkDataObjectDownloadResponseDTO responseDTO = new HpcBulkDataObjectDownloadResponseDTO();
 		responseDTO.setTaskId(collectionDownloadTask.getId());
 		responseDTO.setDestinationLocation(getDestinationLocation(collectionDownloadTask));
-
 		return responseDTO;
 
 		} catch (HpcException e) {
@@ -1698,8 +1699,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcBulkDataObjectRegistrationResponseDTO getFilesFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
 		logger.info("Getting the list of S3 file in the external Collection with download task id {}, path {} ", downloadTask.getId(), downloadTask.getPath());
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
-		String path = downloadTask.getPath();
 		String userId = downloadTask.getUserId();
+
+		// Determine the path to register from the download task
+		String path = null;
+		if(downloadTask.getType() == HpcDownloadTaskType.COLLECTION_LIST) {
+			if (downloadTask.getCollectionPaths() != null && !downloadTask.getCollectionPaths().isEmpty()) {
+				logger.info("Registering collection list from external source for paths: " + downloadTask.getCollectionPaths());
+				path = downloadTask.getCollectionPaths().get(0).replace(downloadArchiveLinkBasePath, "");
+			} else {
+				logger.info("Unable to register collection list as it is empty: " + downloadTask.getCollectionPaths());
+				throw new HpcException("Collection paths list is empty for download task: " + downloadTask.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+		} else if(downloadTask.getType() == HpcDownloadTaskType.COLLECTION) {
+			logger.info("Registering path from external source for path: " + downloadTask.getPath());
+			path = downloadTask.getPath().replace(downloadArchiveLinkBasePath, "");
+		} else {
+			throw new HpcException("Unsupported download task type for method getFilesFromExternalSource: " + downloadTask.getType(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		// Find the matching S3 data transfer configuration for the external path
 		try {
@@ -1724,11 +1741,24 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 		String s3CollectionPath =  archiveObjectId + relativePath;
-		// Build the DirectoryScanRegistrationItem
 		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
-		registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
+		if(downloadTask.getType() == HpcDownloadTaskType.COLLECTION_LIST) {
+			// Build the DirectoryScanRegistrationItem for collection list
+			logger.info("Registering collection list from external source for paths: " + downloadTask.getCollectionPaths());
+			if (downloadTask.getCollectionPaths() != null && !downloadTask.getCollectionPaths().isEmpty()) {
+				for (String collectionPath : downloadTask.getCollectionPaths()) {
+					registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, archiveObjectId + collectionPath.substring(posixPath.length()), s3ArchiveConfiguration.getId(), basePath, bucket);
+				}
+			} else {
+				registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath, bucket);
+			}
+		} else if(downloadTask.getType() == HpcDownloadTaskType.COLLECTION) {
+			logger.info("Registering collection from external source for path: " + downloadTask.getPath());
+			registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
+		}
+
 		// Set the registration request to dry run mode. We do not want to actually register the data objects at this stage.
-		// We only want the list of files in S3 for the external collection download.
+		// We only want the list of files in S3 for the external collection/collection list download
 		registrationBulkRequestDTO.setDryRun(true);
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
 		try{
@@ -5537,7 +5567,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 	}
 
-    private HpcBulkDataObjectRegistrationRequestDTO buildDirectoryScanRegistrationItem(HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO, String s3CollectionPath, String s3ArchiveConfigurationId, String basePath, String bucket) throws HpcException {
+  private HpcBulkDataObjectRegistrationRequestDTO buildDirectoryScanRegistrationItem(HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO, String s3CollectionPath, String s3ArchiveConfigurationId, String basePath, String bucket) throws HpcException {
         HpcFileLocation directoryLocation = new HpcFileLocation();
         directoryLocation.setFileContainerId(bucket);
         directoryLocation.setFileId(s3CollectionPath);

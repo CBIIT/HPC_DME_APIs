@@ -27,6 +27,7 @@ import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcUploadSource;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
@@ -889,6 +890,7 @@ class HpcDataManagementBusServiceImplTest {
         downloadTask.setId("task-425");
         downloadTask.setPath("/external/data");
         downloadTask.setUserId("test-user");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION);
 
         HpcDataTransferConfiguration s3Config = buildExternalArchiveConfiguration(
             "s3-config-3", "dm-config-3", "/external", "bucket-3", "archive-object/root");
@@ -922,6 +924,7 @@ class HpcDataManagementBusServiceImplTest {
         downloadTask.setId("task-426");
         downloadTask.setPath("/external");
         downloadTask.setUserId("test-user");
+         downloadTask.setType(HpcDownloadTaskType.COLLECTION);
 
         HpcDataTransferConfiguration s3Config = buildExternalArchiveConfiguration(
             "s3-config-4", "dm-config-4", "/external", "bucket-4", "archive-object/root");
@@ -942,6 +945,7 @@ class HpcDataManagementBusServiceImplTest {
         downloadTask.setId("task-427");
         downloadTask.setPath("/external/data/file.txt");
         downloadTask.setUserId("test-user");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION);
 
         when(dataManagementService.getS3ArchiveConfigurationForExternalPath("/external/data/file.txt")).thenReturn(null);
 
@@ -958,6 +962,7 @@ class HpcDataManagementBusServiceImplTest {
         downloadTask.setId("task-428");
         downloadTask.setPath("/external/data/file.txt");
         downloadTask.setUserId("test-user");
+         downloadTask.setType(HpcDownloadTaskType.COLLECTION);
 
         HpcDataTransferConfiguration s3Config = buildExternalArchiveConfiguration(
             "s3-config-5", "dm-config-5", "/external", "bucket-5", "archive-object/root");
