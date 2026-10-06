@@ -573,8 +573,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					}
 				}
 
-				listObjectsRequest = listObjectsRequest.toBuilder()
-						.continuationToken(listObjectsResponse.nextContinuationToken()).build();
+String continuationToken = listObjectsResponse.nextContinuationToken();
+				if (listObjectsResponse.isTruncated()
+						&& StringUtils.equals(listObjectsRequest.continuationToken(), continuationToken)) {
+					break;
+				}
+				listObjectsRequest = listObjectsRequest.toBuilder().continuationToken(continuationToken).build();
 
 			} while (listObjectsResponse.isTruncated());
 
