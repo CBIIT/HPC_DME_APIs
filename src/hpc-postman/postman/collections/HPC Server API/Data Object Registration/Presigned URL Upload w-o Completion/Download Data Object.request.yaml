@@ -1,0 +1,19 @@
+$kind: http-request
+method: POST
+url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}/download"
+scripts:
+  - type: beforeRequest
+    code: "pm.variables.set('path',
+      pm.collectionVariables.get('lastSyncUploadPath')); "
+    language: text/javascript
+order: 1298400026467289
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  path: NCI/myCollection/myFile.txt
+body:
+  type: json
+  content: |-
+    {
+    }

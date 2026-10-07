@@ -2,16 +2,11 @@ name: Local
 values:
   - key: baseUrl
     value: 'https://localhost:7738'
-    enabled: true
   - key: basePath
     value: /hpc-server
-    enabled: true
   - key: username
     value: '{{vault:username}}'
-    enabled: true
   - key: password
     value: '{{vault:password}}'
-    enabled: true
   - key: dataObjectPath
-    value: FNL_SF_Archive/eran-pi-lab/eran-project/eran-flowcell/eran-sample/eran-data-object-sync-
-    enabled: true
+    value: FNL_SF_Archive/eran-pi-lab/eran-project/eran-flowcell/eran-sample/eran-data-object
