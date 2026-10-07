@@ -10,4 +10,4 @@ headers:
 body:
   type: file
   content:
-    src: '/Users/rosenbergea/Development/HPC-DM/hpc-dm-repo/src/hpc-postman/files/registration-presigned-data.txt'
+    src: 'registration-presigned-data.txt'
