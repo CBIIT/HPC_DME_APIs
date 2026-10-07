@@ -1,0 +1,12 @@
+$kind: http-request
+name: Complete Multipart Upload
+url: "{{baseUrl}}{{basePath}}/dataObject/{{lastSyncUploadPath}}/completeMultipa\
+  rtUpload"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: "{}"
+order: 164005204680936
