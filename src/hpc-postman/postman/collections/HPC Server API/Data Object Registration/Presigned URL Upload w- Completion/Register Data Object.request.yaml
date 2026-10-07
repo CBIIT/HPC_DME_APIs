@@ -18,6 +18,7 @@ scripts:
       const ss = String(now.getSeconds()).padStart(2, '0');
       const timestamp = `${mm}-${dd}-${yyyy}-${hh}-${min}-${ss}`;
       const dynamicPath = `${pm.environment.get('dataObjectPath')}-presigned-sp-${timestamp}`;
+      pm.collectionVariables.unset('presignedUploadUrl');
       pm.variables.set('path', dynamicPath);
       pm.collectionVariables.set('lastSyncUploadPath', dynamicPath);
     language: text/javascript
