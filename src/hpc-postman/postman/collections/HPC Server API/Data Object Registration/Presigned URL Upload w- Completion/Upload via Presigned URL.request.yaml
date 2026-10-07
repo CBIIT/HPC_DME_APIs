@@ -1,0 +1,11 @@
+$kind: http-request
+method: PUT
+url: '{{presignedUploadUrl}}'
+order: 105107674253428
+headers:
+  - key: Content-Type
+    value: text/plain
+body:
+  type: file
+  content:
+    src: '/Users/rosenbergea/Development/HPC-DM/hpc-dm-repo/src/hpc-postman/files/registration-presigned-data.txt'

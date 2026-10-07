@@ -139,6 +139,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// Cloudian tiering info header required when adding tiering rule
 	private static final String CLOUDIAN_TIERING_INFO_HEADER = "x-gmt-tieringinfo";
 
+	// S3 user-metadata prefix (used as query parameters on pre-signed upload URLs).
+	private static final String S3_USER_METADATA_PREFIX = "x-amz-meta-";
+
 	// Number of days the restored data object will be available.
 	@Value("${hpc.integration.s3.tieringEndpoint}")
 	private String tieringEndpoint = null;
@@ -976,11 +979,22 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration,
 			List<HpcMetadataEntry> metadataEntries, String uploadRequestURLChecksum, String storageClass,
 			boolean uploadCompletion) throws HpcException {
+		// Add user metadata.
+		AwsRequestOverrideConfiguration.Builder overrideConfigurationBuilder = AwsRequestOverrideConfiguration
+				.builder();
+		if (metadataEntries != null) {
+			for (HpcMetadataEntry metadataEntry : metadataEntries) {
+				if (!StringUtils.isEmpty(metadataEntry.getAttribute()) && metadataEntry.getValue() != null) {
+					overrideConfigurationBuilder.putRawQueryParameter(
+							S3_USER_METADATA_PREFIX + metadataEntry.getAttribute(), metadataEntry.getValue());
+				}
+			}
+		}
+
 		PutObjectRequest objectRequest = PutObjectRequest.builder()
 				.bucket(archiveDestinationLocation.getFileContainerId()).key(archiveDestinationLocation.getFileId())
-				// .metadata(toS3Metadata(metadataEntries)) - TODO: setting metadata on the URL
-				// cause Cloudian upload w/ URL to fail.
-				.storageClass(storageClass).contentMD5(uploadRequestURLChecksum).build();
+				.overrideConfiguration(overrideConfigurationBuilder.build()).storageClass(storageClass)
+				.contentMD5(uploadRequestURLChecksum).build();
 		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
 				.signatureDuration(Duration.ofHours(uploadRequestURLExpiration)).putObjectRequest(objectRequest)
 				.build();
