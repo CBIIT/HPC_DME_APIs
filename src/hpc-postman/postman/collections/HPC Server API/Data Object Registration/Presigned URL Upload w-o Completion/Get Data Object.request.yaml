@@ -1,0 +1,17 @@
+$kind: http-request
+name: Get Data Object
+method: GET
+url: "{{baseUrl}}{{basePath}}/dataObject/{{path}}"
+order: 208428003555469
+headers:
+  Accept: application/json
+pathVariables:
+  path: ""
+scripts:
+  - type: beforeRequest
+    code: pm.variables.set('path', pm.collectionVariables.get('lastSyncUploadPath')); // Set the path variable to the dynamicPath collection variable
+    language: text/javascript
+queryParams:
+  - key: includeAcl
+    value: "false"
+    disabled: true
