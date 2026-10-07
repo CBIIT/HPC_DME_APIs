@@ -1,6 +1,9 @@
 $kind: http-request
 method: GET
 url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}"
+pathVariables:
+  - key: path
+    value: 'NCI/myCollection/myFile.txt'
 order: 1774715710737
 headers:
   Accept: application/json
