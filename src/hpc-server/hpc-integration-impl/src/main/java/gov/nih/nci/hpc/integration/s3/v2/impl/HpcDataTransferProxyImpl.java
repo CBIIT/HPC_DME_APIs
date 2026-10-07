@@ -142,6 +142,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	// S3 user-metadata prefix (used as query parameters on pre-signed upload URLs).
 	private static final String S3_USER_METADATA_PREFIX = "x-amz-meta-";
 
+	// S3 storage class (used as query parameter on pre-signed upload URLs).
+	private static final String S3_STORAGE_CLASS = "x-amz-storage-class";
+
 	// Number of days the restored data object will be available.
 	@Value("${hpc.integration.s3.tieringEndpoint}")
 	private String tieringEndpoint = null;
@@ -979,9 +982,15 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			HpcFileLocation archiveDestinationLocation, int uploadRequestURLExpiration,
 			List<HpcMetadataEntry> metadataEntries, String uploadRequestURLChecksum, String storageClass,
 			boolean uploadCompletion) throws HpcException {
-		// Add user metadata.
 		AwsRequestOverrideConfiguration.Builder overrideConfigurationBuilder = AwsRequestOverrideConfiguration
 				.builder();
+
+		// Add the storage class.
+		if (!StringUtils.isEmpty(storageClass)) {
+			overrideConfigurationBuilder.putRawQueryParameter(S3_STORAGE_CLASS, storageClass);
+		}
+
+		// Add user metadata.
 		if (metadataEntries != null) {
 			for (HpcMetadataEntry metadataEntry : metadataEntries) {
 				if (!StringUtils.isEmpty(metadataEntry.getAttribute()) && metadataEntry.getValue() != null) {
@@ -993,8 +1002,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		PutObjectRequest objectRequest = PutObjectRequest.builder()
 				.bucket(archiveDestinationLocation.getFileContainerId()).key(archiveDestinationLocation.getFileId())
-				.overrideConfiguration(overrideConfigurationBuilder.build()).storageClass(storageClass)
-				.contentMD5(uploadRequestURLChecksum).build();
+				.overrideConfiguration(overrideConfigurationBuilder.build()).contentMD5(uploadRequestURLChecksum)
+				.build();
 		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
 				.signatureDuration(Duration.ofHours(uploadRequestURLExpiration)).putObjectRequest(objectRequest)
 				.build();
