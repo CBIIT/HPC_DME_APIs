@@ -17,18 +17,27 @@ scripts:
       const min = String(now.getMinutes()).padStart(2, '0');
       const ss = String(now.getSeconds()).padStart(2, '0');
       const timestamp = `${mm}-${dd}-${yyyy}-${hh}-${min}-${ss}`;
-      const dynamicPath = `${pm.environment.get('dataObjectPath')}${timestamp}`;
+      const dynamicPath = `${pm.environment.get('dataObjectPath')}-presigned-sp-nc-${timestamp}`;
       pm.variables.set('path', dynamicPath);
       pm.collectionVariables.set('lastSyncUploadPath', dynamicPath);
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      const response = pm.response.json();
+      const uploadUrl = response?.uploadRequestURL;
+      if (uploadUrl) {
+          pm.collectionVariables.set('presignedUploadUrl', uploadUrl);
+          console.log('Presigned upload URL captured:', uploadUrl);
+      } else {
+          console.warn('No uploadRequestURL found in response');
+      }
     language: text/javascript
 body:
   type: formdata
   content:
     - type: file
       key: dataObjectRegistration
-      src: /Users/rosenbergea/Development/HPC-DM/hpc-dm-repo/src/hpc-postman/files/registration-sync-upload.json
+      src:
+        - registration-singlepart-url-no-completion.json
       contentType: application/json
-    - type: file
-      key: dataObject
-      src: /Users/rosenbergea/Development/HPC-DM/hpc-dm-repo/src/hpc-postman/files/data-object-binary.png
-      contentType: application/octet-stream
+      disabled: false
