@@ -1,0 +1,43 @@
+$kind: http-request
+method: PUT
+url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}"
+order: 1787344951408
+headers:
+  Accept: application/json
+pathVariables:
+  path: "{{path}}"
+scripts:
+  - type: beforeRequest
+    code: |-
+      const now = new Date();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      const timestamp = `${mm}-${dd}-${yyyy}-${hh}-${min}-${ss}`;
+      const dynamicPath = `${pm.environment.get('dataObjectPath')}-presigned-sp-${timestamp}`;
+      pm.variables.set('path', dynamicPath);
+      pm.collectionVariables.set('lastSyncUploadPath', dynamicPath);
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      const response = pm.response.json();
+      const uploadUrl = response?.uploadRequestURL;
+      if (uploadUrl) {
+          pm.collectionVariables.set('presignedUploadUrl', uploadUrl);
+          console.log('Presigned upload URL captured:', uploadUrl);
+      } else {
+          console.warn('No uploadRequestURL found in response');
+      }
+    language: text/javascript
+body:
+  type: formdata
+  content:
+    - type: file
+      key: dataObjectRegistration
+      src:
+        - registration-singlepart-url.json
+      contentType: application/json
+      disabled: false
