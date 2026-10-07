@@ -565,9 +565,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 						listObjectsEntry.setArchived(false);
 						listObjectsEntry.setSize(0);
 
-						Calendar now = Calendar.getInstance();
-						listObjectsEntry.setCreated(now);
-						listObjectsEntry.setLastModified(now);
+						Calendar latestModified = getLatestLastModified(authenticatedToken,
+								directoryLocation.getFileContainerId(), commonPrefix.prefix());
+						listObjectsEntry.setCreated(latestModified);
+						listObjectsEntry.setLastModified(Calendar.getInstance());
 
 						directoryListing.add(listObjectsEntry);
 					}
@@ -1423,6 +1424,35 @@ String continuationToken = listObjectsResponse.nextContinuationToken();
 		}, s3Executor);
 
 		return String.valueOf(s3TransferManagerDownloadFuture.hashCode());
+	}
+
+	private Calendar getLatestLastModified(Object authenticatedToken, String bucket, String prefix)
+			throws HpcException {
+		ListObjectsV2Request request = ListObjectsV2Request.builder().bucket(bucket).prefix(prefix).build();
+		Date latestModified = null;
+		ListObjectsV2Response response;
+		do {
+			response = s3Connection.getClient(authenticatedToken).listObjectsV2(request).join();
+			for (S3Object s3Object : response.contents()) {
+				Date lastModified = Date.from(s3Object.lastModified());
+				if (latestModified == null || lastModified.after(latestModified)) {
+					latestModified = lastModified;
+				}
+			}
+
+			String continuationToken = response.nextContinuationToken();
+			if (response.isTruncated()
+					&& StringUtils.equals(request.continuationToken(), continuationToken)) {
+				break;
+			}
+			request = request.toBuilder().continuationToken(continuationToken).build();
+		} while (response.isTruncated());
+
+		Calendar result = Calendar.getInstance();
+		if (latestModified != null) {
+			result.setTime(latestModified);
+		}
+		return result;
 	}
 
 	/**
