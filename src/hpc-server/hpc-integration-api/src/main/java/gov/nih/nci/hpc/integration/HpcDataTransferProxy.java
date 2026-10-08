@@ -33,6 +33,7 @@ import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntry;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadRequest;
 import gov.nih.nci.hpc.domain.model.HpcDataObjectUploadResponse;
+import gov.nih.nci.hpc.domain.datamanagement.HpcListObjectsEntry;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemTokens;
 import gov.nih.nci.hpc.exception.HpcException;
@@ -325,6 +326,19 @@ public interface HpcDataTransferProxy {
 	public default List<HpcDirectoryScanItem> scanDirectory(Object authenticatedToken,
 			HpcFileLocation directoryLocation) throws HpcException {
 		throw new HpcException("scanDirectory() not supported", HpcErrorType.UNEXPECTED_ERROR);
+	}
+
+	/**
+	 * List a directory (non-recursive) and return a list of all its files and folder directly under the path.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @param directoryLocation       The directory to check.
+	 * @return A list of files/folders found.
+	 * @throws HpcException on data transfer system failure.
+	 */
+	public default List<HpcListObjectsEntry> listDirectory(Object authenticatedToken,
+			HpcFileLocation directoryLocation) throws HpcException {
+		throw new HpcException("listDirectory() not supported", HpcErrorType.UNEXPECTED_ERROR);
 	}
 
 	/**

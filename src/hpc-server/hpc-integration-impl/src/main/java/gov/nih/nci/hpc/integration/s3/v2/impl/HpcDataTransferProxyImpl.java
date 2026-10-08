@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcArchive;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveObjectMetadata;
 import gov.nih.nci.hpc.domain.datatransfer.HpcArchiveType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadRequest;
+import gov.nih.nci.hpc.domain.datamanagement.HpcListObjectsEntry;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadMethod;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
@@ -80,6 +81,7 @@ import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.http.HttpStatusCode;
 import software.amazon.awssdk.services.s3.model.BucketLifecycleConfiguration;
+import software.amazon.awssdk.services.s3.model.CommonPrefix;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
@@ -188,6 +190,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	/** Constructor for spring injection. */
 	private HpcDataTransferProxyImpl() {
 	}
+
 
 	// ---------------------------------------------------------------------//
 	// Methods
@@ -509,6 +512,84 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 			});
 
 			return directoryScanItems;
+
+		} catch (CompletionException e) {
+			throw new HpcException("[S3] Failed to list objects: " + e.getCause().getMessage(),
+					HpcErrorType.DATA_TRANSFER_ERROR, s3Connection.getS3Provider(authenticatedToken), e.getCause());
+		}
+	}
+
+	@Override
+	public List<HpcListObjectsEntry> listDirectory(Object authenticatedToken,
+			HpcFileLocation directoryLocation) throws HpcException {
+		List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
+
+		String directoryPrefix = StringUtils.strip(directoryLocation.getFileId(), "/");
+		if (StringUtils.isNotEmpty(directoryPrefix)) {
+			directoryPrefix += "/";
+		}
+
+		try {
+			ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
+					.bucket(directoryLocation.getFileContainerId()).prefix(directoryPrefix).delimiter("/").build();
+
+			ListObjectsV2Response listObjectsResponse = null;
+			do {
+				listObjectsResponse = s3Connection.getClient(authenticatedToken).listObjectsV2(listObjectsRequest).join();
+				List<S3Object> s3Objects = listObjectsResponse.contents();
+
+				for (S3Object s3Object : s3Objects) {
+					// S3 directory markers and child directories are represented by CommonPrefixes.
+					if (directoryPrefix.equals(s3Object.key()) || s3Object.key().endsWith("/")) {
+						continue;
+					}
+
+					HpcListObjectsEntry listObjectsEntry = new HpcListObjectsEntry();
+					listObjectsEntry.setPath(s3Object.key());
+					listObjectsEntry.setName(FilenameUtils.getName(s3Object.key()));
+					listObjectsEntry.setIsDirectory(false);
+					listObjectsEntry.setArchived(false);
+					listObjectsEntry.setSize(s3Object.size());
+
+					Calendar lastModified = Calendar.getInstance();
+					lastModified.setTime(Date.from(s3Object.lastModified()));
+					listObjectsEntry.setCreated(lastModified);
+					listObjectsEntry.setLastModified(lastModified);
+
+					directoryListing.add(listObjectsEntry);
+				}
+
+				// Process S3 CommonPrefixes as directory entries
+				List<CommonPrefix> commonPrefixes = listObjectsResponse.commonPrefixes();
+				if (!CollectionUtils.isEmpty(commonPrefixes)) {
+					for (CommonPrefix commonPrefix : commonPrefixes) {
+						String prefixPath = StringUtils.removeEnd(commonPrefix.prefix(), "/");
+						HpcListObjectsEntry listObjectsEntry = new HpcListObjectsEntry();
+						listObjectsEntry.setPath(prefixPath);
+						listObjectsEntry.setName(FilenameUtils.getName(prefixPath));
+						listObjectsEntry.setIsDirectory(true);
+						listObjectsEntry.setArchived(false);
+						listObjectsEntry.setSize(0);
+
+						Calendar latestModified = getLatestLastModified(authenticatedToken,
+								directoryLocation.getFileContainerId(), commonPrefix.prefix());
+						listObjectsEntry.setCreated(latestModified);
+						listObjectsEntry.setLastModified(Calendar.getInstance());
+
+						directoryListing.add(listObjectsEntry);
+					}
+				}
+
+String continuationToken = listObjectsResponse.nextContinuationToken();
+				if (listObjectsResponse.isTruncated()
+						&& StringUtils.equals(listObjectsRequest.continuationToken(), continuationToken)) {
+					break;
+				}
+				listObjectsRequest = listObjectsRequest.toBuilder().continuationToken(continuationToken).build();
+
+			} while (listObjectsResponse.isTruncated());
+
+			return directoryListing;
 
 		} catch (CompletionException e) {
 			throw new HpcException("[S3] Failed to list objects: " + e.getCause().getMessage(),
@@ -1368,6 +1449,35 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		return String.valueOf(s3TransferManagerDownloadFuture.hashCode());
 	}
 
+	private Calendar getLatestLastModified(Object authenticatedToken, String bucket, String prefix)
+			throws HpcException {
+		ListObjectsV2Request request = ListObjectsV2Request.builder().bucket(bucket).prefix(prefix).build();
+		Date latestModified = null;
+		ListObjectsV2Response response;
+		do {
+			response = s3Connection.getClient(authenticatedToken).listObjectsV2(request).join();
+			for (S3Object s3Object : response.contents()) {
+				Date lastModified = Date.from(s3Object.lastModified());
+				if (latestModified == null || lastModified.after(latestModified)) {
+					latestModified = lastModified;
+				}
+			}
+
+			String continuationToken = response.nextContinuationToken();
+			if (response.isTruncated()
+					&& StringUtils.equals(request.continuationToken(), continuationToken)) {
+				break;
+			}
+			request = request.toBuilder().continuationToken(continuationToken).build();
+		} while (response.isTruncated());
+
+		Calendar result = Calendar.getInstance();
+		if (latestModified != null) {
+			result.setTime(latestModified);
+		}
+		return result;
+	}
+
 	/**
 	 * Check if a path is a directory on S3 bucket.
 	 *
@@ -1379,8 +1489,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private boolean isDirectory(Object authenticatedToken, HpcFileLocation fileLocation) throws HpcException {
 		try {
 			try { // Check if this is a directory. Use V2 listObjects API.
+				String directoryPrefix = StringUtils.strip(fileLocation.getFileId(), "/");
+				if (StringUtils.isNotEmpty(directoryPrefix)) {
+					directoryPrefix += "/";
+				}
 				ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-						.bucket(fileLocation.getFileContainerId()).prefix(fileLocation.getFileId() + "/").build();
+						.bucket(fileLocation.getFileContainerId()).prefix(directoryPrefix).build();
 
 				ListObjectsV2Response listObjectsV2Response = s3Connection.getClient(authenticatedToken)
 						.listObjectsV2(listObjectsV2Request).join();

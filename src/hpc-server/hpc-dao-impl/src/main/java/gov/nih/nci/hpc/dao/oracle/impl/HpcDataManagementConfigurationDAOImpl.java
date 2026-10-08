@@ -149,6 +149,7 @@ public class HpcDataManagementConfigurationDAOImpl implements HpcDataManagementC
 		s3Configuration.setDataManagementConfigurationId(rs.getString("DATA_MANAGEMENT_CONFIGURATION_ID"));
 		s3Configuration.setExternalStorage(rs.getBoolean("EXTERNAL_STORAGE"));
 		s3Configuration.setPosixPath(rs.getString("POSIX_PATH"));
+		s3Configuration.setUseS3Listing(rs.getBoolean("USE_S3_LISTING"));
 		String autoTieringSearchSourcePath = rs.getString("AUTO_TIERING_SEARCH_SOURCE_PATH");
 		if (autoTieringSearchSourcePath != null) {
 			if (!autoTieringSearchSourcePath.contains(":")) {
