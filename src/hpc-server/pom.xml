@@ -41,7 +41,7 @@
 		<amazon-aws.version>1.12.797</amazon-aws.version>
 		<amazon-aws-v2.version>2.54.12</amazon-aws-v2.version>
 		<amazon-aws-crt.version>0.48.4</amazon-aws-crt.version>
-		<jackson.version>2.18.10</jackson.version>
+		<jackson.version>2.18.11</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
 		<jjwt.version>0.12.5</jjwt.version>
 		<bouncycastle.version>1.85</bouncycastle.version>
