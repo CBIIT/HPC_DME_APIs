@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -736,6 +737,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
+			boolean markedInProcess = false;
 			try {
 				logger.info("collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
 						downloadTask.getType());
@@ -780,13 +782,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 				// Mark this collection download task in-process.
 				dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
+				markedInProcess = true;
 
 				// Process this collection download task async.
 				CompletableFuture.runAsync(() -> {
+					AtomicBoolean processingStarted = new AtomicBoolean(false);
 					try {
 						// Since this is executed in a separate thread. Need to get system-account
 						// execution again.
 						securityService.executeAsSystemAccount(Optional.empty(), () -> {
+							processingStarted.set(true);
 							try {
 								List<HpcCollectionDownloadTaskItem> downloadItems = null;
 								HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker(
@@ -911,6 +916,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					} catch (HpcException | RuntimeException e) {
 						logger.error("collection download task: [taskId={}] - Failed to execute as system account",
 								downloadTask.getId(), e);
+						if (!processingStarted.get()) {
+							// Failed before processing the task. Clear its in-process indicator, so it is
+							// retried. Once started, the task is activated or completed above.
+							clearCollectionDownloadTaskInProcess(downloadTask.getId());
+						}
 					}
 
 				}, collectionDownloadTaskExecutor);
@@ -918,6 +928,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			} catch (HpcException | RuntimeException e) {
 				logger.error("collection download task: [taskId={}] - Failed to start processing",
 						downloadTask.getId(), e);
+				if (markedInProcess) {
+					// The async processing was not started (e.g. rejected by the executor). Clear the
+					// task's in-process indicator, so it is retried.
+					clearCollectionDownloadTaskInProcess(downloadTask.getId());
+				}
 			}
 		}
 	}
@@ -2682,6 +2697,22 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		logger.info("collection download task: [taskId={}] - completed as {} [{}]", downloadTask.getId(),
 				result.value(), downloadTask.getType().value());
 
+	}
+
+	/**
+	 * Clear the in-process indicator of a collection download task that was not
+	 * processed, so a later run can retry it. A failure is logged rather than
+	 * raised.
+	 *
+	 * @param taskId The collection download task ID.
+	 */
+	private void clearCollectionDownloadTaskInProcess(String taskId) {
+		try {
+			dataTransferService.setCollectionDownloadTaskInProgress(taskId, false);
+
+		} catch (HpcException | RuntimeException e) {
+			logger.error("collection download task: [taskId={}] - Failed to clear in-process indicator", taskId, e);
+		}
 	}
 
 	/**
