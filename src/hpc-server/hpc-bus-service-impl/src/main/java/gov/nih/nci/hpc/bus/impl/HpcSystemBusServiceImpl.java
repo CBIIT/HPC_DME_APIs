@@ -2792,7 +2792,8 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// Initiate a download task for each data object in the collection.
 			// The download task for a single data object in an external archive will first register
 			// an archive link before initiating the download.
-			if (downloadTask.getType() == HpcDownloadTaskType.COLLECTION || (downloadTask.getType() == HpcDownloadTaskType.COLLECTION_LIST)) {
+			if (HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())
+					|| HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
 				for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
 					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
 							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
@@ -2801,7 +2802,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							downloadTask.getId(), downloadTask.getExternalArchiveFlag());
 					downloadItems.add(downloadItem);
 				}
-			} else if(downloadTask.getType() == HpcDownloadTaskType.DATA_OBJECT_LIST) {
+			} else if (HpcDownloadTaskType.DATA_OBJECT_LIST.equals(downloadTask.getType())) {
 				for (String item : downloadTask.getDataObjectPaths()) {
 					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item,
 							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
