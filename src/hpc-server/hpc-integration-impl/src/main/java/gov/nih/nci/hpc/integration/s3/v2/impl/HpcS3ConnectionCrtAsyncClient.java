@@ -51,6 +51,12 @@ public class HpcS3ConnectionCrtAsyncClient extends HpcS3Connection {
 	@Value("${hpc.integration.s3.crtLogLevel:Info}")
 	private String crtLogLevel = null;
 
+	// The max native memory a CRT S3 client may use to buffer the parts of its
+	// transfers, in bytes (CRT requires at least 1 GiB). The limit is per client, and
+	// a client is shared per system account and S3 URL / region.
+	@Value("${hpc.integration.s3.crtMaxNativeMemoryLimitInBytes:2147483648}")
+	private Long maxNativeMemoryLimitInBytes = null;
+
 	// ---------------------------------------------------------------------//
 	// Constructors
 	// ---------------------------------------------------------------------//
@@ -83,6 +89,7 @@ public class HpcS3ConnectionCrtAsyncClient extends HpcS3Connection {
 			return S3AsyncClient.crtBuilder().credentialsProvider(credentialsProvider)
 					.forcePathStyle(pathStyleAccessEnabled).endpointOverride(endpoint)
 					.minimumPartSizeInBytes(minimumUploadPartSize).thresholdInBytes(thresholdInBytes)
+					.maxNativeMemoryLimitInBytes(maxNativeMemoryLimitInBytes)
 					.httpConfiguration(httpConfiguration(true)).retryConfiguration(retryConfiguration()).build();
 
 		} catch (CrtRuntimeException e) {
@@ -99,6 +106,7 @@ public class HpcS3ConnectionCrtAsyncClient extends HpcS3Connection {
 			// Instantiate a S3 async client.
 			return S3AsyncClient.crtBuilder().credentialsProvider(credentialsProvider).region(Region.of(region))
 					.minimumPartSizeInBytes(minimumUploadPartSize).thresholdInBytes(multipartUploadThreshold)
+					.maxNativeMemoryLimitInBytes(maxNativeMemoryLimitInBytes)
 					.httpConfiguration(httpConfiguration(false)).retryConfiguration(retryConfiguration()).build();
 
 		} catch (CrtRuntimeException e) {
