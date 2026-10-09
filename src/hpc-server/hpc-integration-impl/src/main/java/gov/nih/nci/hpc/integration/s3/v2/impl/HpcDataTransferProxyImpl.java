@@ -752,20 +752,29 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 	@Override
 	public void shutdown(Object authenticatedToken) throws HpcException {
-		try {
-			s3Connection.getTransferManager(authenticatedToken).close();
-			s3Connection.getPresigner(authenticatedToken).close();
-			s3Connection.getClient(authenticatedToken).close();
-
-		} catch (Exception e) {
-			throw new HpcException("[S3] Failed to shutdown AWS TransferManager/Client/Presigner: " + e.getMessage(),
-					HpcErrorType.DATA_TRANSFER_ERROR, e);
-		}
+		s3Connection.shutdown(authenticatedToken);
 	}
 
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
+
+	/**
+	 * Shutdown an authenticated token that was obtained for a single operation
+	 * (e.g. authenticated w/ a user's S3 account), releasing its resources. A
+	 * failure is logged rather than raised, so it doesn't mask the outcome of the
+	 * operation.
+	 *
+	 * @param authenticatedToken The authenticated token to shutdown.
+	 */
+	private void shutdownQuietly(Object authenticatedToken) {
+		try {
+			s3Connection.shutdown(authenticatedToken);
+
+		} catch (HpcException e) {
+			logger.error("[S3] Failed to shutdown an authenticated token: " + e.getMessage(), e);
+		}
+	}
 
 	/**
 	 * Upload a data object file.
@@ -884,10 +893,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 			// If not provided, generate a download pre-signed URL for the requested data
 			// file from AWS // (using the provided S3 account).
-			sourceURL = StringUtils.isEmpty(s3UploadSource.getSourceURL())
-					? generateDownloadRequestURL(s3Connection.authenticate(s3UploadSource.getAccount()), sourceLocation,
-							baseArchiveDestination, S3_STREAM_EXPIRATION)
-					: s3UploadSource.getSourceURL();
+			if (StringUtils.isEmpty(s3UploadSource.getSourceURL())) {
+				// The S3 account token is used to presign the URL only. The presigned URL
+				// remains valid after the token is shutdown.
+				Object s3AccountAuthenticatedToken = s3Connection.authenticate(s3UploadSource.getAccount());
+				try {
+					sourceURL = generateDownloadRequestURL(s3AccountAuthenticatedToken, sourceLocation,
+							baseArchiveDestination, S3_STREAM_EXPIRATION);
+				} finally {
+					shutdownQuietly(s3AccountAuthenticatedToken);
+				}
+			} else {
+				sourceURL = s3UploadSource.getSourceURL();
+			}
 
 		} else if (googleDriveUploadSource != null) { // Upload by streaming from Google Drive
 			uploadMethod = HpcDataTransferUploadMethod.GOOGLE_DRIVE;
@@ -1264,50 +1282,56 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private String downloadDataObject(Object authenticatedToken, HpcFileLocation archiveLocation,
 			String archiveLocationURL, HpcArchive baseArchiveDestination, HpcS3DownloadDestination s3Destination,
 			HpcDataTransferProgressListener progressListener, long fileSize) throws HpcException {
-		// Authenticate the S3 account.
+		// Authenticate the S3 account. The token is used for this transfer only - it is
+		// shutdown when the transfer completes, or here if the transfer fails to start.
 		Object s3AccountAuthenticatedToken = s3Connection.authenticate(s3Destination.getAccount());
-
-		// Confirm the S3 bucket is accessible.
-		boolean s3BucketAccessible = true;
 		try {
-			s3BucketAccessible = getPathAttributes(s3AccountAuthenticatedToken, s3Destination.getDestinationLocation(),
-					false).getIsAccessible();
-		} catch (HpcException e) {
-			s3BucketAccessible = false;
-			logger.error("Failed to get S3 path attributes: " + e.getMessage(), e);
-		}
-		if (!s3BucketAccessible) {
-			throw new HpcException(
-					"Failed to access AWS S3 bucket: " + s3Destination.getDestinationLocation().getFileContainerId(),
-					HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-
-		String sourceURL = null;
-		long size = fileSize;
-		if (StringUtils.isEmpty(archiveLocationURL)) {
-			// Downloading from S3 archive -> S3 destination.
-			sourceURL = generateDownloadRequestURL(authenticatedToken, archiveLocation, baseArchiveDestination,
-					S3_STREAM_EXPIRATION);
-			if (size == 0) {
-				size = getPathAttributes(authenticatedToken, archiveLocation, true).getSize();
+			// Confirm the S3 bucket is accessible.
+			boolean s3BucketAccessible = true;
+			try {
+				s3BucketAccessible = getPathAttributes(s3AccountAuthenticatedToken,
+						s3Destination.getDestinationLocation(), false).getIsAccessible();
+			} catch (HpcException e) {
+				s3BucketAccessible = false;
+				logger.error("Failed to get S3 path attributes: " + e.getMessage(), e);
 			}
-		} else {
-			// Downloading from POSIX archive -> S3 destination.
-			sourceURL = archiveLocationURL;
-			if (size == 0) {
-				try {
-					size = Files.size(Paths.get(URI.create(archiveLocationURL)));
-				} catch (IOException e) {
-					throw new HpcException(
-							"Failed to determine data object size in a POSIX archive: " + archiveLocationURL,
-							HpcErrorType.UNEXPECTED_ERROR);
+			if (!s3BucketAccessible) {
+				throw new HpcException(
+						"Failed to access AWS S3 bucket: " + s3Destination.getDestinationLocation().getFileContainerId(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			String sourceURL = null;
+			long size = fileSize;
+			if (StringUtils.isEmpty(archiveLocationURL)) {
+				// Downloading from S3 archive -> S3 destination.
+				sourceURL = generateDownloadRequestURL(authenticatedToken, archiveLocation, baseArchiveDestination,
+						S3_STREAM_EXPIRATION);
+				if (size == 0) {
+					size = getPathAttributes(authenticatedToken, archiveLocation, true).getSize();
+				}
+			} else {
+				// Downloading from POSIX archive -> S3 destination.
+				sourceURL = archiveLocationURL;
+				if (size == 0) {
+					try {
+						size = Files.size(Paths.get(URI.create(archiveLocationURL)));
+					} catch (IOException e) {
+						throw new HpcException(
+								"Failed to determine data object size in a POSIX archive: " + archiveLocationURL,
+								HpcErrorType.UNEXPECTED_ERROR);
+					}
 				}
 			}
-		}
 
-		// Use AWS transfer manager to download the file.
-		return downloadDataObject(s3AccountAuthenticatedToken, sourceURL, s3Destination.getDestinationLocation(), size,
-				progressListener);
+			// Use AWS transfer manager to download the file.
+			return downloadDataObject(s3AccountAuthenticatedToken, sourceURL, s3Destination.getDestinationLocation(),
+					size, progressListener);
+
+		} catch (HpcException | RuntimeException e) {
+			shutdownQuietly(s3AccountAuthenticatedToken);
+			throw e;
+		}
 	}
 
 	/**
@@ -1315,7 +1339,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	 * Manager.
 	 *
 	 * @param s3AccountAuthenticatedToken An authenticated token to the user's AWS
-	 *                                    S3 account.
+	 *                                    S3 account. It is shutdown when the
+	 *                                    transfer completes.
 	 * @param sourceURL                   The download source URL.
 	 * @param destinationLocation         The destination location.
 	 * @param fileSize                    The size of the file to download.
@@ -1358,9 +1383,12 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				streamUpload.completionFuture().join();
 
 			} catch (CompletionException | HpcException | IOException e) {
-				logger.error("[S3] Failed to download to S3 destination: " + e.getCause().getMessage(), e);
-				progressListener.transferFailed(e.getCause().getMessage());
+				Throwable cause = e.getCause() != null ? e.getCause() : e;
+				logger.error("[S3] Failed to download to S3 destination: " + cause.getMessage(), e);
+				progressListener.transferFailed(cause.getMessage());
 
+			} finally {
+				shutdownQuietly(s3AccountAuthenticatedToken);
 			}
 
 		}, s3Executor);

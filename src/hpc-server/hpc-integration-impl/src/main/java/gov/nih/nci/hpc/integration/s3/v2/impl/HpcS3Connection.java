@@ -13,14 +13,21 @@ package gov.nih.nci.hpc.integration.s3.v2.impl;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
@@ -43,9 +50,15 @@ import software.amazon.awssdk.transfer.s3.S3TransferManager;
  * implementations is how the {@link S3AsyncClient} is built (e.g. AWS CRT vs
  * Netty-NIO), which is delegated to the abstract build methods.
  *
+ * <p>
+ * System account tokens are cached and shared, since every token holds a S3
+ * client w/ its own connection pool (and, for the CRT client, native memory
+ * that is released only when the client is closed). User S3 account tokens are
+ * not cached.
+ *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public abstract class HpcS3Connection {
+public abstract class HpcS3Connection implements DisposableBean {
 	// ---------------------------------------------------------------------//
 	// Constants
 	// ---------------------------------------------------------------------//
@@ -90,6 +103,16 @@ public abstract class HpcS3Connection {
 
 	// The executor service to be used by AWSTransferManager
 	private ExecutorService executorService = null;
+
+	// The authenticated system account tokens, keyed by the S3 provider and URL (or
+	// AWS region). A token is shared by all the callers authenticating the same
+	// system account, and is closed on bean destruction.
+	private final Map<HpcS3SystemAccountKey, HpcS3> systemAccountTokens = new ConcurrentHashMap<>();
+
+	// System account tokens replaced after the account credentials changed.
+	// Transfers in progress may still be using them, so they are closed on bean
+	// destruction.
+	private final Queue<HpcS3> retiredSystemAccountTokens = new ConcurrentLinkedQueue<>();
 
 	// The logger instance.
 	protected final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -149,7 +172,10 @@ public abstract class HpcS3Connection {
 
 	/**
 	 * Authenticate a (system) data transfer account to S3 (AWS or 3rd Party
-	 * Provider)
+	 * Provider). The authenticated token is cached and shared by all callers
+	 * authenticating the same system account and S3 URL / region, so shutdown() is
+	 * a no-op for it. If the account credentials changed since the token was
+	 * cached, a new token is authenticated and replaces it.
 	 *
 	 * @param dataTransferAccount A data transfer account to authenticate.
 	 * @param s3URLorRegion       The S3 URL if authenticating with a 3rd party S3
@@ -161,15 +187,49 @@ public abstract class HpcS3Connection {
 	 */
 	public Object authenticate(HpcIntegratedSystemAccount dataTransferAccount, String s3URLorRegion)
 			throws HpcException {
-		if (dataTransferAccount.getIntegratedSystem().equals(HpcIntegratedSystem.AWS)) {
-			return authenticateAWS(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(), s3URLorRegion);
-		} else {
-			// Determine if this S3 provider require path-style enabled.
-			boolean pathStyleAccessEnabled = pathStyleAccessEnabledProviders
-					.contains(dataTransferAccount.getIntegratedSystem());
+		HpcS3SystemAccountKey key = new HpcS3SystemAccountKey(dataTransferAccount.getIntegratedSystem(),
+				s3URLorRegion);
+		HpcS3 s3 = systemAccountTokens.get(key);
+		if (s3 != null && s3.isAuthenticatedWith(dataTransferAccount)) {
+			return s3;
+		}
 
-			return authenticateS3Provider(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(),
-					s3URLorRegion, pathStyleAccessEnabled, dataTransferAccount.getIntegratedSystem());
+		// Synchronized, so concurrent callers don't create multiple S3 clients for the
+		// same system account.
+		synchronized (systemAccountTokens) {
+			s3 = systemAccountTokens.get(key);
+			if (s3 != null && s3.isAuthenticatedWith(dataTransferAccount)) {
+				return s3;
+			}
+
+			HpcS3 systemAccountS3 = null;
+			if (dataTransferAccount.getIntegratedSystem().equals(HpcIntegratedSystem.AWS)) {
+				systemAccountS3 = authenticateAWS(dataTransferAccount.getUsername(), dataTransferAccount.getPassword(),
+						s3URLorRegion);
+			} else {
+				// Determine if this S3 provider require path-style enabled.
+				boolean pathStyleAccessEnabled = pathStyleAccessEnabledProviders
+						.contains(dataTransferAccount.getIntegratedSystem());
+
+				systemAccountS3 = authenticateS3Provider(dataTransferAccount.getUsername(),
+						dataTransferAccount.getPassword(), s3URLorRegion, pathStyleAccessEnabled,
+						dataTransferAccount.getIntegratedSystem());
+			}
+
+			systemAccountS3.shared = true;
+			systemAccountS3.systemAccountUsername = dataTransferAccount.getUsername();
+			systemAccountS3.systemAccountPassword = dataTransferAccount.getPassword();
+			systemAccountTokens.put(key, systemAccountS3);
+
+			if (s3 != null) {
+				retiredSystemAccountTokens.add(s3);
+				logger.info("[S3] System account credentials changed. Replaced the S3 client of {} [{}]",
+						key.provider(), key.urlOrRegion());
+			} else {
+				logger.info("[S3] Created a shared S3 client for {} [{}]", key.provider(), key.urlOrRegion());
+			}
+
+			return systemAccountS3;
 		}
 	}
 
@@ -254,6 +314,43 @@ public abstract class HpcS3Connection {
 		return ((HpcS3) authenticatedToken).provider;
 	}
 
+	/**
+	 * Shutdown an authenticated token - close its transfer manager, presigner and
+	 * S3 client. System account tokens are shared, so they are not closed here, but
+	 * on bean destruction.
+	 *
+	 * @param authenticatedToken An authenticated token.
+	 * @throws HpcException on invalid authentication token.
+	 */
+	public void shutdown(Object authenticatedToken) throws HpcException {
+		if (!(authenticatedToken instanceof HpcS3)) {
+			throw new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		HpcS3 s3 = (HpcS3) authenticatedToken;
+		if (!s3.shared) {
+			s3.close();
+		}
+	}
+
+	// ---------------------------------------------------------------------//
+	// DisposableBean Implementation
+	// ---------------------------------------------------------------------//
+
+	@Override
+	public void destroy() {
+		synchronized (systemAccountTokens) {
+			logger.info("[S3] Closing {} shared S3 clients",
+					systemAccountTokens.size() + retiredSystemAccountTokens.size());
+			systemAccountTokens.values().forEach(HpcS3::close);
+			systemAccountTokens.clear();
+			retiredSystemAccountTokens.forEach(HpcS3::close);
+			retiredSystemAccountTokens.clear();
+		}
+
+		executorService.shutdown();
+	}
+
 	// ---------------------------------------------------------------------//
 	// Helper Methods
 	// ---------------------------------------------------------------------//
@@ -263,6 +360,62 @@ public abstract class HpcS3Connection {
 		private S3AsyncClient client = null;
 		private S3Presigner presigner = null;
 		private HpcIntegratedSystem provider = null;
+
+		// True for a system account token, which is shared by all its callers.
+		private boolean shared = false;
+
+		// The credentials a system account token was authenticated with, to detect
+		// credential changes.
+		private String systemAccountUsername = null;
+		private String systemAccountPassword = null;
+
+		private final AtomicBoolean closed = new AtomicBoolean(false);
+
+		/**
+		 * Check if this token was authenticated with the system account's current
+		 * credentials.
+		 *
+		 * @param systemAccount The system account.
+		 * @return true if the credentials are unchanged.
+		 */
+		private boolean isAuthenticatedWith(HpcIntegratedSystemAccount systemAccount) {
+			return Objects.equals(systemAccountUsername, systemAccount.getUsername())
+					&& Objects.equals(systemAccountPassword, systemAccount.getPassword());
+		}
+
+		/**
+		 * Close the transfer manager, presigner and S3 client. Closing an already
+		 * closed token is a no-op.
+		 */
+		private void close() {
+			if (closed.compareAndSet(false, true)) {
+				closeQuietly(transferManager);
+				closeQuietly(presigner);
+				closeQuietly(client);
+			}
+		}
+	}
+
+	// The key of a cached system account token.
+	private record HpcS3SystemAccountKey(HpcIntegratedSystem provider, String urlOrRegion) {
+	}
+
+	/**
+	 * Close a S3 resource, logging (rather than raising) a failure.
+	 *
+	 * @param resource The resource to close.
+	 */
+	private void closeQuietly(AutoCloseable resource) {
+		if (resource == null) {
+			return;
+		}
+
+		try {
+			resource.close();
+
+		} catch (Exception e) {
+			logger.error("[S3] Failed to close {}: {}", resource.getClass().getSimpleName(), e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -277,7 +430,7 @@ public abstract class HpcS3Connection {
 	 * @return HpcS3 instance
 	 * @throws HpcException if authentication failed
 	 */
-	private Object authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
+	private HpcS3 authenticateS3Provider(String username, String password, String url, boolean pathStyleAccessEnabled,
 			HpcIntegratedSystem s3Provider) throws HpcException {
 		// Create the credential provider based on the configured credentials.
 		AwsBasicCredentials s3ProviderCredentials = AwsBasicCredentials.create(username, password);
@@ -315,6 +468,8 @@ public abstract class HpcS3Connection {
 			return s3;
 
 		} catch (SdkException e) {
+			// Release whatever was built before the failure.
+			s3.close();
 			throw new HpcException(
 					"[S3] Failed to authenticate S3 Provider: " + s3Provider.value() + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -330,7 +485,7 @@ public abstract class HpcS3Connection {
 	 * @return TransferManager
 	 * @throws HpcException if authentication failed
 	 */
-	private Object authenticateAWS(String accessKey, String secretKey, String region) throws HpcException {
+	private HpcS3 authenticateAWS(String accessKey, String secretKey, String region) throws HpcException {
 		// Create the credential provider based on provided AWS S3 account.
 		AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
 		StaticCredentialsProvider awsCredentialsProvider = StaticCredentialsProvider.create(awsCredentials);
@@ -352,6 +507,8 @@ public abstract class HpcS3Connection {
 			return s3;
 
 		} catch (SdkException e) {
+			// Release whatever was built before the failure.
+			s3.close();
 			throw new HpcException("[S3] Failed to authenticate S3 in region " + region + "] - " + e.getMessage(),
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
 		}

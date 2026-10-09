@@ -14,7 +14,6 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.function.Consumer;
 
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -32,7 +31,7 @@ import software.amazon.awssdk.utils.AttributeMap;
  *
  * @author <a href="mailto:eran.rosenberg@nih.gov">Eran Rosenberg</a>
  */
-public class HpcS3ConnectionNettyNioAsyncClient extends HpcS3Connection implements DisposableBean {
+public class HpcS3ConnectionNettyNioAsyncClient extends HpcS3Connection {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -131,6 +130,9 @@ public class HpcS3ConnectionNettyNioAsyncClient extends HpcS3Connection implemen
 
 	@Override
 	public void destroy() {
+		// Close the S3 clients first, since they use the shared HTTP client.
+		super.destroy();
+
 		synchronized (httpClientLock) {
 			if (httpClient != null) {
 				logger.info("Closing the shared Netty-NIO HTTP client");
