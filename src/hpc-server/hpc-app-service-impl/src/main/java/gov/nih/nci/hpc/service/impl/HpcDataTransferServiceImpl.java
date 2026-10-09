@@ -923,13 +923,16 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 		// This is S3 only functionality, so we get the S3 data-transfer-proxy.
 		HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
+		Object authenticatedToken = null;
 		try {
-			return dataTransferProxy.getPathAttributes(dataTransferProxy.authenticate(s3Account), fileLocation,
-					getSize);
+			authenticatedToken = dataTransferProxy.authenticate(s3Account);
+			return dataTransferProxy.getPathAttributes(authenticatedToken, fileLocation, getSize);
 
 		} catch (HpcException e) {
 			throw new HpcException("Failed to access AWS S3 bucket: [" + e.getMessage() + "] " + fileLocation,
 					HpcErrorType.INVALID_REQUEST_INPUT, e);
+		} finally {
+			shutdownQuietly(dataTransferProxy, authenticatedToken);
 		}
 	}
 
@@ -1019,7 +1022,15 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 			}
 
 			// Scan the directory to get a list of all files.
-			scanItems = dataTransferProxies.get(dataTransferType).scanDirectory(authenticatedToken, directoryLocation);
+			try {
+				scanItems = dataTransferProxies.get(dataTransferType).scanDirectory(authenticatedToken,
+						directoryLocation);
+			} finally {
+				// A token authenticated w/ the user's S3 account is used for this scan only.
+				if (s3Account != null) {
+					shutdownQuietly(dataTransferProxies.get(dataTransferType), authenticatedToken);
+				}
+			}
 		}
 
 		// Filter the list based on provided patterns.
@@ -2674,6 +2685,29 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 	}
 
 	/**
+	 * Shutdown a data transfer authenticated token that was obtained for a single
+	 * operation (e.g. authenticated w/ a user's S3 account), releasing its
+	 * resources. A failure is logged rather than raised, so it doesn't mask the
+	 * outcome of the operation.
+	 *
+	 * @param dataTransferProxy  The data transfer proxy that authenticated the
+	 *                           token.
+	 * @param authenticatedToken (Optional) The authenticated token to shutdown.
+	 */
+	private void shutdownQuietly(HpcDataTransferProxy dataTransferProxy, Object authenticatedToken) {
+		if (authenticatedToken == null) {
+			return;
+		}
+
+		try {
+			dataTransferProxy.shutdown(authenticatedToken);
+
+		} catch (HpcException e) {
+			logger.error("Failed to shutdown a data transfer authenticated token: " + e.getMessage(), e);
+		}
+	}
+
+	/**
 	 * Get the data transfer authenticated token from cache.
 	 *
 	 * @param token The data transfer authenticated token.
@@ -3075,15 +3109,18 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 			HpcDataTransferProxy dataTransferProxy = dataTransferProxies.get(HpcDataTransferType.S_3);
 			boolean s3BucketAccessible = true;
+			Object authenticatedToken = null;
 			try {
+				authenticatedToken = dataTransferProxy.authenticate(s3DownloadDestination.getAccount());
 				s3BucketAccessible = dataTransferProxy
-						.getPathAttributes(dataTransferProxy.authenticate(s3DownloadDestination.getAccount()),
-								s3DownloadDestination.getDestinationLocation(), false)
+						.getPathAttributes(authenticatedToken, s3DownloadDestination.getDestinationLocation(), false)
 						.getIsAccessible();
 			} catch (HpcException e) {
 				throw new HpcException("Failed to locate S3 bucket: "
 						+ s3DownloadDestination.getDestinationLocation().getFileContainerId() + " [" + e.getMessage()
 						+ "]", HpcErrorType.INVALID_REQUEST_INPUT, e);
+			} finally {
+				shutdownQuietly(dataTransferProxy, authenticatedToken);
 			}
 			if (!s3BucketAccessible) {
 				throw new HpcException(
