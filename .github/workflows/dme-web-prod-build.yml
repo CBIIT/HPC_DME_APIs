@@ -62,6 +62,8 @@ jobs:
       - name: build the war file
         run: |
           #cd HPC_DME_APIs/src
+          cd $GITHUB_WORKSPACE/src/hpc-server
+          mvn clean install -pl hpc-dto,hpc-client,hpc-domain-types
           cd $GITHUB_WORKSPACE/src/hpc-web
           #sed -i "s|^spring.datasource.password=.*|spring.datasource.password=${{ env.SPRING_DS_PWD }}|" src/main/resources/application.properties
           sed -i "s|^gov.nih.nci.hpc.drive.clientid=.*|gov.nih.nci.hpc.drive.clientid=${{ env.HPC_DRIVE_CLIENTID }}|" src/main/resources/appconfigs/prod-env.conf 

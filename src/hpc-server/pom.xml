@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>gov.nih.nci.hpc</groupId>
 		<artifactId>hpc</artifactId>
-		<version>3.30.0</version>
+		<version>3.31.0</version>
 	</parent>
 	<artifactId>hpc-server</artifactId>
 	<packaging>pom</packaging>
@@ -41,7 +41,7 @@
 		<amazon-aws.version>1.12.797</amazon-aws.version>
 		<amazon-aws-v2.version>2.54.12</amazon-aws-v2.version>
 		<amazon-aws-crt.version>0.48.4</amazon-aws-crt.version>
-		<jackson.version>2.18.9</jackson.version>
+		<jackson.version>2.18.11</jackson.version>
 		<jargon.version>4.3.3.0-RELEASE</jargon.version>
 		<jjwt.version>0.12.5</jjwt.version>
 		<bouncycastle.version>1.85</bouncycastle.version>
