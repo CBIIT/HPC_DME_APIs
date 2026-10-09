@@ -1,7 +1,7 @@
 $kind: http-request
 method: PUT
 url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}"
-order: 1787344951408
+order: 1000
 headers:
   Accept: application/json
 pathVariables:
