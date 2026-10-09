@@ -1703,7 +1703,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		// Determine the path to register from the download task
 		String path = null;
-		if(downloadTask.getType() == HpcDownloadTaskType.COLLECTION_LIST) {
+		if (HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
 			if (downloadTask.getCollectionPaths() != null && !downloadTask.getCollectionPaths().isEmpty()) {
 				logger.info("Registering collection list from external source for paths: " + downloadTask.getCollectionPaths());
 				path = downloadTask.getCollectionPaths().get(0).replace(downloadArchiveLinkBasePath, "");
@@ -1711,7 +1711,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 				logger.info("Unable to register collection list as it is empty: " + downloadTask.getCollectionPaths());
 				throw new HpcException("Collection paths list is empty for download task: " + downloadTask.getId(), HpcErrorType.INVALID_REQUEST_INPUT);
 			}
-		} else if(downloadTask.getType() == HpcDownloadTaskType.COLLECTION) {
+		} else if (HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())) {
 			logger.info("Registering path from external source for path: " + downloadTask.getPath());
 			path = downloadTask.getPath().replace(downloadArchiveLinkBasePath, "");
 		} else {
@@ -1742,7 +1742,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		}
 		String s3CollectionPath =  archiveObjectId + relativePath;
 		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
-		if(downloadTask.getType() == HpcDownloadTaskType.COLLECTION_LIST) {
+		if (HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
 			// Build the DirectoryScanRegistrationItem for collection list
 			logger.info("Registering collection list from external source for paths: " + downloadTask.getCollectionPaths());
 			if (downloadTask.getCollectionPaths() != null && !downloadTask.getCollectionPaths().isEmpty()) {
@@ -1752,7 +1752,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			} else {
 				registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath, bucket);
 			}
-		} else if(downloadTask.getType() == HpcDownloadTaskType.COLLECTION) {
+		} else if (HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())) {
 			logger.info("Registering collection from external source for path: " + downloadTask.getPath());
 			registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
 		}
