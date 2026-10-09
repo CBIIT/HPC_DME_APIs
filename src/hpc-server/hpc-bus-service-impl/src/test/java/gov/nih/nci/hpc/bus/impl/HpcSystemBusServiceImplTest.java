@@ -236,6 +236,42 @@ class HpcSystemBusServiceImplTest {
         verify(dataTransferService).completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED),
                 any(), any());
         verify(dataTransferService, never()).setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
+        verify(dataTransferService, never()).resetCollectionDownloadTaskInProgress(any());
+    }
+
+    /*
+     * Test Case: Processing a collection download task fails, and completing it as failed also fails (e.g. DB error).
+     * Expected: The task is reset (in-process indicator cleared, started data object downloads canceled), so a later
+     * run retries it.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_CompletionFailureResetsInProcess() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = receivedCollectionDownloadTask();
+        service.collectionDownloadTaskExecutor = Runnable::run;
+        executeAsSystemAccount();
+        doThrow(new HpcException("DB error", HpcErrorType.DATABASE_ERROR)).when(dataTransferService)
+                .completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED), any(), any());
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService).resetCollectionDownloadTaskInProgress(downloadTask.getId());
+    }
+
+    /*
+     * Test Case: Processing a collection download task fails, and completing it as failed throws a runtime exception.
+     * Expected: The task is reset, so a later run retries it.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_CompletionRuntimeFailureResetsInProcess() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = receivedCollectionDownloadTask();
+        service.collectionDownloadTaskExecutor = Runnable::run;
+        executeAsSystemAccount();
+        doThrow(new IllegalStateException("Unexpected failure")).when(dataTransferService)
+                .completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED), any(), any());
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService).resetCollectionDownloadTaskInProgress(downloadTask.getId());
     }
 
     /*
@@ -283,6 +319,16 @@ class HpcSystemBusServiceImplTest {
         when(dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false))
                 .thenReturn(List.of(downloadTask));
         return downloadTask;
+    }
+
+    /**
+     * Mock executing as the system account to run the given function.
+     */
+    private void executeAsSystemAccount() throws HpcException {
+        doAnswer(invocation -> {
+            ((HpcSystemAccountFunctionNoReturn) invocation.getArgument(1)).execute();
+            return null;
+        }).when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
     }
      
 }
