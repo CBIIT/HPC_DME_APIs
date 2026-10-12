@@ -1,0 +1,10 @@
+$kind: http-request
+method: POST
+url: "{{baseUrl}}{{basePath}}/dataObject/{{lastSyncUploadPath}}/completeMultipartUpload"
+order: 105107674253429
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: "{}"
