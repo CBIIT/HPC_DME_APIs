@@ -1122,8 +1122,17 @@ public interface HpcDataTransferService {
 	 * List directory (non-recursive) and return a list of all folder and files
 	 *
 	 * @param fileLocation The path to get the listing for.
+	 * @param dataTransferType         The remote data transfer type, or null for
+	 *                                 local POSIX listing.
+	 * @param configurationId          The configuration ID (needed to determine the
+	 *                                 archive connection config).
+	 * @param s3ArchiveConfigurationId (Optional) The S3 Archive configuration ID.
+	 *                                 Used to identify the S3 archive the
+	 *                                 data-object is stored in. This is only
+	 *                                 applicable for S3 archives, not POSIX.
 	 * @return The list of HpcListObjectsEntry.
 	 * @throws HpcException on service failure.
 	 */
-	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException;
+	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+			String configurationId, String s3ArchiveConfigurationId) throws HpcException;
 }
