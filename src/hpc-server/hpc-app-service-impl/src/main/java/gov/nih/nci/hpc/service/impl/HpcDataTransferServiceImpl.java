@@ -2417,10 +2417,22 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 	}
 	
 	@Override
-	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException {
-	  
-	    List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
-      
+	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+			String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+
+		if (dataTransferType != null && !HpcDataTransferType.S_3.equals(dataTransferType)) {
+			throw new HpcException("Unsupported data transfer type for directory listing",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
+
+		if (HpcDataTransferType.S_3.equals(dataTransferType)) {
+			return dataTransferProxies.get(dataTransferType).listDirectory(
+					getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+					fileLocation);
+		}
+
 		// Input validation.
 	    if (!getPathAttributes(fileLocation).getExists()) {
 	        return directoryListing;
