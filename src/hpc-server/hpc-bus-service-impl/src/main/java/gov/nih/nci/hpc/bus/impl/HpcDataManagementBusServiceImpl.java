@@ -2781,20 +2781,33 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcListObjectsResponseDTO listObjects(String externalPath) throws HpcException {
 		
 		HpcListObjectsResponseDTO listObjectsResponse = new HpcListObjectsResponseDTO();
-		
-		// Validate the external path
-		validateExternalPath(externalPath, false);
-		
+
+		HpcDataTransferConfiguration s3ArchiveConfiguration =
+				dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath);
+		if (s3ArchiveConfiguration == null) {
+			throw new HpcException("External path not configured in DME: " + externalPath,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+		boolean useS3Listing = s3ArchiveConfiguration.getUseS3Listing();
+		if (!useS3Listing) {
+			validateExternalPath(externalPath, false);
+		}
+
 		// Get the corresponding archive path from the configuration if any
-		String archivePath = getExistingArchivePathFromExternalPath(externalPath, false);
-		
-		// Construct the File location
-		HpcFileLocation fileLocation = new HpcFileLocation();
-		fileLocation.setFileContainerId("External"); // This is not used for local path but required for validation
-		fileLocation.setFileId(externalPath);
-		
-		// Get the directory listing for the input path
-		List<HpcListObjectsEntry> directoryListing = dataTransferService.listDirectory(fileLocation);
+		String archivePath = getExistingArchivePathFromExternalPath(externalPath, false, s3ArchiveConfiguration);
+
+		HpcFileLocation fileLocation = getExternalPathLocation(externalPath, s3ArchiveConfiguration);
+		HpcDataTransferType dataTransferType = useS3Listing ? HpcDataTransferType.S_3 : null;
+		List<HpcListObjectsEntry> directoryListing = dataTransferService.listDirectory(fileLocation,
+				dataTransferType, s3ArchiveConfiguration.getDataManagementConfigurationId(),
+				s3ArchiveConfiguration.getId());
+
+		if (useS3Listing) {
+			String externalDirectoryPath = StringUtils.removeEnd(externalPath, "/");
+			for (HpcListObjectsEntry entry : directoryListing) {
+				entry.setPath(externalDirectoryPath + "/" + entry.getName());
+			}
+		}
 		listObjectsResponse.getContents().addAll(directoryListing);
 		
 		// HashSet of path
@@ -2833,24 +2846,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		HpcCalculateTotalSizeResponseDTO calculateTotalSizeResponse = new HpcCalculateTotalSizeResponseDTO();
 		
 		for(String externalPath: calculateTotalSizeRequest.getPaths()) {
-			
-  		    // Construct the File location
-            HpcFileLocation fileLocation = new HpcFileLocation();
-            fileLocation.setFileContainerId("External"); // This is not used for local path but required for validation
-            fileLocation.setFileId(externalPath);
-            
-	        // Validate the external path
-			validateExternalPath(externalPath, true);
-			
+
+			HpcDataTransferConfiguration s3ArchiveConfiguration =
+					dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath);
+			if (s3ArchiveConfiguration == null) {
+				throw new HpcException("External path not configured in DME: " + externalPath,
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			boolean useS3Listing = s3ArchiveConfiguration.getUseS3Listing();
+			if (!useS3Listing) {
+				validateExternalPath(externalPath, true);
+			}
+
 			// Get the corresponding archive path from the configuration if any
-			String archivePath = getExistingArchivePathFromExternalPath(externalPath, true);
-			
+			String archivePath = getExistingArchivePathFromExternalPath(externalPath, true, s3ArchiveConfiguration);
+
 			HpcCalculateTotalSizeEntry calculateTotalSizeEntry = new HpcCalculateTotalSizeEntry();
 			calculateTotalSizeEntry.setPath(externalPath);
-			
+
+			HpcFileLocation fileLocation = getExternalPathLocation(externalPath, s3ArchiveConfiguration);
+
 			// Check if the path is a file
-            HpcPathAttributes pathAttributes = dataTransferService.getPathAttributes(fileLocation);
-            
+			HpcPathAttributes pathAttributes = getExternalPathAttributes(externalPath, s3ArchiveConfiguration, true);
 			// If the external path is a file, add the size of the file and continue.
 			if(pathAttributes.getExists() && !pathAttributes.getIsDirectory()) {
 			    calculateTotalSizeEntry.setObjectCount(1L);
@@ -2869,7 +2886,10 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			}
 		
 			// Calculate the total size and object count of the path by recursively adding the file sizes and object counts
-			calculateTotalSizeEntry = calculateTotalSizeAndCount(calculateTotalSizeEntry, fileLocation);
+			calculateTotalSizeEntry = calculateTotalSizeAndCount(calculateTotalSizeEntry, fileLocation,
+					useS3Listing ? HpcDataTransferType.S_3 : null,
+					s3ArchiveConfiguration.getDataManagementConfigurationId(),
+					s3ArchiveConfiguration.getId());
 			
 			if(calculateTotalSizeRequest.getIncludeArchived()) {
 				
@@ -5288,20 +5308,23 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @throws HpcException
 	 */
 	private HpcCalculateTotalSizeEntry calculateTotalSizeAndCount(HpcCalculateTotalSizeEntry calculateTotalSizeEntry,
-			HpcFileLocation fileLocation) throws HpcException {
+			HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+			String configurationId, String s3ArchiveConfigurationId) throws HpcException {
 
 		// Retrieve the list of objects in the directory
-		List<HpcListObjectsEntry> directoryListing = dataTransferService.listDirectory(fileLocation);
-		
+		List<HpcListObjectsEntry> directoryListing = dataTransferService.listDirectory(fileLocation,
+				dataTransferType, configurationId, s3ArchiveConfigurationId);
+
 		// Iterate through each entry in the directory listing
 		for(HpcListObjectsEntry entry: directoryListing) {
 			if (entry.getIsDirectory()) {
 				// If entry is a directory, recursively calculate size and count for subdirectory
 				HpcFileLocation childLocation = new HpcFileLocation();
-				childLocation.setFileContainerId("External");
+				childLocation.setFileContainerId(fileLocation.getFileContainerId());
 				childLocation.setFileId(entry.getPath());
 				// Recursively calculate total size and count for this subdirectory
-				calculateTotalSizeEntry = calculateTotalSizeAndCount(calculateTotalSizeEntry, childLocation);
+				calculateTotalSizeEntry = calculateTotalSizeAndCount(calculateTotalSizeEntry, childLocation,
+						dataTransferType, configurationId, s3ArchiveConfigurationId);
 			} else {
 				// If entry is a file, add its size to the total and increment object count
 				calculateTotalSizeEntry.setSize(calculateTotalSizeEntry.getSize()+ entry.getSize());
@@ -5331,7 +5354,7 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 			listObjectEntry.setArchivePath(entry.getPath());
 			Path fullPath = Paths.get(entry.getPath());
 			listObjectEntry.setName(fullPath.getFileName().toString());
-			listObjectEntry.setPath(path + File.separator + listObjectEntry.getName());
+			listObjectEntry.setPath(path + "/" + listObjectEntry.getName());
 			listObjectEntry.setIsDirectory(isCollection ? true : false);
 			listObjectEntry.setCreated(entry.getCreatedAt());
 			listObjectEntry.setLastModified(entry.getCreatedAt());
@@ -5411,6 +5434,36 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 					HpcRequestRejectReason.DATA_OBJECT_PERMISSION_DENIED);
 		}
 	}
+
+	private HpcFileLocation getExternalPathLocation(String externalPath,
+			HpcDataTransferConfiguration s3ArchiveConfiguration) {
+		HpcFileLocation fileLocation = new HpcFileLocation();
+		if (s3ArchiveConfiguration.getUseS3Listing()) {
+			String basePrefix = StringUtils.strip(
+					s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId(), "/");
+			String relativePath = StringUtils.removeStart(
+					externalPath.substring(s3ArchiveConfiguration.getPosixPath().length()), "/");
+			String s3Path = StringUtils.isEmpty(basePrefix) ? relativePath
+					: StringUtils.isEmpty(relativePath) ? basePrefix : basePrefix + "/" + relativePath;
+			fileLocation.setFileContainerId(
+					s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId());
+			fileLocation.setFileId(s3Path);
+		} else {
+			fileLocation.setFileContainerId("External");
+			fileLocation.setFileId(externalPath);
+		}
+		return fileLocation;
+	}
+
+	private HpcPathAttributes getExternalPathAttributes(String externalPath,
+			HpcDataTransferConfiguration s3ArchiveConfiguration, boolean getSize) throws HpcException {
+		HpcFileLocation fileLocation = getExternalPathLocation(externalPath, s3ArchiveConfiguration);
+		if (s3ArchiveConfiguration.getUseS3Listing()) {
+			return dataTransferService.getPathAttributes(HpcDataTransferType.S_3, fileLocation, getSize,
+					s3ArchiveConfiguration.getDataManagementConfigurationId(), s3ArchiveConfiguration.getId());
+		}
+		return dataTransferService.getPathAttributes(fileLocation);
+	}
 	
 	/**
 	 * Obtains the corresponding archive path for a given external path from the configuration.
@@ -5425,17 +5478,17 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	 * @return The corresponding archive path for the external path, or empty string if not archived yet
 	 * @throws HpcException if the path is not properly configured or does not exist
 	 */
-	private String getExistingArchivePathFromExternalPath(String externalPath, boolean allowFile) throws HpcException {
+	private String getExistingArchivePathFromExternalPath(String externalPath, boolean allowFile, HpcDataTransferConfiguration s3ArchiveConfiguration) throws HpcException {
 		
 		// Derive the archive path for the input path from the configuration
 		String archivePath = getArchivePathFromExternalPath(externalPath);
 		
-		// Get path attributes to check if external path exists and its type
-		HpcFileLocation fileLocation = new HpcFileLocation();
-		fileLocation.setFileContainerId("External");
-		fileLocation.setFileId(externalPath);
-		HpcPathAttributes pathAttributes = dataTransferService.getPathAttributes(fileLocation);
-		
+		HpcPathAttributes pathAttributes = getExternalPathAttributes(externalPath, s3ArchiveConfiguration,
+				allowFile);
+		if (pathAttributes.getExists() && !pathAttributes.getIsDirectory() && !allowFile) {
+			throw new HpcException("Invalid file location: " + externalPath, HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
 		// Check if the archive path is an existing file
 		if(allowFile) {
 		    if (pathAttributes.getExists() && !pathAttributes.getIsDirectory()) {
