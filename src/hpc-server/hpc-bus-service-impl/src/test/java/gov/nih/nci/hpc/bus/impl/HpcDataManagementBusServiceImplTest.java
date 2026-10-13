@@ -23,6 +23,12 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationTaskDT
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO;
+import gov.nih.nci.hpc.domain.datamanagement.HpcListObjectsEntry;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
+import gov.nih.nci.hpc.domain.datamanagement.HpcPermission;
+import gov.nih.nci.hpc.domain.datamanagement.HpcSubjectPermission;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
+import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.metadata.HpcMetadataEntries;
 import gov.nih.nci.hpc.domain.model.HpcDataManagementConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
@@ -36,6 +42,7 @@ import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.HpcCollectionDownloadResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcCalculateTotalSizeRequestDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
@@ -990,6 +997,133 @@ class HpcDataManagementBusServiceImplTest {
             exception.getMessage());
         }
 
+    @Test
+    void testListObjects_UsesS3PrefixAndRemapsExternalPath() throws Exception {
+        String externalPath = "/external/project";
+        HpcDataTransferConfiguration configuration = buildExternalDownloadConfiguration("dm-config", "s3-config",
+                "/external", "/base", "bucket-a", "archive-object-");
+        configuration.setUseS3Listing(true);
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath)).thenReturn(configuration);
+        stubExternalPathArchiveAccess();
+
+        var pathAttributes = mock(HpcPathAttributes.class);
+        when(pathAttributes.getExists()).thenReturn(true);
+        when(pathAttributes.getIsDirectory()).thenReturn(true);
+        when(dataTransferService.getPathAttributes(eq(HpcDataTransferType.S_3), any(HpcFileLocation.class),
+                anyBoolean(), eq("dm-config"), eq("s3-config"))).thenReturn(pathAttributes);
+
+        var listedFile = new HpcListObjectsEntry();
+        listedFile.setName("file.txt");
+        listedFile.setPath("archive-object-/project/file.txt");
+        var directoryListing = Collections.singletonList(listedFile);
+        when(dataTransferService.listDirectory(any(HpcFileLocation.class), eq(HpcDataTransferType.S_3),
+                eq("dm-config"), eq("s3-config"))).thenReturn(directoryListing);
+
+        var response = service.listObjects(externalPath);
+
+        assertEquals("/external/project/file.txt", response.getContents().get(0).getPath());
+        assertEquals("file.txt", response.getContents().get(0).getName());
+        assertEquals(1, response.getTotalRecords());
+        verify(dataTransferService).listDirectory(argThat(location ->
+                "bucket-a".equals(location.getFileContainerId())
+                        && "archive-object-/project".equals(location.getFileId())),
+                eq(HpcDataTransferType.S_3), eq("dm-config"), eq("s3-config"));
+    }
+
+    @Test
+    void testCalculateTotalSize_RecursesThroughS3Directories() throws Exception {
+        String externalPath = "/external/project";
+        HpcDataTransferConfiguration configuration = buildExternalDownloadConfiguration("dm-config", "s3-config",
+                "/external", "/base", "bucket-a", "archive-object-");
+        configuration.setUseS3Listing(true);
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath)).thenReturn(configuration);
+        stubExternalPathArchiveAccess();
+        when(dataManagementService.collectionExists("/base/project")).thenReturn(false);
+
+        var pathAttributes = mock(HpcPathAttributes.class);
+        when(pathAttributes.getExists()).thenReturn(true);
+        when(pathAttributes.getIsDirectory()).thenReturn(true);
+        when(dataTransferService.getPathAttributes(eq(HpcDataTransferType.S_3), any(HpcFileLocation.class),
+                anyBoolean(), eq("dm-config"), eq("s3-config"))).thenReturn(pathAttributes);
+
+        var subdirectory = mock(HpcListObjectsEntry.class);
+        when(subdirectory.getIsDirectory()).thenReturn(true);
+        when(subdirectory.getPath()).thenReturn("archive-object-/project/nested");
+        var file = mock(HpcListObjectsEntry.class);
+        when(file.getIsDirectory()).thenReturn(false);
+        when(file.getSize()).thenReturn(17L);
+        when(dataTransferService.listDirectory(any(HpcFileLocation.class), eq(HpcDataTransferType.S_3),
+                eq("dm-config"), eq("s3-config")))
+                .thenAnswer(invocation -> {
+                    var location = invocation.<HpcFileLocation>getArgument(0);
+                    return "archive-object-/project".equals(location.getFileId())
+                            ? Collections.singletonList(subdirectory) : Collections.singletonList(file);
+                });
+
+        var request = new HpcCalculateTotalSizeRequestDTO();
+        request.getPaths().add(externalPath);
+        request.setIncludeArchived(false);
+        var response = service.calculateTotalSize(request);
+
+        assertEquals(1, response.getCalculateTotalSizeResponse().size());
+        assertEquals(1L, response.getCalculateTotalSizeResponse().get(0).getObjectCount());
+        assertEquals(17L, response.getCalculateTotalSizeResponse().get(0).getSize());
+        verify(dataTransferService).listDirectory(argThat(location ->
+                "bucket-a".equals(location.getFileContainerId())
+                        && "archive-object-/project".equals(location.getFileId())),
+                eq(HpcDataTransferType.S_3), eq("dm-config"), eq("s3-config"));
+        verify(dataTransferService).listDirectory(argThat(location ->
+                "bucket-a".equals(location.getFileContainerId())
+                        && "archive-object-/project/nested".equals(location.getFileId())),
+                eq(HpcDataTransferType.S_3), eq("dm-config"), eq("s3-config"));
+    }
+
+    @Test
+    void testListObjectsAndCalculateTotalSize_FallBackToPosixListing() throws Exception {
+        String externalPath = "/external/project";
+        HpcDataTransferConfiguration configuration = buildExternalDownloadConfiguration("dm-config", "s3-config",
+                "/external", "/base", "bucket-a", "archive-object-");
+        configuration.setUseS3Listing(false);
+        when(dataManagementService.getS3ArchiveConfigurationForExternalPath(externalPath)).thenReturn(configuration);
+        stubExternalPathArchiveAccess();
+        when(dataManagementService.collectionExists("/base/project")).thenReturn(false);
+
+        var pathAttributes = mock(HpcPathAttributes.class);
+        when(pathAttributes.getExists()).thenReturn(true);
+        when(pathAttributes.getIsDirectory()).thenReturn(true);
+        when(dataTransferService.getPathAttributes(any(HpcFileLocation.class))).thenReturn(pathAttributes);
+        var listedFile = new HpcListObjectsEntry();
+        listedFile.setName("file.txt");
+        listedFile.setPath(externalPath + "/file.txt");
+        listedFile.setSize(8L);
+        var directoryListing = Collections.singletonList(listedFile);
+        when(dataTransferService.listDirectory(any(HpcFileLocation.class), isNull(), eq("dm-config"),
+                eq("s3-config"))).thenReturn(directoryListing);
+
+        var request = new HpcCalculateTotalSizeRequestDTO();
+        request.getPaths().add(externalPath);
+        request.setIncludeArchived(false);
+        var response = service.calculateTotalSize(request);
+
+        assertEquals(1, response.getCalculateTotalSizeResponse().size());
+        assertEquals(1L, response.getCalculateTotalSizeResponse().get(0).getObjectCount());
+        assertEquals(8L, response.getCalculateTotalSizeResponse().get(0).getSize());
+        var listingResponse = service.listObjects(externalPath);
+        assertEquals(externalPath + "/file.txt", listingResponse.getContents().get(0).getPath());
+        verify(dataTransferService, times(2)).listDirectory(argThat(location ->
+                "External".equals(location.getFileContainerId()) && externalPath.equals(location.getFileId())),
+                isNull(), eq("dm-config"), eq("s3-config"));
+    }
+
+    private void stubExternalPathArchiveAccess() throws HpcException {
+        when(securityService.getRequestInvoker().getUserRole()).thenReturn(HpcUserRole.SYSTEM_ADMIN);
+        when(dataManagementService.getDataManagementConfiguration("dm-config"))
+                .thenReturn(buildDataManagementConfiguration("/base"));
+        var permission = mock(HpcSubjectPermission.class);
+        when(permission.getPermission()).thenReturn(HpcPermission.READ);
+        when(dataManagementService.getCollectionPermission("/base")).thenReturn(permission);
+    }
+
     private HpcDataObjectDownloadResponseDTO invokeDownloadExternal(String path, HpcDownloadRequestDTO request) throws Exception {
         Method method = HpcDataManagementBusServiceImpl.class.getDeclaredMethod(
                 "downloadExternal", String.class, HpcDownloadRequestDTO.class, String.class, String.class,
@@ -1021,7 +1155,22 @@ class HpcDataManagementBusServiceImplTest {
         config.setBaseArchiveDestination(archive);
         return config;
     }
-    
+
+        private HpcDataTransferConfiguration buildExternalDownloadConfiguration(String configurationId,
+            String s3ArchiveConfigurationId, String posixPath, String basePath, String bucket, String archiveObjectId) {
+        var baseArchiveDestination = mock(gov.nih.nci.hpc.domain.datatransfer.HpcArchive.class);
+        var fileLocation = new gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation();
+        fileLocation.setFileContainerId(bucket);
+        fileLocation.setFileId(archiveObjectId);
+        when(baseArchiveDestination.getFileLocation()).thenReturn(fileLocation);
+
+        var s3ArchiveConfiguration = new HpcDataTransferConfiguration();
+        s3ArchiveConfiguration.setId(s3ArchiveConfigurationId);
+        s3ArchiveConfiguration.setDataManagementConfigurationId(configurationId);
+        s3ArchiveConfiguration.setPosixPath(posixPath);
+        s3ArchiveConfiguration.setBaseArchiveDestination(baseArchiveDestination);
+        return s3ArchiveConfiguration;
+    }
 
     private HpcDataManagementConfiguration buildDataManagementConfiguration(String basePath) {
         var configuration = new HpcDataManagementConfiguration();
