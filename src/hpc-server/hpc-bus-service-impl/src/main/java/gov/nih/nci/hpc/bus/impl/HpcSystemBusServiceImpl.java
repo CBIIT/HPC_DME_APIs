@@ -736,92 +736,130 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false)) {
-			try {
-				logger.info("collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
-						downloadTask.getType());
+			logger.info("collection download task: [taskId={}] - started processing [{}]", downloadTask.getId(),
+					downloadTask.getType());
 
-				if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
-					// User requested to cancel this collection download task.
-					logger.info("Processing User requested cancellation of task for collection path {}",
-							downloadTask.getPath());
-					completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED, "Download request canceled");
-					continue;
-				}
+			if (dataTransferService.getCollectionDownloadTaskCancellationRequested(downloadTask.getId())) {
+				// User requested to cancel this collection download task.
+				logger.info("Processing User requested cancellation of task for collection path {}",
+						downloadTask.getPath());
+				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.CANCELED, "Download request canceled");
+				continue;
+			}
 
-				// We limit a user to one download (collection breakdown or processing) task at
-				// a time for the same collection
-				int tasksInProcessForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
-						downloadTask.getUserId(), downloadTask.getPath(), true);
-				if (tasksInProcessForSameCollectionCount > 0) {
-					// Another collection breakdown or processing task is in-process (other thread)
-					// for this same collection for this user.
-					logger.info(
-							"collection download task: [taskId={}] - Not processing at this time. A download task is already in-process for user {} for collection {}",
-							downloadTask.getId(), downloadTask.getUserId(), downloadTask.getPath());
-					continue;
-				}
+			// We limit a user to one download (collection breakdown or processing) task at
+			// a time for the same collection
+			int tasksInProcessForSameCollectionCount = dataTransferService.getCollectionDownloadTasksCountByUserAndPath(
+					downloadTask.getUserId(), downloadTask.getPath(), true);
+			if (tasksInProcessForSameCollectionCount > 0) {
+				// Another collection breakdown or processing task is in-process (other thread)
+				// for this same collection for this user.
+				logger.info(
+						"collection download task: [taskId={}] - Not processing at this time. A download task is already in-process for user {} for collection {}",
+						downloadTask.getId(), downloadTask.getUserId(), downloadTask.getPath());
+				continue;
+			}
 
-				// We also limit a user overall to a configured number of collection download
-				// tasks at a time if they are not system admin or group admin
-				int totalTasksInProcessCount = dataTransferService
-						.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
-				// Get the current user role.
-				HpcUserRole currentUserRole = dataManagementSecurityService.getUserRole(downloadTask.getUserId());
-				if (maxPermittedInProcessDownloadTasksPerUser > 0
-						&& totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser
-						&& !(HpcUserRole.GROUP_ADMIN.equals(currentUserRole)
-								|| HpcUserRole.SYSTEM_ADMIN.equals(currentUserRole))) {
-					// We have reached the max collection breakdown tasks in-process for this user.
-					logger.info(
-							"collection download task: [taskId={}] - Not processing at this time. {} download tasks already in-process for user {}",
-							downloadTask.getId(), totalTasksInProcessCount, downloadTask.getUserId());
-					continue;
-				}
+			// We also limit a user overall to a configured number of collection download
+			// tasks at a time if they are not system admin or group admin
+			int totalTasksInProcessCount = dataTransferService
+					.getCollectionDownloadTasksCountByUser(downloadTask.getUserId(), true);
+			// Get the current user role.
+			HpcUserRole currentUserRole = dataManagementSecurityService.getUserRole(downloadTask.getUserId());
+			if (maxPermittedInProcessDownloadTasksPerUser > 0
+					&& totalTasksInProcessCount >= maxPermittedInProcessDownloadTasksPerUser
+					&& !(HpcUserRole.GROUP_ADMIN.equals(currentUserRole)
+							|| HpcUserRole.SYSTEM_ADMIN.equals(currentUserRole))) {
+				// We have reached the max collection breakdown tasks in-process for this user.
+				logger.info(
+						"collection download task: [taskId={}] - Not processing at this time. {} download tasks already in-process for user {}",
+						downloadTask.getId(), totalTasksInProcessCount, downloadTask.getUserId());
+				continue;
+			}
 
-				// Mark this collection download task in-process.
-				dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
+			// Mark this collection download task in-process.
+			dataTransferService.setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
 
-				// Process this collection download task async.
-				CompletableFuture.runAsync(() -> {
-					try {
-						// Since this is executed in a separate thread. Need to get system-account
-						// execution again.
-						securityService.executeAsSystemAccount(Optional.empty(), () -> {
-							try {
-								List<HpcCollectionDownloadTaskItem> downloadItems = null;
-								HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker(
+			// Process this collection download task async.
+			CompletableFuture.runAsync(() -> {
+				try {
+					// Since this is executed in a separate thread. Need to get system-account
+					// execution again.
+					securityService.executeAsSystemAccount(Optional.empty(), () -> {
+						try {
+							List<HpcCollectionDownloadTaskItem> downloadItems = null;
+							HpcCollectionDownloadBreaker collectionDownloadBreaker = new HpcCollectionDownloadBreaker(
+									downloadTask.getId());
+
+							// If this is a retry task, exclude the path that downloaded successfully in the
+							// original request.
+							Set<String> excludedPaths = getExcludedDownloadTaskItemPaths(downloadTask.getRetryTaskId(),
+									downloadTask.getType());
+
+							if (!StringUtils.isEmpty(downloadTask.getRetryTaskId())
+									&& downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+								downloadItems = retryDownloadTask(downloadTask.getRetryTaskId(), downloadTask.getType(),
+										downloadTask.getGlobusDownloadDestination(),
+										downloadTask.getS3DownloadDestination(),
+										downloadTask.getGoogleDriveDownloadDestination(),
+										downloadTask.getGoogleCloudStorageDownloadDestination(),
+										downloadTask.getAsperaDownloadDestination(),
+										downloadTask.getBoxDownloadDestination(), downloadTask.getUserId(),
 										downloadTask.getId());
 
-								// If this is a retry task, exclude the path that downloaded successfully in the
-								// original request.
-								Set<String> excludedPaths = getExcludedDownloadTaskItemPaths(downloadTask.getRetryTaskId(),
-										downloadTask.getType());
+							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+								// Get the System generated metadata.
+								HpcSystemGeneratedMetadata metadata = metadataService
+										.getCollectionSystemGeneratedMetadata(downloadTask.getPath());
 
-								if (!StringUtils.isEmpty(downloadTask.getRetryTaskId())
-										&& downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
-									downloadItems = retryDownloadTask(downloadTask.getRetryTaskId(), downloadTask.getType(),
-											downloadTask.getGlobusDownloadDestination(),
-											downloadTask.getS3DownloadDestination(),
-											downloadTask.getGoogleDriveDownloadDestination(),
-											downloadTask.getGoogleCloudStorageDownloadDestination(),
-											downloadTask.getAsperaDownloadDestination(),
-											downloadTask.getBoxDownloadDestination(), downloadTask.getUserId(),
-											downloadTask.getId());
+								// Get the collection to be downloaded.
+								HpcCollection collection = dataManagementService
+										.getFullCollection(downloadTask.getPath(), metadata.getLinkSourcePath());
+								if (collection == null) {
+									throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+								}
 
-								} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+								// Download all files under this collection.
+								downloadItems = downloadCollection(collection,
+										downloadTask.getGlobusDownloadDestination(),
+										downloadTask.getS3DownloadDestination(),
+										downloadTask.getGoogleDriveDownloadDestination(),
+										downloadTask.getGoogleCloudStorageDownloadDestination(),
+										downloadTask.getAsperaDownloadDestination(),
+										downloadTask.getBoxDownloadDestination(),
+										downloadTask.getAppendPathToDownloadDestination(),
+										downloadTask.getAppendCollectionNameToDownloadDestination(),
+										downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
+										excludedPaths);
+
+							} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+								downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
+										downloadTask.getGlobusDownloadDestination(),
+										downloadTask.getS3DownloadDestination(),
+										downloadTask.getGoogleDriveDownloadDestination(),
+										downloadTask.getGoogleCloudStorageDownloadDestination(),
+										downloadTask.getAsperaDownloadDestination(),
+										downloadTask.getBoxDownloadDestination(),
+										downloadTask.getAppendPathToDownloadDestination(),
+										downloadTask.getAppendCollectionNameToDownloadDestination(),
+										downloadTask.getUserId(), downloadTask.getId());
+
+							} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
+								downloadItems = new ArrayList<>();
+								for (String path : downloadTask.getCollectionPaths()) {
 									// Get the System generated metadata.
 									HpcSystemGeneratedMetadata metadata = metadataService
-											.getCollectionSystemGeneratedMetadata(downloadTask.getPath());
+											.getCollectionSystemGeneratedMetadata(path);
 
-									// Get the collection to be downloaded.
-									HpcCollection collection = dataManagementService
-											.getFullCollection(downloadTask.getPath(), metadata.getLinkSourcePath());
+									HpcCollection collection = dataManagementService.getFullCollection(path,
+											metadata.getLinkSourcePath());
 									if (collection == null) {
-										throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+										throw new HpcException("Collection not found",
+												HpcErrorType.INVALID_REQUEST_INPUT);
 									}
 
-									// Download all files under this collection.
-									downloadItems = downloadCollection(collection,
+									// Get a list of download items for this collection
+									List<HpcCollectionDownloadTaskItem> items = downloadCollection(collection,
 											downloadTask.getGlobusDownloadDestination(),
 											downloadTask.getS3DownloadDestination(),
 											downloadTask.getGoogleDriveDownloadDestination(),
@@ -833,92 +871,46 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 											downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
 											excludedPaths);
 
-								} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
-									downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
-											downloadTask.getGlobusDownloadDestination(),
-											downloadTask.getS3DownloadDestination(),
-											downloadTask.getGoogleDriveDownloadDestination(),
-											downloadTask.getGoogleCloudStorageDownloadDestination(),
-											downloadTask.getAsperaDownloadDestination(),
-											downloadTask.getBoxDownloadDestination(),
-											downloadTask.getAppendPathToDownloadDestination(),
-											downloadTask.getAppendCollectionNameToDownloadDestination(),
-											downloadTask.getUserId(), downloadTask.getId());
+									// Update the collection path on the items.
+									items.forEach(item -> item.setCollectionPath(path));
 
-								} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
-									downloadItems = new ArrayList<>();
-									for (String path : downloadTask.getCollectionPaths()) {
-										// Get the System generated metadata.
-										HpcSystemGeneratedMetadata metadata = metadataService
-												.getCollectionSystemGeneratedMetadata(path);
-
-										HpcCollection collection = dataManagementService.getFullCollection(path,
-												metadata.getLinkSourcePath());
-										if (collection == null) {
-											throw new HpcException("Collection not found",
-													HpcErrorType.INVALID_REQUEST_INPUT);
-										}
-
-										// Get a list of download items for this collection
-										List<HpcCollectionDownloadTaskItem> items = downloadCollection(collection,
-												downloadTask.getGlobusDownloadDestination(),
-												downloadTask.getS3DownloadDestination(),
-												downloadTask.getGoogleDriveDownloadDestination(),
-												downloadTask.getGoogleCloudStorageDownloadDestination(),
-												downloadTask.getAsperaDownloadDestination(),
-												downloadTask.getBoxDownloadDestination(),
-												downloadTask.getAppendPathToDownloadDestination(),
-												downloadTask.getAppendCollectionNameToDownloadDestination(),
-												downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
-												excludedPaths);
-
-										// Update the collection path on the items.
-										items.forEach(item -> item.setCollectionPath(path));
-
-										downloadItems.addAll(items);
-									}
-								}
-
-								// Verify data objects found under this collection.
-								if (downloadItems == null || downloadItems.isEmpty()) {
-									// No data objects found under this collection.
-									throw new HpcException("No data objects found under collection",
-											HpcErrorType.INVALID_REQUEST_INPUT);
-								}
-
-								// 'Activate' the collection download request.
-								downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
-								downloadTask.getItems().addAll(downloadItems);
-
-								// Persist the collection download task.
-								dataTransferService.updateCollectionDownloadTask(downloadTask);
-
-								logger.info("collection download task: [taskId={}] - finished processing [{}]",
-										downloadTask.getId(), downloadTask.getType());
-
-							} catch (HpcException | RuntimeException e) {
-								logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
-								try {
-									completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED,
-											e instanceof HpcException ? e.getMessage() : e.toString());
-
-								} catch (HpcException ex) {
-									logger.error("Failed to complete collection download as failed {}",
-											downloadTask.getId(), ex);
+									downloadItems.addAll(items);
 								}
 							}
-						});
-					} catch (HpcException | RuntimeException e) {
-						logger.error("collection download task: [taskId={}] - Failed to execute as system account",
-								downloadTask.getId(), e);
-					}
 
-				}, collectionDownloadTaskExecutor);
+							// Verify data objects found under this collection.
+							if (downloadItems == null || downloadItems.isEmpty()) {
+								// No data objects found under this collection.
+								throw new HpcException("No data objects found under collection",
+										HpcErrorType.INVALID_REQUEST_INPUT);
+							}
 
-			} catch (HpcException | RuntimeException e) {
-				logger.error("collection download task: [taskId={}] - Failed to start processing",
-						downloadTask.getId(), e);
-			}
+							// 'Activate' the collection download request.
+							downloadTask.setStatus(HpcCollectionDownloadTaskStatus.ACTIVE);
+							downloadTask.getItems().addAll(downloadItems);
+
+							// Persist the collection download task.
+							dataTransferService.updateCollectionDownloadTask(downloadTask);
+
+							logger.info("collection download task: [taskId={}] - finished processing [{}]",
+									downloadTask.getId(), downloadTask.getType());
+
+						} catch (HpcException e) {
+							logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
+							try {
+								completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
+
+							} catch (HpcException ex) {
+								logger.error("Failed to complete collection download as failed {}",
+										downloadTask.getId(), ex);
+							}
+						}
+					});
+				} catch (HpcException e) {
+					logger.error("Failed to execute collection download task as system account", e);
+				}
+
+			}, collectionDownloadTaskExecutor);
 		}
 	}
 
@@ -928,120 +920,112 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		// Iterate through all the active collection download requests.
 		for (HpcCollectionDownloadTask downloadTask : dataTransferService
 				.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.ACTIVE)) {
+			boolean downloadCompleted = true;
+			int inProgressItemsCount = 0;
+			List<HpcDataObjectDownloadTask> globusBunchingReceivedDownloadTasks = new ArrayList<>();
+
+			// Get updated status on download items w/o a result yet.
+			Map<String, HpcDownloadTaskStatus> downloadItemsStatus = null;
 			try {
-				boolean downloadCompleted = true;
-				int inProgressItemsCount = 0;
-				List<HpcDataObjectDownloadTask> globusBunchingReceivedDownloadTasks = new ArrayList<>();
+				downloadItemsStatus = dataTransferService.getDownloadItemsStatus(downloadTask);
 
-				// Get updated status on download items w/o a result yet.
-				Map<String, HpcDownloadTaskStatus> downloadItemsStatus = null;
+			} catch (HpcException e) {
+				logger.error("Failed to get download items status", e);
+				downloadItemsStatus = new HashMap<>();
+			}
+
+			// Update status of individual download items in this collection download task.
+			for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
 				try {
-					downloadItemsStatus = dataTransferService.getDownloadItemsStatus(downloadTask);
+					if (downloadItem.getResult() == null) {
+						// This download item in progress - check its status.
+						HpcDownloadTaskStatus downloadItemStatus = downloadItemsStatus
+								.get(downloadItem.getDataObjectDownloadTaskId());
+						if (downloadItemStatus == null) {
+							throw new HpcException("Data object download task status is unknown. Task ID: "
+									+ downloadItem.getDataObjectDownloadTaskId() + ". Path: " + downloadItem.getPath(),
+									HpcErrorType.UNEXPECTED_ERROR);
+						}
+						if (!downloadItemStatus.getInProgress()) {
+							// This download item is now complete. Update the result.
+							downloadItem.setResult(downloadItemStatus.getResult().getResult());
+							downloadItem.setMessage(downloadItemStatus.getResult().getMessage());
+							downloadItem.setPercentComplete(
+									downloadItemStatus.getResult().getResult().equals(HpcDownloadResult.COMPLETED) ? 100
+											: 0);
+							downloadItem.setEffectiveTransferSpeed(
+									downloadItemStatus.getResult().getEffectiveTransferSpeed() > 0
+											? downloadItemStatus.getResult().getEffectiveTransferSpeed()
+											: null);
+							downloadItem.setSize(downloadItemStatus.getResult().getSize());
 
-				} catch (HpcException e) {
-					logger.error("collection download task: [taskId={}] - Failed to get download items status",
-							downloadTask.getId(), e);
-					downloadItemsStatus = new HashMap<>();
-				}
-
-				// Update status of individual download items in this collection download task.
-				for (HpcCollectionDownloadTaskItem downloadItem : downloadTask.getItems()) {
-					try {
-						if (downloadItem.getResult() == null) {
-							// This download item in progress - check its status.
-							HpcDownloadTaskStatus downloadItemStatus = downloadItemsStatus
-									.get(downloadItem.getDataObjectDownloadTaskId());
-							if (downloadItemStatus == null) {
-								throw new HpcException("Data object download task status is unknown. Task ID: "
-										+ downloadItem.getDataObjectDownloadTaskId() + ". Path: " + downloadItem.getPath(),
-										HpcErrorType.UNEXPECTED_ERROR);
+							if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_PERMISSION_DENIED)) {
+								// This item failed because of permission denied.
+								// Cancel any pending download items (i.e. items in RECEIVED state).
+								dataTransferService.cancelCollectionDownloadTask(downloadTask);
+								logger.info("collection download task: [taskId={}] - detected permission denied [{}]",
+										downloadTask.getId(), downloadTask.getType().value());
 							}
-							if (!downloadItemStatus.getInProgress()) {
-								// This download item is now complete. Update the result.
-								downloadItem.setResult(downloadItemStatus.getResult().getResult());
-								downloadItem.setMessage(downloadItemStatus.getResult().getMessage());
-								downloadItem.setPercentComplete(
-										downloadItemStatus.getResult().getResult().equals(HpcDownloadResult.COMPLETED) ? 100
-												: 0);
-								downloadItem.setEffectiveTransferSpeed(
-										downloadItemStatus.getResult().getEffectiveTransferSpeed() > 0
-												? downloadItemStatus.getResult().getEffectiveTransferSpeed()
-												: null);
-								downloadItem.setSize(downloadItemStatus.getResult().getSize());
 
-								if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_PERMISSION_DENIED)) {
-									// This item failed because of permission denied.
-									// Cancel any pending download items (i.e. items in RECEIVED state).
-									dataTransferService.cancelCollectionDownloadTask(downloadTask);
-									logger.info("collection download task: [taskId={}] - detected permission denied [{}]",
-											downloadTask.getId(), downloadTask.getType().value());
-								}
+							if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED)) {
+								// This item failed because of credentials are needed.
+								// Cancel any pending download items (i.e. items in RECEIVED state).
+								dataTransferService.cancelCollectionDownloadTask(downloadTask);
+								logger.info(
+										"collection download task: [taskId={}] - detected credentials are needed [{}]",
+										downloadTask.getId(), downloadTask.getType().value());
+							}
 
-								if (downloadItem.getResult().equals(HpcDownloadResult.FAILED_CREDENTIALS_NEEDED)) {
-									// This item failed because of credentials are needed.
-									// Cancel any pending download items (i.e. items in RECEIVED state).
-									dataTransferService.cancelCollectionDownloadTask(downloadTask);
-									logger.info(
-											"collection download task: [taskId={}] - detected credentials are needed [{}]",
-											downloadTask.getId(), downloadTask.getType().value());
-								}
+						} else {
+							// Update the progress on this download item.
+							downloadItem.setSize(downloadItemStatus.getDataObjectDownloadTask().getSize());
+							downloadItem.setPercentComplete(
+									downloadItemStatus.getDataObjectDownloadTask().getPercentComplete());
+							downloadItem.setStagingInProgress(HpcDataTransferType.GLOBUS
+									.equals(downloadItemStatus.getDataObjectDownloadTask().getDestinationType())
+									&& HpcDataTransferType.S_3.equals(
+											downloadItemStatus.getDataObjectDownloadTask().getDataTransferType()) ? true
+													: null);
+							if (Optional.ofNullable(downloadItem.getStagingInProgress()).orElse(false)) {
+								downloadItem.setStagingPercentComplete(
+										downloadItemStatus.getDataObjectDownloadTask().getStagingPercentComplete());
+							}
 
-							} else {
-								// Update the progress on this download item.
-								downloadItem.setSize(downloadItemStatus.getDataObjectDownloadTask().getSize());
-								downloadItem.setPercentComplete(
-										downloadItemStatus.getDataObjectDownloadTask().getPercentComplete());
-								downloadItem.setStagingInProgress(HpcDataTransferType.GLOBUS
-										.equals(downloadItemStatus.getDataObjectDownloadTask().getDestinationType())
-										&& HpcDataTransferType.S_3.equals(
-												downloadItemStatus.getDataObjectDownloadTask().getDataTransferType()) ? true
-														: null);
-								if (Optional.ofNullable(downloadItem.getStagingInProgress()).orElse(false)) {
-									downloadItem.setStagingPercentComplete(
-											downloadItemStatus.getDataObjectDownloadTask().getStagingPercentComplete());
-								}
+							// This item still in progress, so overall download not completed just yet.
+							downloadCompleted = false;
 
-								// This item still in progress, so overall download not completed just yet.
-								downloadCompleted = false;
-
-								// We count how many items in progress, and how many completed Globus first hop
-								// (if this is a collection download to Globus).
-								// These counts are used to determine when to trigger a Globus 2nd hop request
-								// for the entire collection.
-								inProgressItemsCount++;
-								if (downloadItemStatus.getDataObjectDownloadTask().getDataTransferStatus()
-										.equals(HpcDataTransferDownloadStatus.GLOBUS_BUNCHING)) {
-									globusBunchingReceivedDownloadTasks.add(downloadItemStatus.getDataObjectDownloadTask());
-								}
+							// We count how many items in progress, and how many completed Globus first hop
+							// (if this is a collection download to Globus).
+							// These counts are used to determine when to trigger a Globus 2nd hop request
+							// for the entire collection.
+							inProgressItemsCount++;
+							if (downloadItemStatus.getDataObjectDownloadTask().getDataTransferStatus()
+									.equals(HpcDataTransferDownloadStatus.GLOBUS_BUNCHING)) {
+								globusBunchingReceivedDownloadTasks.add(downloadItemStatus.getDataObjectDownloadTask());
 							}
 						}
-
-					} catch (HpcException e) {
-						logger.error("collection download task: [taskId={}] - Failed to check download item status: {}",
-								downloadTask.getId(), downloadItem.getPath(), e);
-						downloadItem.setResult(HpcDownloadResult.FAILED);
-						downloadItem.setMessage(e.getMessage());
 					}
+
+				} catch (HpcException e) {
+					logger.error("Failed to check collection download item status", e);
+					downloadItem.setResult(HpcDownloadResult.FAILED);
+					downloadItem.setMessage(e.getMessage());
 				}
+			}
 
-				// Update the collection download task.
-				if (downloadCompleted) {
-					logger.info("Download completed for task for collection path " + downloadTask.getPath());
-					completeCollectionDownloadTask(downloadTask);
+			// Update the collection download task.
+			if (downloadCompleted) {
+				logger.info("Download completed for task for collection path " + downloadTask.getPath());
+				completeCollectionDownloadTask(downloadTask);
 
-				} else {
-					if (inProgressItemsCount == globusBunchingReceivedDownloadTasks.size()) {
-						// A collection download to Globus destination completed first hop of all files.
-						// Submit the transfer request (second hop) as a bunch.
-						dataTransferService.processCollectionDownloadTaskSecondHopBunch(downloadTask,
-								globusBunchingReceivedDownloadTasks);
-					}
-					dataTransferService.updateCollectionDownloadTask(downloadTask);
+			} else {
+				if (inProgressItemsCount == globusBunchingReceivedDownloadTasks.size()) {
+					// A collection download to Globus destination completed first hop of all files.
+					// Submit the transfer request (second hop) as a bunch.
+					dataTransferService.processCollectionDownloadTaskSecondHopBunch(downloadTask,
+							globusBunchingReceivedDownloadTasks);
 				}
-
-			} catch (HpcException | RuntimeException e) {
-				logger.error("collection download task: [taskId={}] - Failed to complete / update",
-						downloadTask.getId(), e);
+				dataTransferService.updateCollectionDownloadTask(downloadTask);
 			}
 		}
 	}
@@ -1628,14 +1612,14 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 												downloadTask.getDestinationType());
 										dataTransferService.continueDataObjectDownloadTask(downloadTask);
 
-									} catch (HpcException | RuntimeException e) {
+									} catch (HpcException e) {
 										logger.error(
 												"download task: [taskId={}] - Failed to process [transfer-type={}, destination-type={}]",
 												downloadTask.getId(), downloadTask.getDataTransferType(),
 												downloadTask.getDestinationType(), e);
 									}
 								});
-							} catch (HpcException | RuntimeException e) {
+							} catch (HpcException e) {
 								logger.error(
 										"download task: [taskId={}] - Failed to execute as system account [transfer-type={}, destination-type={}]",
 										downloadTask.getId(), downloadTask.getDataTransferType(),
