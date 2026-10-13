@@ -907,12 +907,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 									completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED,
 											e instanceof HpcException ? e.getMessage() : e.toString());
 
-								} catch (HpcException | RuntimeException ex) {
+								} catch (HpcException ex) {
 									logger.error("Failed to complete collection download as failed {}",
 											downloadTask.getId(), ex);
-									// The task may still be in-process. Reset it (canceling any data object
-									// downloads it started), so it is retried.
-									resetCollectionDownloadTaskInProcess(downloadTask.getId());
 								}
 							}
 						});
@@ -921,7 +918,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 								downloadTask.getId(), e);
 						if (!processingStarted.get()) {
 							// Failed before processing the task. Clear its in-process indicator, so it is
-							// retried. Once started, the task is activated, completed or reset above.
+							// retried. Once started, the task is activated or completed above.
 							clearCollectionDownloadTaskInProcess(downloadTask.getId());
 						}
 					}
@@ -2715,22 +2712,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 		} catch (HpcException | RuntimeException e) {
 			logger.error("collection download task: [taskId={}] - Failed to clear in-process indicator", taskId, e);
-		}
-	}
-
-	/**
-	 * Reset a collection download task that failed to complete, so a later run can
-	 * retry it. Data object downloads that got started for it are canceled. A
-	 * failure is logged rather than raised.
-	 *
-	 * @param taskId The collection download task ID.
-	 */
-	private void resetCollectionDownloadTaskInProcess(String taskId) {
-		try {
-			dataTransferService.resetCollectionDownloadTaskInProgress(taskId);
-
-		} catch (HpcException | RuntimeException e) {
-			logger.error("collection download task: [taskId={}] - Failed to reset in-process indicator", taskId, e);
 		}
 	}
 
