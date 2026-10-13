@@ -1,0 +1,13 @@
+$kind: http-request
+method: PUT
+url: '{{presignedUploadUrl}}'
+auth:
+  type: noauth
+order: 105107674253428
+headers:
+  - key: Content-Type
+    value: text/plain
+body:
+  type: file
+  content:
+    src: 'registration-presigned-data.txt'

@@ -371,7 +371,7 @@ public interface HpcDataManagementRestService {
 	 * Complete S3 multipart upload for a data object.
 	 *
 	 * @param path                           The data object path to complete the
-	 *                                       multipart upload for for.
+	 *                                       multipart upload for.
 	 * @param completeMultipartUploadRequest The multipart upload completion
 	 *                                       request.
 	 * @return The REST service response w/o entity.
