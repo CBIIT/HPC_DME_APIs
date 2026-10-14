@@ -28,9 +28,12 @@ export default function DownloadButton() {
 
 		} else if (selectedRows[0].isDirectory){
 			const selectedRowData = selectedRows[0];
-			const url = selectedRowData.archived ?
-			                '/download?type=collection&path=' + normalizePath(selectedRowData.archivePath) :
-			                '/download?ext=true&type=collection&path=' + normalizePath(selectedRowData.path);
+            const params = new URLSearchParams({
+                type: 'collection',
+                path: normalizePath(selectedRowData.archived ? selectedRowData.archivePath : selectedRowData.path)
+            });
+            if (!selectedRowData.archived) params.set('ext', 'true');
+            const url = `/download?${params.toString()}`;
             window.open(url, '_blank', 'noopener noreferrer');
             console.log('Selected row data:', selectedRowData);
 		}
