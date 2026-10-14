@@ -28,7 +28,9 @@ export default function DownloadButton() {
 
 		} else if (selectedRows[0].isDirectory){
 			const selectedRowData = selectedRows[0];
-            const url = '/download?ext=true&type=collection&path=' + normalizePath(selectedRowData.path);
+			const url = selectedRowData.archived ?
+			                '/download?type=collection&path=' + normalizePath(selectedRowData.archivePath) :
+			                '/download?ext=true&type=collection&path=' + normalizePath(selectedRowData.path);
             window.open(url, '_blank', 'noopener noreferrer');
             console.log('Selected row data:', selectedRowData);
 		}
