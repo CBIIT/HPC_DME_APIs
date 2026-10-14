@@ -88,9 +88,11 @@
 								</div>
 								<div class="col-md-3 col-md-offset-6" th:if="${hpcBulkDataObjectDownloadRetry == true}">
 								<h2>
-									<strong> <button id="downloadfailed" class="btn btn-link btn-sm" 
+									<strong> <button id="downloadfailed" class="downloadfailed btn btn-link btn-sm" 
+									th:disabled="${hpcDataObjectDownloadStatusDTO.getExternalArchiveFlag()}"
+									th:classappend="${hpcDataObjectDownloadStatusDTO.getExternalArchiveFlag()} ? ' disabled'"
 									th:data-task-id="${taskId}" th:data-task-type="${taskType}" 
-									th:onclick="retryDownload(this.getAttribute('data-task-id'),this.getAttribute('data-task-type'));">
+									th:onclick="${hpcDataObjectDownloadStatusDTO.getExternalArchiveFlag()} ? null : 'retryDownload(this.getAttribute(\'data-task-id\'),this.getAttribute(\'data-task-type\'));'">
 									<i class="fa fa-repeat" title="Retry" aria-hidden="true"></i></button></strong>
 								</h2>
 								</div>
@@ -146,7 +148,10 @@
 									</div>
 										<div class="col-md-12 form-group">
 											<label for="Name">Path:</label> 
-											<a th:href="@{/datafile(action=view,path=${hpcDataObjectDownloadStatusDTO.getPath()})}">
+											<span th:if="${hpcDataObjectDownloadStatusDTO.getExternalArchiveFlag()}">
+												<label for="${hpcDataObjectDownloadStatusDTO.getPath()}" th:text="${hpcDataObjectDownloadStatusDTO.getPath()}"></label>
+											</span>
+											<a th:unless="${hpcDataObjectDownloadStatusDTO.getExternalArchiveFlag()}" th:href="@{/datafile(action=view,path=${hpcDataObjectDownloadStatusDTO.getPath()})}">
                       					  	  <label for="${hpcDataObjectDownloadStatusDTO.getPath()}" th:text="${hpcDataObjectDownloadStatusDTO.getPath()}">
                      					 	  </label>
                     						</a>		
