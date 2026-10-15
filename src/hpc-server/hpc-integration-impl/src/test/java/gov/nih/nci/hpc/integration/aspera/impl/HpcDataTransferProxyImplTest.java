@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -50,6 +53,10 @@ public class HpcDataTransferProxyImplTest {
 
 	@TempDir
 	Path tempDir;
+
+	// The fake 'ascp' script is created under the build directory since the
+	// system temp directory may be mounted with 'noexec' (e.g. on Jenkins).
+	private Path scriptDirectory = null;
 
 	private HpcDataTransferProxyImpl asperaProxy = null;
 	private Path archiveDirectory = null;
@@ -81,6 +88,14 @@ public class HpcDataTransferProxyImplTest {
 		archiveDirectory = Files.createDirectories(tempDir.resolve("archive dir"));
 		archiveFile = Files.writeString(archiveDirectory.resolve("archive-file"), ARCHIVE_CONTENT);
 		ascpOutput = tempDir.resolve("ascp-output");
+
+		Path buildDirectory = Files.createDirectories(Paths.get("target").toAbsolutePath());
+		scriptDirectory = Files.createTempDirectory(buildDirectory, "fake-ascp-");
+	}
+
+	@AfterEach
+	public void tearDown() throws Exception {
+		FileUtils.deleteDirectory(scriptDirectory.toFile());
 	}
 
 	@Test
@@ -149,7 +164,7 @@ public class HpcDataTransferProxyImplTest {
 	}
 
 	private void setAscp(String script) throws Exception {
-		Path ascp = tempDir.resolve("ascp");
+		Path ascp = scriptDirectory.resolve("ascp");
 		Files.write(ascp, ("#!/bin/sh\n" + script).getBytes(StandardCharsets.UTF_8));
 		Files.setPosixFilePermissions(ascp, PosixFilePermissions.fromString("rwx------"));
 		setField("ascp", ascp.toString());
