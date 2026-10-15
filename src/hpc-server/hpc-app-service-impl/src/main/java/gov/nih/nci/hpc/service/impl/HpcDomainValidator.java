@@ -15,6 +15,7 @@ import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -55,6 +56,16 @@ public class HpcDomainValidator {
 	private static final int MAX_COMPOUND_METADATA_QUERY_DEPTH = 10;
 
 	private static final String EMPTY_METADATA_MSG = "Empty metadata entry in request";
+
+	// Aspera user: letters, digits and '_', '.', '@', '+', '-'. Can't start with
+	// '-'.
+	private static final Pattern ASPERA_USER_PATTERN = Pattern.compile("^[A-Za-z0-9_.@+][A-Za-z0-9_.@+-]*$");
+
+	// Aspera host: a host name, an IPv4 address or an IPv6 address in brackets.
+	private static final Pattern ASPERA_HOST_PATTERN = Pattern
+			.compile("^([A-Za-z0-9]([A-Za-z0-9_.-]*[A-Za-z0-9])?|\\[[0-9A-Fa-f:.]+\\])$");
+
+	private static final Pattern CONTROL_CHARACTERS_PATTERN = Pattern.compile("\\p{Cntrl}");
 
 	// ---------------------------------------------------------------------//
 	// Class members
@@ -214,8 +225,103 @@ public class HpcDomainValidator {
 			return validationResult;
 		}
 
+		if (!ASPERA_USER_PATTERN.matcher(asperaAccount.getUser()).matches()) {
+			validationResult.setMessage("Invalid Aspera user: " + asperaAccount.getUser());
+			return validationResult;
+		}
+
+		if (!ASPERA_HOST_PATTERN.matcher(asperaAccount.getHost()).matches()) {
+			validationResult.setMessage("Invalid Aspera host: " + asperaAccount.getHost());
+			return validationResult;
+		}
+
 		validationResult.setValid(true);
 		return validationResult;
+	}
+
+	/**
+	 * Validate an Aspera download destination location. The file container ID is
+	 * the destination directory on the Aspera server. For a data object download,
+	 * the last part of the file ID is the destination file name.
+	 *
+	 * @param location     The location to be validated.
+	 * @param bulkDownload True if this is a collection / bulk download, in which
+	 *                     case the file ID is a destination directory.
+	 * @return The validation result.
+	 */
+	public static HpcDomainValidationResult isValidAsperaDestinationLocation(HpcFileLocation location,
+			boolean bulkDownload) {
+		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+		validationResult.setValid(false);
+
+		if (!isValidFileLocation(location)) {
+			validationResult.setMessage("Empty file container ID / file ID");
+			return validationResult;
+		}
+
+		String fileContainerId = location.getFileContainerId();
+		if (fileContainerId.startsWith("-") || CONTROL_CHARACTERS_PATTERN.matcher(fileContainerId).find()) {
+			validationResult.setMessage("Invalid file container ID: " + fileContainerId);
+			return validationResult;
+		}
+
+		String fileId = location.getFileId();
+		if (CONTROL_CHARACTERS_PATTERN.matcher(fileId).find()) {
+			validationResult.setMessage("Invalid file ID: " + fileId);
+			return validationResult;
+		}
+
+		if (!bulkDownload) {
+			String fileName = fileId.substring(fileId.lastIndexOf('/') + 1);
+			if (fileName.isEmpty() || fileName.equals(".") || fileName.equals("..") || fileName.startsWith("-")) {
+				validationResult.setMessage("Invalid file name: " + fileId);
+				return validationResult;
+			}
+		}
+
+		validationResult.setValid(true);
+		return validationResult;
+	}
+
+	/**
+	 * Validate a caller object ID. The caller object ID is optional and is used as
+	 * part of the archive path.
+	 *
+	 * @param callerObjectId The caller object ID to be validated.
+	 * @return The validation result.
+	 */
+	public static HpcDomainValidationResult isValidCallerObjectId(String callerObjectId) {
+		HpcDomainValidationResult validationResult = new HpcDomainValidationResult();
+		validationResult.setValid(false);
+
+		if (StringUtils.isEmpty(callerObjectId)) {
+			validationResult.setValid(true);
+			return validationResult;
+		}
+
+		if (CONTROL_CHARACTERS_PATTERN.matcher(callerObjectId).find()) {
+			validationResult.setMessage("Control characters are not allowed");
+			return validationResult;
+		}
+
+		if (Arrays.asList(callerObjectId.split("/")).contains("..")) {
+			validationResult.setMessage("'..' path segments are not allowed");
+			return validationResult;
+		}
+
+		validationResult.setValid(true);
+		return validationResult;
+	}
+
+	/**
+	 * Validate a group name used to set archive file permissions.
+	 *
+	 * @param groupName The group name to be validated.
+	 * @return true if valid, false otherwise.
+	 */
+	public static boolean isValidGroupName(String groupName) {
+		return !StringUtils.isEmpty(groupName) && !groupName.startsWith("-") && !groupName.contains(":")
+				&& !groupName.contains("/") && !CONTROL_CHARACTERS_PATTERN.matcher(groupName).find();
 	}
 
 	// ---------------------------------------------------------------------//
