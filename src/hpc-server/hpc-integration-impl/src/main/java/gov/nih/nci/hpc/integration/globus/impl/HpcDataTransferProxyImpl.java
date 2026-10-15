@@ -5,12 +5,18 @@ import static gov.nih.nci.hpc.util.HpcUtil.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -100,6 +106,9 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 	private static final String PERMISSION_DENIED_STATUS = "PERMISSION_DENIED";
 	private static final String OK_STATUS = "OK";
 	private static final String NOT_DIRECTORY_GLOBUS_CODE = "ExternalError.DirListingFailed.NotDirectory";
+
+	// Buffer size used when calculating a file checksum.
+	private static final int CHECKSUM_BUFFER_SIZE = 1024 * 1024;
 
 	// ---------------------------------------------------------------------//
 	// Instance members
@@ -276,9 +285,10 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 					baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
 			try {
-				exec("cp " + archiveFilePath + " " + downloadRequest.getFileDestination(), null, null, null);
+				Files.copy(Paths.get(archiveFilePath), downloadRequest.getFileDestination().toPath(),
+						StandardCopyOption.REPLACE_EXISTING);
 
-			} catch (HpcException e) {
+			} catch (IOException e) {
 				throw new HpcException(
 						"Failed to copy file from POSIX archive: " + archiveFilePath + "[" + e.getMessage() + "]",
 						HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -328,7 +338,7 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 
 		HpcSetArchiveObjectMetadataResponse response = new HpcSetArchiveObjectMetadataResponse();
-		response.setChecksum(exec("md5sum " + archiveFilePath, null, null, null).split("\\s+")[0]);
+		response.setChecksum(md5Checksum(archiveFilePath));
 
 		File metadataFile = getMetadataFile(archiveFilePath);
 		if (metadataFile.exists()) {
@@ -362,16 +372,16 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 				baseArchiveDestination.getFileLocation().getFileId(), baseArchiveDestination.getDirectory());
 		// Delete the archive file.
 		try {
-			exec("rm " + archiveFilePath, null, null, null);
+			Files.delete(Paths.get(archiveFilePath));
 
-		} catch (HpcException e) {
+		} catch (IOException e) {
 			logger.error("Failed to delete file: {}", archiveFilePath, e);
 		}
 		// Delete the metadata file.
 		try {
-			exec("rm " + getMetadataFile(archiveFilePath).getAbsolutePath(), null, null, null);
+			Files.delete(getMetadataFile(archiveFilePath).toPath());
 
-		} catch (HpcException e) {
+		} catch (IOException e) {
 			logger.error("Failed to delete metadata for file: {}", archiveFilePath, e);
 		}
 	}
@@ -1042,12 +1052,13 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String archiveDirectory = archiveFilePath.substring(0, archiveFilePath.lastIndexOf('/'));
 
 		try {
-			exec("install -d -o " + systemAccount + " " + archiveDirectory, null, null, null);
-			exec("chown -R " + systemAccount + " " + baseArchiveDestination.getDirectory(), null, null, null);
-			exec("cp " + sourceFile.getAbsolutePath() + " " + archiveFilePath, null, null, null);
-			exec("chown " + systemAccount + " " + archiveFilePath, null, null, null);
+			Files.createDirectories(Paths.get(archiveDirectory));
+			exec(Arrays.asList("chown", "-R", systemAccount, baseArchiveDestination.getDirectory()), null, null,
+					null);
+			Files.copy(sourceFile.toPath(), Paths.get(archiveFilePath), StandardCopyOption.REPLACE_EXISTING);
+			exec(Arrays.asList("chown", systemAccount, archiveFilePath), null, null, null);
 
-		} catch (HpcException e) {
+		} catch (HpcException | IOException e) {
 			throw new HpcException(
 					"Failed to copy file to POSIX archive: " + archiveFilePath + " - [" + e.getMessage() + "]",
 					HpcErrorType.DATA_TRANSFER_ERROR, e);
@@ -1077,5 +1088,28 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		int lastSlashIndex = archiveFilePath.lastIndexOf('/');
 		return new File(
 				archiveFilePath.substring(0, lastSlashIndex) + "/." + archiveFilePath.substring(lastSlashIndex + 1));
+	}
+
+	/**
+	 * Calculate the MD5 checksum of a file.
+	 *
+	 * @param filePath The file path.
+	 * @return The MD5 checksum (lower case hex).
+	 * @throws HpcException If failed to read the file.
+	 */
+	private String md5Checksum(String filePath) throws HpcException {
+		try (InputStream inputStream = Files.newInputStream(Paths.get(filePath))) {
+			MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+			byte[] buffer = new byte[CHECKSUM_BUFFER_SIZE];
+			int bytesRead;
+			while ((bytesRead = inputStream.read(buffer)) != -1) {
+				messageDigest.update(buffer, 0, bytesRead);
+			}
+			return HexFormat.of().formatHex(messageDigest.digest());
+
+		} catch (IOException | NoSuchAlgorithmException e) {
+			throw new HpcException("Failed to calculate checksum: " + filePath + " - [" + e.getMessage() + "]",
+					HpcErrorType.UNEXPECTED_ERROR, e);
+		}
 	}
 }

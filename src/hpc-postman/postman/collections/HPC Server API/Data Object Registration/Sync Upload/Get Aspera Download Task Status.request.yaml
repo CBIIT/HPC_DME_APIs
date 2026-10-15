@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Aspera Download Task Status
+method: GET
+url: '{{baseUrl}}{{basePath}}/dataObject/download/{{lastAsperaDownloadTaskId}}'
+order: 3863696254383544
+headers:
+  - key: Accept
+    value: 'application/json'
