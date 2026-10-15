@@ -4,10 +4,17 @@ import static gov.nih.nci.hpc.util.HpcUtil.exec;
 import static gov.nih.nci.hpc.util.HpcUtil.toNormalizedPath;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +93,6 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 		String archiveLocationDirectoryPath = downloadRequest.getArchiveLocationFilePath().substring(0,
 				downloadRequest.getArchiveLocationFilePath().lastIndexOf('/'));
-		File archiveLocationDirectory = new File(archiveLocationDirectoryPath);
 
 		String transferDirectoryName = "aspera-" + UUID.randomUUID().toString();
 		String transferDirectoryPath = archiveLocationDirectoryPath + "/" + transferDirectoryName;
@@ -94,21 +100,26 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 		String fileId = toNormalizedPath(asperaDestination.getDestinationLocation().getFileId());
 		String transferFileName = fileId.substring(fileId.lastIndexOf('/') + 1);
 		String transferFilePath = transferDirectoryPath + "/" + transferFileName;
+		String asperaTarget = asperaDestination.getAccount().getUser() + "@" + asperaDestination.getAccount().getHost()
+				+ ":" + asperaDestination.getDestinationLocation().getFileContainerId();
+
+		// ascp would interpret an argument starting with '-' as an option.
+		if (StringUtils.isEmpty(transferFileName) || transferFileName.startsWith("-") || asperaTarget.startsWith("-")) {
+			throw new HpcException("[Aspera] Invalid destination: " + asperaTarget + "/" + transferFileName,
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		logger.info("[Aspera] - staged transfer file: {}", transferFilePath);
 
-		String[] envp = new String[] { "ASPERA_SCP_PASS=" + asperaDestination.getAccount().getPassword() };
+		Map<String, String> environment = Map.of("ASPERA_SCP_PASS",
+				Objects.toString(asperaDestination.getAccount().getPassword(), ""));
 		CompletableFuture<Void> asperaDownloadFuture = CompletableFuture.runAsync(() -> {
 			try {
-				exec("mkdir " + transferDirectoryName, null, envp, archiveLocationDirectory);
-				exec("ln -s " + downloadRequest.getArchiveLocationFilePath() + " " + transferFilePath, null, envp,
-						archiveLocationDirectory);
+				Files.createDirectory(transferDirectory.toPath());
+				Files.createSymbolicLink(Paths.get(transferFilePath),
+						Paths.get(downloadRequest.getArchiveLocationFilePath()));
 
-				String ascpResponse = exec(
-						ascp + " -i " + privateKeyFile + " -Q -l 1000m -k 0 " + transferFileName + " "
-								+ asperaDestination.getAccount().getUser() + "@"
-								+ asperaDestination.getAccount().getHost() + ":"
-								+ asperaDestination.getDestinationLocation().getFileContainerId(),
-						null, envp, transferDirectory);
+				String ascpResponse = exec(Arrays.asList(ascp, "-i", privateKeyFile, "-Q", "-l", "1000m", "-k", "0",
+						transferFileName, asperaTarget), null, environment, transferDirectory);
 
 				logger.info("[Aspera] successfully completed download of {} to {}:{}/{}. ascp response: {}",
 						downloadRequest.getPath(), asperaDestination.getAccount().getHost(),
@@ -117,17 +128,19 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 
-			} catch (HpcException e) {
+			} catch (HpcException | IOException e) {
 				String message = "[Aspera] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);
 
 			} finally {
 				try {
-					exec("rm -rf " + transferDirectoryPath, null, envp, archiveLocationDirectory);
+					// The staged file is a symbolic link - deleting the directory doesn't
+					// delete the archive file.
+					FileUtils.deleteDirectory(transferDirectory);
 					logger.info("[Aspera] - Deleted staged transfer directory: {}", transferDirectoryPath);
 
-				} catch (HpcException e) {
+				} catch (IOException e) {
 					logger.error("Failed to delete staged transfer directory: {}", transferDirectoryPath, e);
 				}
 			}

@@ -11,7 +11,10 @@
 package gov.nih.nci.hpc.service.impl;
 
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidAsperaAccount;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidAsperaDestinationLocation;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidCallerObjectId;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidFileLocation;
+import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidGroupName;
 import static gov.nih.nci.hpc.service.impl.HpcDomainValidator.isValidS3Account;
 import static gov.nih.nci.hpc.util.HpcUtil.exec;
 import static gov.nih.nci.hpc.util.HpcUtil.fromValue;
@@ -28,6 +31,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumMap;
@@ -351,6 +355,13 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 		// Validate data-object-id provided.
 		if (StringUtils.isEmpty(dataObjectId)) {
 			throw new HpcException("No data object ID in upload request", HpcErrorType.UNEXPECTED_ERROR);
+		}
+
+		// Validate the caller object ID.
+		HpcDomainValidationResult callerObjectIdValidationResult = isValidCallerObjectId(callerObjectId);
+		if (!callerObjectIdValidationResult.getValid()) {
+			throw new HpcException("Invalid caller object ID: " + callerObjectIdValidationResult.getMessage(),
+					HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
 		// Validate an upload source was provided.
@@ -2343,6 +2354,10 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 				|| StringUtils.isEmpty(permissions.getGroup()) || permissions.getPermissionsMode() == null) {
 			throw new HpcException("Invalid permissions object", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
+		if (!isValidGroupName(permissions.getGroup())) {
+			throw new HpcException("Invalid group name: " + permissions.getGroup(),
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 
 		// Get the data transfer configuration.
 		HpcDataTransferConfiguration dataTransferConfiguration = dataManagementConfigurationLocator
@@ -2361,10 +2376,11 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 		// to own the file.
 		// With this change the 'sudo enabled exec() is no longer needed. This is a
 		// temporary fix until code cleanup
-		// exec("chown " + permissions.getOwner() + " " + archivePath, sudoPassword);
+		// exec(Arrays.asList("chown", permissions.getOwner(), archivePath), sudoPassword, null, null);
 
-		exec("chown :" + permissions.getGroup() + " " + archivePath, sudoPassword, null, null);
-		exec("chmod " + permissions.getPermissionsMode() + " " + archivePath, sudoPassword, null, null);
+		exec(Arrays.asList("chown", ":" + permissions.getGroup(), archivePath), sudoPassword, null, null);
+		exec(Arrays.asList("chmod", String.valueOf(permissions.getPermissionsMode()), archivePath), sudoPassword,
+				null, null);
 	}
 
 	@Override
@@ -3148,6 +3164,13 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 			HpcDomainValidationResult validationResult = isValidAsperaAccount(asperaDownloadDestination.getAccount());
 			if (!validationResult.getValid()) {
 				throw new HpcException("Invalid Aspera account: " + validationResult.getMessage(),
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			validationResult = isValidAsperaDestinationLocation(asperaDownloadDestination.getDestinationLocation(),
+					bulkDownload);
+			if (!validationResult.getValid()) {
+				throw new HpcException("Invalid Aspera download destination location: " + validationResult.getMessage(),
 						HpcErrorType.INVALID_REQUEST_INPUT);
 			}
 		}
