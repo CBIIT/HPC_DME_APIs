@@ -45,7 +45,7 @@ public interface HpcScheduledTask
 		try {
 			task.execute();
 
-		} catch (HpcException e) {
+		} catch (HpcException | RuntimeException e) {
 			logger.error("Scheduled task failed: " + name, e);
 
 		} finally {
