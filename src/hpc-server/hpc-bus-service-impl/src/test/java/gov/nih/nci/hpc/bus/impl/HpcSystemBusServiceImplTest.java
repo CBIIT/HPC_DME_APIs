@@ -3,6 +3,12 @@ package gov.nih.nci.hpc.bus.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import static org.mockito.Mockito.*;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.AfterEach;
@@ -16,11 +22,20 @@ import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
 
@@ -35,6 +50,10 @@ class HpcSystemBusServiceImplTest {
     private HpcDataManagementService dataManagementService;
     @Mock
     private HpcNotificationService notificationService;
+    @Mock
+    private HpcDataManagementBusService dataManagementBusService;
+    @Mock
+    private HpcEventService eventService;
 
     // The bus service under test.
     @InjectMocks
@@ -156,6 +175,85 @@ class HpcSystemBusServiceImplTest {
         assertFalse(service.canRemoveDeletedDataObject("somePath", "originalPath"));
     }
 
+        @Test
+        void testProcessExternalDownloadTask_ReturnsDownloadItemsForEachRegistration() throws Exception {
+        HpcCollectionDownloadTask downloadTask = externalDownloadTask();
+        HpcBulkDataObjectRegistrationResponseDTO registrationResponse = new HpcBulkDataObjectRegistrationResponseDTO();
+        HpcDataObjectRegistrationItemDTO registrationItem = new HpcDataObjectRegistrationItemDTO();
+        registrationItem.setPath("/external/file.txt");
+        registrationResponse.getDataObjectRegistrationItems().add(registrationItem);
+
+        HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
+        downloadResponse.setTaskId("data-task-1");
+        when(dataManagementBusService.getFilesFromExternalSource(downloadTask)).thenReturn(registrationResponse);
+        when(dataManagementBusService.downloadDataObject(eq("/external/file.txt"), any(), isNull(),
+            eq("test-user"), isNull(), eq(false), eq("collection-task-1"), eq(true)))
+            .thenReturn(downloadResponse);
+
+        List<HpcCollectionDownloadTaskItem> downloadItems = invokeProcessExternalDownloadTask(downloadTask);
+
+        assertEquals(1, downloadItems.size());
+        assertEquals("/external/file.txt", downloadItems.get(0).getPath());
+        assertEquals("data-task-1", downloadItems.get(0).getDataObjectDownloadTaskId());
+        verify(dataManagementBusService).getFilesFromExternalSource(downloadTask);
+        verify(dataManagementBusService).downloadDataObject(eq("/external/file.txt"), any(), isNull(),
+            eq("test-user"), isNull(), eq(false), eq("collection-task-1"), eq(true));
+        }
+
+        @Test
+        void testProcessExternalDownloadTask_FailureCompletesTaskAndReturnsEmptyList() throws Exception {
+        HpcCollectionDownloadTask downloadTask = externalDownloadTask();
+        when(dataManagementBusService.getFilesFromExternalSource(downloadTask))
+            .thenThrow(new HpcException("scan failed", gov.nih.nci.hpc.domain.error.HpcErrorType.INVALID_REQUEST_INPUT));
+
+        List<HpcCollectionDownloadTaskItem> downloadItems = invokeProcessExternalDownloadTask(downloadTask);
+
+        assertTrue(downloadItems.isEmpty());
+        verify(dataTransferService).completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED),
+            eq("scan failed"), any(java.util.Calendar.class));
+        verify(dataManagementBusService, never()).downloadDataObject(anyString(), any(), any(), anyString(), any(),
+            anyBoolean(), anyString(), anyBoolean());
+        }
+
+        @Test
+        void testProcessExternalDownloadTask_CompletionFailureIsHandled() throws Exception {
+        HpcCollectionDownloadTask downloadTask = externalDownloadTask();
+        when(dataManagementBusService.getFilesFromExternalSource(downloadTask))
+            .thenThrow(new HpcException("scan failed", gov.nih.nci.hpc.domain.error.HpcErrorType.INVALID_REQUEST_INPUT));
+        doThrow(new HpcException("completion failed", gov.nih.nci.hpc.domain.error.HpcErrorType.UNEXPECTED_ERROR))
+            .when(dataTransferService).completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED),
+                eq("scan failed"), any(java.util.Calendar.class));
+
+        assertTrue(invokeProcessExternalDownloadTask(downloadTask).isEmpty());
+        verify(dataTransferService).completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED),
+            eq("scan failed"), any(java.util.Calendar.class));
+        }
+
+        private HpcCollectionDownloadTask externalDownloadTask() {
+        HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+        downloadTask.setId("collection-task-1");
+        downloadTask.setUserId("test-user");
+        downloadTask.setPath("/external");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION);
+        downloadTask.setExternalArchiveFlag(true);
+        downloadTask.setAppendPathToDownloadDestination(false);
+        downloadTask.setAppendCollectionNameToDownloadDestination(false);
+        return downloadTask;
+        }
+
+        @SuppressWarnings("unchecked")
+        private List<HpcCollectionDownloadTaskItem> invokeProcessExternalDownloadTask(
+            HpcCollectionDownloadTask downloadTask) throws Exception {
+        Method method = HpcSystemBusServiceImpl.class.getDeclaredMethod("processExternalDownloadTask",
+            HpcCollectionDownloadTask.class);
+        method.setAccessible(true);
+        try {
+            return (List<HpcCollectionDownloadTaskItem>) method.invoke(service, downloadTask);
+        } catch (InvocationTargetException e) {
+            throw (Exception) e.getCause();
+        }
+        }
+    
     @Test
     void testUpdateRegistrationItemStatusSetsBytesTransferredAndPercentComplete() throws Exception {
         HpcBulkDataObjectRegistrationItem item = new HpcBulkDataObjectRegistrationItem();
