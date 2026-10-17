@@ -13,17 +13,21 @@ package gov.nih.nci.hpc.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.lang.reflect.Field;
 
@@ -42,6 +46,7 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadResponse;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataObjectDownloadTask;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDirectoryScanItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.datatransfer.HpcGlobusDownloadDestination;
 import gov.nih.nci.hpc.domain.datatransfer.HpcS3Account;
@@ -53,6 +58,7 @@ import gov.nih.nci.hpc.domain.model.HpcDataTransferConfiguration;
 import gov.nih.nci.hpc.domain.model.HpcRequestInvoker;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystemAccount;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.user.HpcIntegratedSystem;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.integration.HpcDataTransferProxy;
@@ -73,6 +79,9 @@ public class HpcDataTransferServiceImplTest {
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
+
+	// A token authenticated w/ a user's S3 account.
+	private static final String USER_S3_TOKEN = "user-s3-token";
 
 	// The app service under test.
 	// @InjectMocks
@@ -285,7 +294,8 @@ public class HpcDataTransferServiceImplTest {
 	 */
 	/*
 	 * Test scenario: Successful download to AWS S3 destination Expected:
-	 * HpcDataObjectDownloadResponse object w/ download task ID
+	 * HpcDataObjectDownloadResponse object w/ download task ID, and the user S3
+	 * token used to validate the destination is shut down
 	 */
 	@Test
 	public void testS3DownloadDataObject() throws HpcException {
@@ -322,6 +332,7 @@ public class HpcDataTransferServiceImplTest {
 		s3Account.setAccessKey("testAccessKey");
 		s3Account.setSecretKey("testSecretKey");
 		s3Account.setRegion("testRegion");
+		when(dataTransferProxyMock.authenticate(s3Account)).thenReturn(USER_S3_TOKEN);
 
 		HpcS3DownloadDestination s3loadDestination = new HpcS3DownloadDestination();
 		s3loadDestination.setDestinationLocation(destinationLocation);
@@ -343,6 +354,7 @@ public class HpcDataTransferServiceImplTest {
 		assertEquals(downloadResponse.getDestinationLocation().getFileContainerId(),
 				destinationLocation.getFileContainerId());
 		assertEquals(downloadResponse.getDestinationLocation().getFileId(), destinationLocation.getFileId());
+		verifyUserS3TokenShutdownOnce();
 	}
 
 
@@ -715,5 +727,213 @@ public class HpcDataTransferServiceImplTest {
 		task.setGlobusDownloadDestination(dest);
 
 		return task;
+	}
+
+	// ---------------------------------------------------------------------//
+	// User S3 Token Cleanup Unit Tests
+	// ---------------------------------------------------------------------//
+
+	/**
+	 * {@link HpcDataTransferService#getPathAttributes(HpcS3Account, HpcFileLocation, boolean)}
+	 */
+	/*
+	 * Test scenario: Path attributes retrieved w/ a user's S3 account (e.g. S3
+	 * upload source validation). Expected: The path attributes are returned, and
+	 * the user S3 token is shut down.
+	 */
+	@Test
+	public void testGetPathAttributesWithS3AccountShutsDownToken() throws HpcException {
+		HpcS3Account s3Account = buildS3Account();
+		HpcFileLocation fileLocation = buildFileLocation("testBucket", "testObject");
+		HpcPathAttributes pathAttributes = new HpcPathAttributes();
+		when(dataTransferProxyMock.authenticate(s3Account)).thenReturn(USER_S3_TOKEN);
+		when(dataTransferProxyMock.getPathAttributes(USER_S3_TOKEN, fileLocation, true)).thenReturn(pathAttributes);
+
+		assertSame(pathAttributes, dataTransferService.getPathAttributes(s3Account, fileLocation, true));
+		verifyUserS3TokenShutdownOnce();
+	}
+
+	/**
+	 * {@link HpcDataTransferService#getPathAttributes(HpcS3Account, HpcFileLocation, boolean)}
+	 */
+	/*
+	 * Test scenario: Accessing the path w/ a user's S3 account fails. Expected:
+	 * HpcException - "Failed to access AWS S3 bucket", and the user S3 token is
+	 * shut down.
+	 */
+	@Test
+	public void testGetPathAttributesWithS3AccountFailureShutsDownToken() throws HpcException {
+		HpcS3Account s3Account = buildS3Account();
+		HpcFileLocation fileLocation = buildFileLocation("testBucket", "testObject");
+		when(dataTransferProxyMock.authenticate(s3Account)).thenReturn(USER_S3_TOKEN);
+		when(dataTransferProxyMock.getPathAttributes(USER_S3_TOKEN, fileLocation, true))
+				.thenThrow(new HpcException("Access Denied", HpcErrorType.DATA_TRANSFER_ERROR));
+
+		HpcException exception = assertThrows(HpcException.class,
+				() -> dataTransferService.getPathAttributes(s3Account, fileLocation, true));
+
+		assertTrue(exception.getMessage().contains("Failed to access AWS S3 bucket"));
+		assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, exception.getErrorType());
+		verifyUserS3TokenShutdownOnce();
+	}
+
+	/**
+	 * {@link HpcDataTransferService#getPathAttributes(HpcS3Account, HpcFileLocation, boolean)}
+	 */
+	/*
+	 * Test scenario: Shutting down the user S3 token fails. Expected: The failure
+	 * is not raised, and the path attributes are returned.
+	 */
+	@Test
+	public void testGetPathAttributesWithS3AccountShutdownFailureReturnsResult() throws HpcException {
+		HpcS3Account s3Account = buildS3Account();
+		HpcFileLocation fileLocation = buildFileLocation("testBucket", "testObject");
+		HpcPathAttributes pathAttributes = new HpcPathAttributes();
+		when(dataTransferProxyMock.authenticate(s3Account)).thenReturn(USER_S3_TOKEN);
+		when(dataTransferProxyMock.getPathAttributes(USER_S3_TOKEN, fileLocation, true)).thenReturn(pathAttributes);
+		doThrow(new HpcException("Invalid S3 authentication token", HpcErrorType.INVALID_REQUEST_INPUT))
+				.when(dataTransferProxyMock).shutdown(USER_S3_TOKEN);
+
+		assertSame(pathAttributes, dataTransferService.getPathAttributes(s3Account, fileLocation, true));
+		verifyUserS3TokenShutdownOnce();
+	}
+
+	/**
+	 * {@link HpcDataTransferService#scanDirectory}
+	 */
+	/*
+	 * Test scenario: S3 directory scanned w/ a user's S3 account. Expected: The
+	 * scan items are returned, and the user S3 token is shut down.
+	 */
+	@Test
+	public void testScanDirectoryWithS3AccountShutsDownToken() throws HpcException {
+		HpcS3Account s3Account = buildS3Account();
+		HpcFileLocation directoryLocation = buildFileLocation("testBucket", "testDirectory");
+		List<HpcDirectoryScanItem> scanItems = new ArrayList<>();
+		scanItems.add(new HpcDirectoryScanItem());
+		when(dataTransferProxyMock.authenticate(s3Account)).thenReturn(USER_S3_TOKEN);
+		when(dataTransferProxyMock.scanDirectory(USER_S3_TOKEN, directoryLocation)).thenReturn(scanItems);
+
+		assertSame(scanItems, dataTransferService.scanDirectory(HpcDataTransferType.S_3, s3Account, null,
+				directoryLocation, null, null, Collections.emptyList(), Collections.emptyList(), null));
+		verifyUserS3TokenShutdownOnce();
+	}
+
+	/**
+	 * {@link HpcDataTransferService#scanDirectory}
+	 */
+	/*
+	 * Test scenario: Scanning an S3 directory w/ a user's S3 account fails.
+	 * Expected: The scan HpcException is thrown, and the user S3 token is shut
+	 * down.
+	 */
+	@Test
+	public void testScanDirectoryWithS3AccountFailureShutsDownToken() throws HpcException {
+		HpcS3Account s3Account = buildS3Account();
+		HpcFileLocation directoryLocation = buildFileLocation("testBucket", "testDirectory");
+		HpcException scanException = new HpcException("Access Denied", HpcErrorType.DATA_TRANSFER_ERROR);
+		when(dataTransferProxyMock.authenticate(s3Account)).thenReturn(USER_S3_TOKEN);
+		when(dataTransferProxyMock.scanDirectory(USER_S3_TOKEN, directoryLocation)).thenThrow(scanException);
+
+		HpcException exception = assertThrows(HpcException.class,
+				() -> dataTransferService.scanDirectory(HpcDataTransferType.S_3, s3Account, null, directoryLocation,
+						null, null, Collections.emptyList(), Collections.emptyList(), null));
+
+		assertSame(scanException, exception);
+		verifyUserS3TokenShutdownOnce();
+	}
+
+	/**
+	 * {@link HpcDataTransferService#scanDirectory}
+	 */
+	/*
+	 * Test scenario: S3 directory scanned w/ the system account. Expected: The
+	 * system account token is not shut down, since it is shared.
+	 */
+	@Test
+	public void testScanDirectoryWithSystemAccountKeepsToken() throws HpcException {
+		HpcFileLocation directoryLocation = buildFileLocation("testBucket", "testDirectory");
+
+		HpcDataTransferConfiguration dataTransferConfiguration = new HpcDataTransferConfiguration();
+		dataTransferConfiguration.setId("s3-config");
+		dataTransferConfiguration.setArchiveProvider(HpcIntegratedSystem.AWS);
+		dataTransferConfiguration.setUrlOrRegion("test-region");
+		dataTransferConfiguration.setEncryptionAlgorithm("test-algorithm");
+		dataTransferConfiguration.setEncryptionKey("test-key");
+		when(dataManagementConfigurationLocatorMock.getDataTransferConfiguration("dm-config", "s3-config",
+				HpcDataTransferType.S_3)).thenReturn(dataTransferConfiguration);
+
+		HpcIntegratedSystemAccount systemAccount = new HpcIntegratedSystemAccount();
+		systemAccount.setUsername("test-s3-account");
+		when(systemAccountLocatorMock.getSystemAccount(HpcIntegratedSystem.AWS)).thenReturn(systemAccount);
+		when(dataTransferProxyMock.authenticate(eq(systemAccount), eq("test-region"), eq("test-algorithm"),
+				eq("test-key"))).thenReturn("system-token");
+
+		List<HpcDirectoryScanItem> scanItems = new ArrayList<>();
+		when(dataTransferProxyMock.scanDirectory("system-token", directoryLocation)).thenReturn(scanItems);
+
+		assertSame(scanItems, dataTransferService.scanDirectory(HpcDataTransferType.S_3, null, null,
+				directoryLocation, "dm-config", "s3-config", Collections.emptyList(), Collections.emptyList(), null));
+		verify(dataTransferProxyMock, never()).shutdown(any());
+	}
+
+	/**
+	 * {@link HpcDataTransferService#downloadDataObject}
+	 */
+	/*
+	 * Test scenario: The S3 download destination can't be accessed w/ the user's
+	 * S3 account. Expected: HpcException - "Failed to locate S3 bucket", and the
+	 * user S3 token is shut down.
+	 */
+	@Test
+	public void testS3DownloadDataObjectInvalidDestinationShutsDownToken() throws HpcException {
+		HpcS3Account s3Account = buildS3Account();
+		HpcFileLocation destinationLocation = buildFileLocation("testDestinationBucket", "testDestinationObject");
+		HpcS3DownloadDestination s3DownloadDestination = new HpcS3DownloadDestination();
+		s3DownloadDestination.setDestinationLocation(destinationLocation);
+		s3DownloadDestination.setAccount(s3Account);
+		when(dataTransferProxyMock.authenticate(s3Account)).thenReturn(USER_S3_TOKEN);
+		when(dataTransferProxyMock.getPathAttributes(USER_S3_TOKEN, destinationLocation, false))
+				.thenThrow(new HpcException("Access Denied", HpcErrorType.DATA_TRANSFER_ERROR));
+
+		HpcFileLocation archiveLocation = buildFileLocation("testArchiveBucket", "testArchiveObject");
+		HpcException exception = assertThrows(HpcException.class,
+				() -> dataTransferService.downloadDataObject("/test/path", archiveLocation, null,
+						s3DownloadDestination, null, null, null, null, null, HpcDataTransferType.S_3, "testConfigId",
+						"", null, "testUserId", null, false, null, 0L, HpcDataTransferUploadStatus.ARCHIVED, null,
+						false));
+
+		assertTrue(exception.getMessage().contains("Failed to locate S3 bucket"));
+		verifyUserS3TokenShutdownOnce();
+	}
+
+	/**
+	 * Build a valid user S3 account.
+	 */
+	private HpcS3Account buildS3Account() {
+		HpcS3Account s3Account = new HpcS3Account();
+		s3Account.setAccessKey("testAccessKey");
+		s3Account.setSecretKey("testSecretKey");
+		s3Account.setRegion("testRegion");
+		return s3Account;
+	}
+
+	/**
+	 * Build a file location.
+	 */
+	private HpcFileLocation buildFileLocation(String fileContainerId, String fileId) {
+		HpcFileLocation fileLocation = new HpcFileLocation();
+		fileLocation.setFileContainerId(fileContainerId);
+		fileLocation.setFileId(fileId);
+		return fileLocation;
+	}
+
+	/**
+	 * Verify the user S3 token was shut down exactly once, and no other token was
+	 * shut down.
+	 */
+	private void verifyUserS3TokenShutdownOnce() throws HpcException {
+		verify(dataTransferProxyMock).shutdown(USER_S3_TOKEN);
+		verify(dataTransferProxyMock).shutdown(any());
 	}
 }

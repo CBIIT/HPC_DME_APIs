@@ -380,7 +380,8 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
         dataMigrationDAO.upsertDataMigrationTaskResult(dataObjectMigrationTask, Calendar.getInstance(), result,
                 message);
 
-        // Shutdown the transfer managers.
+        // Shutdown the transfer managers. A no-op w/ the AWS SDK v2 proxy - system
+        // account S3 clients are shared and closed on application shutdown.
         try {
             if (fromS3ArchiveAuthToken != null) {
                 s3DataTransferProxy.shutdown(fromS3ArchiveAuthToken);
