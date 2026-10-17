@@ -1301,9 +1301,11 @@ String continuationToken = listObjectsResponse.nextContinuationToken();
 		DownloadFileRequest.Builder downloadFileRequestBuilder = DownloadFileRequest.builder()
 				.getObjectRequest(b -> b.bucket(archiveLocation.getFileContainerId()).key(archiveLocation.getFileId()))
 				.destination(destinationLocation);
+		HpcS3ProgressListener listener = null;
 		if (progressListener != null) {
-			downloadFileRequestBuilder.addTransferListener(new HpcS3ProgressListener(progressListener,
-					"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId()));
+			listener = new HpcS3ProgressListener(progressListener,
+					"download from " + archiveLocation.getFileContainerId() + ":" + archiveLocation.getFileId());
+			downloadFileRequestBuilder.addTransferListener(listener);
 		}
 
 		FileDownload downloadFile = null;
@@ -1316,6 +1318,10 @@ String continuationToken = listObjectsResponse.nextContinuationToken();
 				downloadFile.completionFuture().join();
 			} else {
 				progressListener.setCompletableFuture(downloadFile.completionFuture());
+
+				// The AWS SDK doesn't call transferComplete() for this download w/ a multipart
+				// enabled Netty-NIO S3 client, so report it off the completion future as well.
+				listener.registerCompletion(downloadFile);
 			}
 
 		} catch (CompletionException | SdkException e) {
