@@ -2,7 +2,9 @@ $kind: http-request
 name: Download via Pre-Signed URL
 method: GET
 url: '{{presignedDownloadUrl}}'
-order: 3599878279079720
+auth:
+  type: noauth
+order: 5000
 headers:
   - key: Accept
     value: '*/*'
