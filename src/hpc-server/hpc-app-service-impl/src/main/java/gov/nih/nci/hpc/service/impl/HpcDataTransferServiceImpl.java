@@ -1209,10 +1209,8 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 					try {
 						logger.info("Temporary Archive Link: {} being deleted", path);
 						HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
-						if(isValidFileLocation(archiveLinkLocation)) {
-							temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
-									configurationId, s3ConfigurationId);
-						}
+						temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
+								configurationId, s3ConfigurationId);
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: "
 								+ path + ". Error: " + e.getMessage(), e);
