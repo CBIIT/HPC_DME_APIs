@@ -2784,16 +2784,16 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			logger.info("External collection download task: [taskId={}] - started processing [{}]",
 					downloadTask.getId(), downloadTask.getType());
 
-			// Obtain the list of files from S3 that need to be registered and downloaded in the collection
-			HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
-					.getFilesFromExternalSource(downloadTask);
-
 			List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 			// Initiate a download task for each data object in the collection.
 			// The download task for a single data object in an external archive will first register
 			// an archive link before initiating the download.
 			if (HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())
 					|| HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
+				// Obtain the list of files from S3 that need to be registered and downloaded in the collection
+				HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
+						.getFilesFromExternalSource(downloadTask);
+
 				for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
 					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
 							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
