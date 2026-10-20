@@ -1,0 +1,42 @@
+$kind: http-request
+url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}/download"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "globusDownloadDestination": {
+        "destinationLocation": {
+          "fileContainerId": "a08f9b7e-c4e2-11e9-98e0-0a63aa6b37da",
+          "fileId": "{{fileId}}"
+        }
+      }
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.collectionVariables.set('lastGlobusDownloadFileId', pm.variables.get('fileId'));
+
+      const res = pm.response.json();
+      if (res.taskId) {
+        pm.collectionVariables.set('lastGlobusDownloadTaskId', res.taskId);
+      }
+    language: text/javascript
+  - type: beforeRequest
+    code: |-
+      pm.variables.set('path', pm.collectionVariables.get('lastSyncUploadPath'));
+
+      const now = new Date();
+      const ts = (now.getMonth()+1).toString().padStart(2,'0') + '-' +
+                 now.getDate().toString().padStart(2,'0') + '-' +
+                 now.getFullYear() + '-' +
+                 now.getHours().toString().padStart(2,'0') + '-' +
+                 now.getMinutes().toString().padStart(2,'0') + '-' +
+                 now.getSeconds().toString().padStart(2,'0');
+
+      pm.variables.set('fileId', '/file-download-' + ts);
+    language: text/javascript
+order: 7926

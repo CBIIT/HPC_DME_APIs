@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Globus Download Task Status
+method: GET
+url: '{{baseUrl}}{{basePath}}/dataObject/download/{{lastGlobusDownloadTaskId}}'
+order: 8000
+headers:
+  - key: Accept
+    value: 'application/json'

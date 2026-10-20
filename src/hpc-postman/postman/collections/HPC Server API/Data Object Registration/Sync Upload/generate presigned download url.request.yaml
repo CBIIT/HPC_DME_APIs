@@ -4,7 +4,8 @@ method: POST
 url: "{{baseUrl}}{{basePath}}/dataObject/{{path}}/generateDownloadRequestURL"
 scripts:
   - type: beforeRequest
-    code: "pm.variables.set('path', pm.collectionVariables.get('lastSyncUploadPath')); "
+    code: "pm.variables.set('path',
+      pm.collectionVariables.get('lastSyncUploadPath')); "
     language: text/javascript
   - type: afterResponse
     code: |-
@@ -14,7 +15,7 @@ scripts:
           pm.collectionVariables.set('presignedDownloadUrl', url);
       }
     language: text/javascript
-order: 3599878279079710
+order: 4000
 headers:
   Content-Type: application/json
   Accept: application/json
