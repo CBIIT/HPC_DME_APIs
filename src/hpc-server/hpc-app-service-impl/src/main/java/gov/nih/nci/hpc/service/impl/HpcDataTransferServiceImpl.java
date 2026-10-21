@@ -1209,6 +1209,14 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
 				logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
 
+				//Temp code begin
+				logger.info("2174: printing all tasks:");
+				for (HpcDataObjectDownloadTask d : getDataObjectDownloadTasks()) {
+					logger.info("Active download task: {}", gson.toJson(d));
+				}
+				logger.info("2174:numberOfActiveExternalDownloadTasksForPath= {}", numberOfActiveExternalDownloadTasksForPath);
+				//Temp code end
+
 				if (numberOfActiveExternalDownloadTasksForPath == 0) {
 					try {
 						logger.info("Temporary Archive Link: {} being deleted", path);
