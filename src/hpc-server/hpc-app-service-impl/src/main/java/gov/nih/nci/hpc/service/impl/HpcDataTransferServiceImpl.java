@@ -1206,7 +1206,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 				 * If multiple download tasks are active for the same path, deletion is deferred
 				 * until the final task completes to prevent data corruption.
 				 */
-				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
+				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path.replaceFirst(downloadArchiveLinkBasePath, ""));
 				logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
 
 				//Temp code begin
@@ -1214,7 +1214,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 				for (HpcDataObjectDownloadTask d : getDataObjectDownloadTasks()) {
 					logger.info("Active download task: {}", gson.toJson(d));
 				}
-				logger.info("2174:numberOfActiveExternalDownloadTasksForPath= {}", numberOfActiveExternalDownloadTasksForPath);
+				logger.info("2174:numberOfActiveExternalDownloadTasksForPath {}", numberOfActiveExternalDownloadTasksForPath);
 				//Temp code end
 
 				if (numberOfActiveExternalDownloadTasksForPath == 0) {
