@@ -1202,7 +1202,8 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 				 * If multiple download tasks are active for the same path, deletion is deferred
 				 * until the final task completes to prevent data corruption.
 				 */
-				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
+				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path.replaceFirst(downloadArchiveLinkBasePath, ""));
+
 				logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
 
 				if (numberOfActiveExternalDownloadTasksForPath == 0) {
