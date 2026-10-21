@@ -122,6 +122,7 @@ import gov.nih.nci.hpc.service.HpcNotificationService;
 import gov.nih.nci.hpc.service.HpcSecurityService;
 import gov.nih.nci.hpc.util.HpcExternalArchiveLinkLockManager;
 import gov.nih.nci.hpc.util.HpcUtil;
+import com.google.gson.Gson;
 
 
 /**
@@ -264,6 +265,9 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 	// The logger instance.
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+	// Gson instance for JSON serialization
+	private final Gson gson = new Gson();
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -1520,6 +1524,9 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 			}
 			// Set the first hop transfer to be from S3 Archive to the DME server's Globus
 			// mounted file system.
+			logger.info("2174: Setting archive location for 2-hop download request: {}", gson.toJson(downloadRequest));
+			logger.info("2174: Setting archive location for 2-hop downloadask: {}", gson.toJson(downloadTask));
+
 			if (downloadTask.getExternalArchiveFlag()){
 				downloadRequest.setArchiveLocation(getArchiveLocation(downloadArchiveLinkBasePath + downloadRequest.getPath()));
 			} else {
