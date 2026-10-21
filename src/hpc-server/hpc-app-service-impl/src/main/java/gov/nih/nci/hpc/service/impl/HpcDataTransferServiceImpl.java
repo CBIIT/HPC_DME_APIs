@@ -1212,6 +1212,8 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 						if(isValidFileLocation(archiveLinkLocation)) {
 							temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
 									configurationId, s3ConfigurationId);
+						} else {
+							logger.warn("The Archive Link does not exist for path: {}. Delete operation for the Archive Link is skipped.", path);
 						}
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: "
