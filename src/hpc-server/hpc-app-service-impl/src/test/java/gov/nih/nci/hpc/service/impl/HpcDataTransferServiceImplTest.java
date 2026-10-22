@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -689,6 +691,44 @@ public class HpcDataTransferServiceImplTest {
 		// Assert – zero-user guard treats the user as eligible; execution proceeds.
 		assertFalse(result);
 		verify(systemAccountLocatorMock).getSystemAccount(any(HpcDataTransferType.class), any());
+	}
+
+	/*
+	 * Test scenario: Reset an in-process collection download task.
+	 * Expected: Started data object downloads are canceled before the in-process indicator is cleared.
+	 */
+	@Test
+	public void testResetCollectionDownloadTaskInProgressCancelsDataObjectDownloadsFirst() throws HpcException {
+		when(dataDownloadDAOMock.getDataObjectDownloadTaskByCollectionDownloadTaskId("collection-task-id"))
+				.thenReturn(Collections.emptyList());
+
+		dataTransferService.resetCollectionDownloadTaskInProgress("collection-task-id");
+
+		InOrder inOrder = Mockito.inOrder(dataDownloadDAOMock);
+		inOrder.verify(dataDownloadDAOMock).getDataObjectDownloadTaskByCollectionDownloadTaskId("collection-task-id");
+		inOrder.verify(dataDownloadDAOMock).resetCollectionDownloadTaskInProcess("collection-task-id");
+	}
+
+	/*
+	 * Test scenario: Reset an in-process collection download task, and canceling a started data object download fails.
+	 * Expected: The exception is raised, and the in-process indicator is not cleared, so the task is not retried while
+	 * its data object downloads may still be active.
+	 */
+	@Test
+	public void testResetCollectionDownloadTaskInProgressCancelFailureKeepsInProcess() throws HpcException {
+		HpcDataObjectDownloadTask dataObjectDownloadTask = buildGlobusDownloadTask("userA", "config1");
+		Calendar created = Calendar.getInstance();
+		created.add(Calendar.MINUTE, -1);
+		dataObjectDownloadTask.setCreated(created);
+		when(dataDownloadDAOMock.getDataObjectDownloadTaskByCollectionDownloadTaskId("collection-task-id"))
+				.thenReturn(Collections.singletonList(dataObjectDownloadTask));
+		when(dataManagementServiceMock.getDataManagementConfiguration("config1"))
+				.thenThrow(new IllegalStateException("Data management configuration not found"));
+
+		assertThrows(IllegalStateException.class,
+				() -> dataTransferService.resetCollectionDownloadTaskInProgress("collection-task-id"));
+
+		verify(dataDownloadDAOMock, never()).resetCollectionDownloadTaskInProcess(any());
 	}
 
 	/**
