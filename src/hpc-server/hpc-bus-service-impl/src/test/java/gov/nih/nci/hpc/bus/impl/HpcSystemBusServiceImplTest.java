@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
@@ -16,6 +17,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollection;
+import gov.nih.nci.hpc.domain.datamanagement.HpcCollectionListingEntry;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
@@ -248,6 +251,77 @@ class HpcSystemBusServiceImplTest {
             anyBoolean(), any(), anyBoolean());
     }
 
+        @Test
+        void testProcessInternalDownloadTaskDownloadsFilesInCollection() throws Exception {
+        HpcCollectionDownloadTask downloadTask = collectionDownloadTask("internal-task-id", "/collection/root");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION);
+        HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
+        when(metadataService.getCollectionSystemGeneratedMetadata("/collection/root")).thenReturn(metadata);
+        when(dataManagementService.getFullCollection("/collection/root", null))
+            .thenReturn(collectionWithFiles("/collection/root/file-one", "/collection/root/file-two"));
+        stubObjectDownloads(downloadTask);
+
+        List<HpcCollectionDownloadTaskItem> items = invokeProcessInternalDownloadTask(downloadTask);
+
+        assertEquals(List.of("/collection/root/file-one", "/collection/root/file-two"),
+            items.stream().map(HpcCollectionDownloadTaskItem::getPath).toList());
+        verify(dataManagementService).getFullCollection("/collection/root", null);
+        verify(dataManagementBusService, times(2)).downloadDataObject(anyString(), any(), isNull(),
+            eq(downloadTask.getUserId()), isNull(), eq(false), eq(downloadTask.getId()), eq(false));
+        }
+
+        @Test
+        void testProcessInternalDownloadTaskDownloadsExplicitDataObjectPaths() throws Exception {
+        HpcCollectionDownloadTask downloadTask = collectionDownloadTask("data-object-task-id", "/objects");
+        downloadTask.setType(HpcDownloadTaskType.DATA_OBJECT_LIST);
+        downloadTask.getDataObjectPaths().addAll(List.of("/objects/one", "/objects/two"));
+        stubObjectDownloads(downloadTask);
+
+        List<HpcCollectionDownloadTaskItem> items = invokeProcessInternalDownloadTask(downloadTask);
+
+        assertEquals(List.of("/objects/one", "/objects/two"),
+            items.stream().map(HpcCollectionDownloadTaskItem::getPath).toList());
+        verify(dataManagementBusService, times(2)).downloadDataObject(anyString(), any(), isNull(),
+            eq(downloadTask.getUserId()), isNull(), eq(false), eq(downloadTask.getId()), eq(false));
+        verify(metadataService, never()).getCollectionSystemGeneratedMetadata(anyString());
+        }
+
+        @Test
+        void testProcessInternalDownloadTaskAggregatesCollectionListAndSetsCollectionPaths() throws Exception {
+        HpcCollectionDownloadTask downloadTask = collectionDownloadTask("collection-list-task-id", "/collections");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
+        downloadTask.getCollectionPaths().addAll(List.of("/collections/one", "/collections/two"));
+        HpcSystemGeneratedMetadata metadata = new HpcSystemGeneratedMetadata();
+        when(metadataService.getCollectionSystemGeneratedMetadata(anyString())).thenReturn(metadata);
+        when(dataManagementService.getFullCollection("/collections/one", null))
+            .thenReturn(collectionWithFiles("/collections/one/file"));
+        when(dataManagementService.getFullCollection("/collections/two", null))
+            .thenReturn(collectionWithFiles("/collections/two/file"));
+        stubObjectDownloads(downloadTask);
+
+        List<HpcCollectionDownloadTaskItem> items = invokeProcessInternalDownloadTask(downloadTask);
+
+        assertEquals(List.of("/collections/one/file", "/collections/two/file"),
+            items.stream().map(HpcCollectionDownloadTaskItem::getPath).toList());
+        assertEquals(List.of("/collections/one", "/collections/two"),
+            items.stream().map(HpcCollectionDownloadTaskItem::getCollectionPath).toList());
+        }
+
+        @Test
+        void testProcessInternalDownloadTaskReturnsEmptyWhenCollectionIsMissing() throws Exception {
+        HpcCollectionDownloadTask downloadTask = collectionDownloadTask("missing-collection-task-id", "/missing");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION);
+        when(metadataService.getCollectionSystemGeneratedMetadata("/missing"))
+            .thenReturn(new HpcSystemGeneratedMetadata());
+        when(dataManagementService.getFullCollection("/missing", null)).thenReturn(null);
+
+        List<HpcCollectionDownloadTaskItem> items = invokeProcessInternalDownloadTask(downloadTask);
+
+        assertTrue(items.isEmpty());
+        verify(dataManagementBusService, never()).downloadDataObject(anyString(), any(), any(), any(), any(),
+            anyBoolean(), any(), anyBoolean());
+        }
+
     /*
      * Test Case: Executing a collection download task as the system account fails before the task is processed.
      * Expected: The task in-process indicator is cleared, so a later run retries it.
@@ -434,6 +508,47 @@ class HpcSystemBusServiceImplTest {
         HpcDataObjectRegistrationItemDTO item = new HpcDataObjectRegistrationItemDTO();
         item.setPath(path);
         return item;
+    }
+
+    private HpcCollection collectionWithFiles(String... paths) {
+        HpcCollection collection = new HpcCollection();
+        for (String path : paths) {
+            HpcCollectionListingEntry entry = new HpcCollectionListingEntry();
+            entry.setPath(path);
+            collection.getDataObjects().add(entry);
+        }
+        return collection;
+    }
+
+    private void stubObjectDownloads(HpcCollectionDownloadTask downloadTask) throws HpcException {
+        HpcDataObjectDownloadResponseDTO response = new HpcDataObjectDownloadResponseDTO();
+        response.setTaskId("object-download-task-id");
+        when(dataManagementBusService.downloadDataObject(anyString(), any(), isNull(), eq(downloadTask.getUserId()),
+                isNull(), eq(false), eq(downloadTask.getId()), eq(false))).thenReturn(response);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<HpcCollectionDownloadTaskItem> invokeProcessInternalDownloadTask(HpcCollectionDownloadTask task)
+            throws Exception {
+        Class<?> breakerClass = null;
+        for (Class<?> nestedClass : HpcSystemBusServiceImpl.class.getDeclaredClasses()) {
+            if (nestedClass.getSimpleName().equals("HpcCollectionDownloadBreaker")) {
+                breakerClass = nestedClass;
+                break;
+            }
+        }
+        if (breakerClass == null) {
+            throw new IllegalStateException("Collection download breaker class was not found");
+        }
+        java.lang.reflect.Constructor<?> breakerConstructor = breakerClass
+                .getDeclaredConstructor(HpcSystemBusServiceImpl.class, String.class);
+        breakerConstructor.setAccessible(true);
+        Object breaker = breakerConstructor.newInstance(service, task.getId());
+
+        Method method = HpcSystemBusServiceImpl.class.getDeclaredMethod("processInternalDownloadTask",
+            HpcCollectionDownloadTask.class, breakerClass, Set.class);
+        method.setAccessible(true);
+        return (List<HpcCollectionDownloadTaskItem>) method.invoke(service, task, breaker, Set.of());
     }
 
     @SuppressWarnings("unchecked")
