@@ -40,12 +40,14 @@ public class HpcAutoTieringDAOImpl implements HpcAutoTieringDAO {
 	// Constants
 	// ---------------------------------------------------------------------//
 
-	// SQL Queries.
+	// SQL Queries. Files with an active data object migration task are excluded to avoid duplicate migrations.
 	private static final String GET_FILES_FOR_AUTO_TIERING_SQL =
-			"SELECT PATH, DATA_SIZE FROM HPC_DATA_OBJECT_LAST_ACCESS_MV " +
-			"WHERE PATH LIKE ? AND S3_ARCHIVE_CONFIGURATION_ID != ? " +
-			"AND EFFECTIVE_ACCESSED_DATE < current_timestamp - INTERVAL '{inactivityMonths}' MONTH " +
-			"AND UPLOADED_DATE < current_timestamp - INTERVAL '{archivedMonths}' MONTH";
+			"SELECT MV.PATH, MV.DATA_SIZE FROM HPC_DATA_OBJECT_LAST_ACCESS_MV MV " +
+			"WHERE MV.PATH LIKE ? AND MV.S3_ARCHIVE_CONFIGURATION_ID != ? " +
+			"AND MV.EFFECTIVE_ACCESSED_DATE < current_timestamp - INTERVAL '{inactivityMonths}' MONTH " +
+			"AND MV.UPLOADED_DATE < current_timestamp - INTERVAL '{archivedMonths}' MONTH " +
+			"AND NOT EXISTS (SELECT 1 FROM HPC_DATA_MIGRATION_TASK T " +
+			"WHERE T.PATH = MV.PATH AND T.TYPE = 'DATA_OBJECT')";
 
 	// ---------------------------------------------------------------------//
 	// Instance members
