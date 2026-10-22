@@ -307,6 +307,15 @@ public interface HpcDataMigrationService {
                                                    String toS3ArchiveConfigurationId, String userId) throws HpcException;
 
     /**
+     * Get an active (received or in-progress) bulk auto-tiering task for a data management configuration.
+     *
+     * @param configurationId The data management configuration ID.
+     * @return An active bulk auto-tiering task, or null if none is active.
+     * @throws HpcException on service failure.
+     */
+    HpcDataMigrationTask getActiveBulkAutoTieringTask(String configurationId) throws HpcException;
+
+    /**
      * Search for files in external or internal archive that are candidates for auto-tiering migration.
      * The search criteria is based on S3 archive configuration.
      *
