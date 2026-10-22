@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,15 +18,24 @@ import org.mockito.MockitoAnnotations;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
+import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadTaskType;
 import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
+import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
 import gov.nih.nci.hpc.exception.HpcException;
+import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
 import gov.nih.nci.hpc.service.HpcDataTransferService;
+import gov.nih.nci.hpc.service.HpcEventService;
 import gov.nih.nci.hpc.service.HpcMetadataService;
 import gov.nih.nci.hpc.service.HpcNotificationService;
+import gov.nih.nci.hpc.service.HpcSecurityService;
+import gov.nih.nci.hpc.service.HpcSystemAccountFunctionNoReturn;
 
 class HpcSystemBusServiceImplTest {
 
@@ -35,6 +48,12 @@ class HpcSystemBusServiceImplTest {
     private HpcDataManagementService dataManagementService;
     @Mock
     private HpcNotificationService notificationService;
+    @Mock
+    private HpcSecurityService securityService;
+    @Mock
+    private HpcDataManagementSecurityService dataManagementSecurityService;
+    @Mock
+    private HpcEventService eventService;
 
     // The bus service under test.
     @InjectMocks
@@ -180,6 +199,198 @@ class HpcSystemBusServiceImplTest {
 
         assertEquals(55L, item.getTask().getBytesTransferred());
         assertEquals(6, item.getTask().getPercentComplete());
+    }
+
+    /*
+     * Test Case: Executing a collection download task as the system account fails before the task is processed.
+     * Expected: The task in-process indicator is cleared, so a later run retries it.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_SystemAccountFailureClearsInProcess() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = receivedCollectionDownloadTask();
+        service.collectionDownloadTaskExecutor = Runnable::run;
+        doThrow(new HpcException("System Data Management Account not configured", HpcErrorType.UNEXPECTED_ERROR))
+                .when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
+    }
+
+    /*
+     * Test Case: Executing as the system account fails after the collection download task was processed (e.g. on
+     * data management disconnect).
+     * Expected: The task in-process indicator is not cleared.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_FailureAfterProcessingDoesNotClearInProcess() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = receivedCollectionDownloadTask();
+        service.collectionDownloadTaskExecutor = Runnable::run;
+        doAnswer(invocation -> {
+            ((HpcSystemAccountFunctionNoReturn) invocation.getArgument(1)).execute();
+            throw new IllegalStateException("Failed to disconnect from data management");
+        }).when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
+
+        service.processCollectionDownloadTasks();
+
+        // The task has no collections to download, so it was processed (completed as failed).
+        verify(dataTransferService).completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED),
+                any(), any());
+        verify(dataTransferService, never()).setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
+        verify(dataTransferService, never()).resetCollectionDownloadTaskInProgress(any());
+    }
+
+    /*
+     * Test Case: Processing a collection download task fails, and completing it as failed also fails (e.g. DB error).
+     * Expected: The task is reset (in-process indicator cleared, started data object downloads canceled), so a later
+     * run retries it.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_CompletionFailureResetsInProcess() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = receivedCollectionDownloadTask();
+        service.collectionDownloadTaskExecutor = Runnable::run;
+        executeAsSystemAccount();
+        doThrow(new HpcException("DB error", HpcErrorType.DATABASE_ERROR)).when(dataTransferService)
+                .completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED), any(), any());
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService).resetCollectionDownloadTaskInProgress(downloadTask.getId());
+    }
+
+    /*
+     * Test Case: Processing a collection download task fails, and completing it as failed throws a runtime exception.
+     * Expected: The task is reset, so a later run retries it.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_CompletionRuntimeFailureResetsInProcess() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = receivedCollectionDownloadTask();
+        service.collectionDownloadTaskExecutor = Runnable::run;
+        executeAsSystemAccount();
+        doThrow(new IllegalStateException("Unexpected failure")).when(dataTransferService)
+                .completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED), any(), any());
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService).resetCollectionDownloadTaskInProgress(downloadTask.getId());
+    }
+
+    /*
+     * Test Case: The collection download task executor rejects the task (e.g. on shutdown).
+     * Expected: The task in-process indicator is cleared, so a later run retries it.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_RejectedExecutionClearsInProcess() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = receivedCollectionDownloadTask();
+        service.collectionDownloadTaskExecutor = command -> {
+            throw new RejectedExecutionException("Executor is shut down");
+        };
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(downloadTask.getId(), true);
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(downloadTask.getId(), false);
+        verify(securityService, never()).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
+    }
+
+    /*
+     * Test Case: Processing a collection download task fails before the task is marked in-process.
+     * Expected: The task in-process indicator is not changed.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_FailureBeforeInProcessDoesNotChangeIt() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = receivedCollectionDownloadTask();
+        when(dataTransferService.getCollectionDownloadTasksCountByUserAndPath(downloadTask.getUserId(),
+                downloadTask.getPath(), true)).thenThrow(new HpcException("DB error", HpcErrorType.DATABASE_ERROR));
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService, never()).setCollectionDownloadTaskInProgress(any(), anyBoolean());
+    }
+
+    /*
+     * Test Case: The executor rejects the first of two received collection download tasks.
+     * Expected: The first task in-process indicator is cleared, and the second task is still marked in-process and
+     * submitted for processing.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_RejectedTaskDoesNotStopBatch() throws HpcException {
+        HpcCollectionDownloadTask rejectedTask = collectionDownloadTask("rejected-task-id", "/collection/rejected");
+        HpcCollectionDownloadTask submittedTask = collectionDownloadTask("submitted-task-id", "/collection/submitted");
+        when(dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false))
+                .thenReturn(List.of(rejectedTask, submittedTask));
+        List<Runnable> submitted = new ArrayList<>();
+        AtomicInteger executions = new AtomicInteger();
+        service.collectionDownloadTaskExecutor = command -> {
+            if (executions.getAndIncrement() == 0) {
+                throw new RejectedExecutionException("Executor queue is full");
+            }
+            submitted.add(command);
+        };
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(rejectedTask.getId(), true);
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(rejectedTask.getId(), false);
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(submittedTask.getId(), true);
+        verify(dataTransferService, never()).setCollectionDownloadTaskInProgress(submittedTask.getId(), false);
+        assertEquals(1, submitted.size());
+    }
+
+    /*
+     * Test Case: Processing the first of two received collection download tasks fails before it is marked in-process.
+     * Expected: The second task is still marked in-process and submitted for processing.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_FailureBeforeInProcessDoesNotStopBatch() throws HpcException {
+        HpcCollectionDownloadTask failedTask = collectionDownloadTask("failed-task-id", "/collection/failed");
+        HpcCollectionDownloadTask submittedTask = collectionDownloadTask("submitted-task-id", "/collection/submitted");
+        when(dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false))
+                .thenReturn(List.of(failedTask, submittedTask));
+        when(dataTransferService.getCollectionDownloadTasksCountByUserAndPath(failedTask.getUserId(),
+                failedTask.getPath(), true)).thenThrow(new HpcException("DB error", HpcErrorType.DATABASE_ERROR));
+        List<Runnable> submitted = new ArrayList<>();
+        service.collectionDownloadTaskExecutor = submitted::add;
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService, never()).setCollectionDownloadTaskInProgress(eq(failedTask.getId()), anyBoolean());
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(submittedTask.getId(), true);
+        assertEquals(1, submitted.size());
+    }
+
+    /**
+     * Mock a single received collection download task (w/o collections to download) to be processed.
+     */
+    private HpcCollectionDownloadTask receivedCollectionDownloadTask() throws HpcException {
+        HpcCollectionDownloadTask downloadTask = collectionDownloadTask("collection-download-task-id",
+                "/collection/path");
+        when(dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false))
+                .thenReturn(List.of(downloadTask));
+        return downloadTask;
+    }
+
+    /**
+     * Build a collection download task (w/o collections to download).
+     */
+    private HpcCollectionDownloadTask collectionDownloadTask(String id, String path) {
+        HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+        downloadTask.setId(id);
+        downloadTask.setUserId("user-id");
+        downloadTask.setPath(path);
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
+        return downloadTask;
+    }
+
+    /**
+     * Mock executing as the system account to run the given function.
+     */
+    private void executeAsSystemAccount() throws HpcException {
+        doAnswer(invocation -> {
+            ((HpcSystemAccountFunctionNoReturn) invocation.getArgument(1)).execute();
+            return null;
+        }).when(securityService).executeAsSystemAccount(any(), any(HpcSystemAccountFunctionNoReturn.class));
     }
      
 }
