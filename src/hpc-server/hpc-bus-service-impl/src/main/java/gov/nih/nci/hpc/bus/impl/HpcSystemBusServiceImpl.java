@@ -902,16 +902,19 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 										downloadTask.getId(), downloadTask.getType());
 
 							} catch (HpcException | RuntimeException e) {
-								logger.error("Failed to process a collection download: " + downloadTask.getId(), e);
+								logger.error("collection download task: [taskId={}] - Failed to process",
+										downloadTask.getId(), e);
 								try {
 									completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED,
 											e instanceof HpcException ? e.getMessage() : e.toString());
 
 								} catch (HpcException | RuntimeException ex) {
-									logger.error("Failed to complete collection download as failed {}",
+									logger.error(
+											"collection download task: [taskId={}] - Failed to complete as failed",
 											downloadTask.getId(), ex);
 									// The task may still be in-process. Reset it (canceling any data object
-									// downloads it started), so it is retried.
+									// downloads it started), so it is retried. If canceling fails, the task
+									// stays in-process until restarted.
 									resetCollectionDownloadTaskInProcess(downloadTask.getId());
 								}
 							}
@@ -2720,8 +2723,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 
 	/**
 	 * Reset a collection download task that failed to complete, so a later run can
-	 * retry it. Data object downloads that got started for it are canceled. A
-	 * failure is logged rather than raised.
+	 * retry it. Data object downloads that got started for it are canceled first. A
+	 * failure is logged rather than raised, and leaves the task in-process (it is
+	 * reset on the next restart), so it is not retried while downloads may be active.
 	 *
 	 * @param taskId The collection download task ID.
 	 */

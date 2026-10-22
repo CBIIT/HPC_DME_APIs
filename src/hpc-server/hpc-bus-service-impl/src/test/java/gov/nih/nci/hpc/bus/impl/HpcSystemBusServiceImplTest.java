@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -307,17 +309,77 @@ class HpcSystemBusServiceImplTest {
         verify(dataTransferService, never()).setCollectionDownloadTaskInProgress(any(), anyBoolean());
     }
 
+    /*
+     * Test Case: The executor rejects the first of two received collection download tasks.
+     * Expected: The first task in-process indicator is cleared, and the second task is still marked in-process and
+     * submitted for processing.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_RejectedTaskDoesNotStopBatch() throws HpcException {
+        HpcCollectionDownloadTask rejectedTask = collectionDownloadTask("rejected-task-id", "/collection/rejected");
+        HpcCollectionDownloadTask submittedTask = collectionDownloadTask("submitted-task-id", "/collection/submitted");
+        when(dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false))
+                .thenReturn(List.of(rejectedTask, submittedTask));
+        List<Runnable> submitted = new ArrayList<>();
+        AtomicInteger executions = new AtomicInteger();
+        service.collectionDownloadTaskExecutor = command -> {
+            if (executions.getAndIncrement() == 0) {
+                throw new RejectedExecutionException("Executor queue is full");
+            }
+            submitted.add(command);
+        };
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(rejectedTask.getId(), true);
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(rejectedTask.getId(), false);
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(submittedTask.getId(), true);
+        verify(dataTransferService, never()).setCollectionDownloadTaskInProgress(submittedTask.getId(), false);
+        assertEquals(1, submitted.size());
+    }
+
+    /*
+     * Test Case: Processing the first of two received collection download tasks fails before it is marked in-process.
+     * Expected: The second task is still marked in-process and submitted for processing.
+     */
+    @Test
+    void testProcessCollectionDownloadTasks_FailureBeforeInProcessDoesNotStopBatch() throws HpcException {
+        HpcCollectionDownloadTask failedTask = collectionDownloadTask("failed-task-id", "/collection/failed");
+        HpcCollectionDownloadTask submittedTask = collectionDownloadTask("submitted-task-id", "/collection/submitted");
+        when(dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false))
+                .thenReturn(List.of(failedTask, submittedTask));
+        when(dataTransferService.getCollectionDownloadTasksCountByUserAndPath(failedTask.getUserId(),
+                failedTask.getPath(), true)).thenThrow(new HpcException("DB error", HpcErrorType.DATABASE_ERROR));
+        List<Runnable> submitted = new ArrayList<>();
+        service.collectionDownloadTaskExecutor = submitted::add;
+
+        service.processCollectionDownloadTasks();
+
+        verify(dataTransferService, never()).setCollectionDownloadTaskInProgress(eq(failedTask.getId()), anyBoolean());
+        verify(dataTransferService).setCollectionDownloadTaskInProgress(submittedTask.getId(), true);
+        assertEquals(1, submitted.size());
+    }
+
     /**
      * Mock a single received collection download task (w/o collections to download) to be processed.
      */
     private HpcCollectionDownloadTask receivedCollectionDownloadTask() throws HpcException {
-        HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
-        downloadTask.setId("collection-download-task-id");
-        downloadTask.setUserId("user-id");
-        downloadTask.setPath("/collection/path");
-        downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
+        HpcCollectionDownloadTask downloadTask = collectionDownloadTask("collection-download-task-id",
+                "/collection/path");
         when(dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false))
                 .thenReturn(List.of(downloadTask));
+        return downloadTask;
+    }
+
+    /**
+     * Build a collection download task (w/o collections to download).
+     */
+    private HpcCollectionDownloadTask collectionDownloadTask(String id, String path) {
+        HpcCollectionDownloadTask downloadTask = new HpcCollectionDownloadTask();
+        downloadTask.setId(id);
+        downloadTask.setUserId("user-id");
+        downloadTask.setPath(path);
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
         return downloadTask;
     }
 
