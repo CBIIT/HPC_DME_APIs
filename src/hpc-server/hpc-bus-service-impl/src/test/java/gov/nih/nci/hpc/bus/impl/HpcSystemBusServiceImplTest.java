@@ -15,10 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import gov.nih.nci.hpc.bus.HpcDataManagementBusService;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObject;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcDataObjectRegistrationTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskItem;
 import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTaskStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDataTransferUploadStatus;
 import gov.nih.nci.hpc.domain.datatransfer.HpcDownloadResult;
@@ -27,6 +29,9 @@ import gov.nih.nci.hpc.domain.datatransfer.HpcFileLocation;
 import gov.nih.nci.hpc.domain.error.HpcErrorType;
 import gov.nih.nci.hpc.domain.model.HpcBulkDataObjectRegistrationItem;
 import gov.nih.nci.hpc.domain.model.HpcSystemGeneratedMetadata;
+import gov.nih.nci.hpc.dto.datamanagement.HpcDataObjectDownloadResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcBulkDataObjectRegistrationResponseDTO;
+import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationItemDTO;
 import gov.nih.nci.hpc.exception.HpcException;
 import gov.nih.nci.hpc.service.HpcDataManagementSecurityService;
 import gov.nih.nci.hpc.service.HpcDataManagementService;
@@ -46,6 +51,8 @@ class HpcSystemBusServiceImplTest {
     private HpcDataTransferService dataTransferService;
     @Mock
     private HpcDataManagementService dataManagementService;
+    @Mock
+    private HpcDataManagementBusService dataManagementBusService;
     @Mock
     private HpcNotificationService notificationService;
     @Mock
@@ -199,6 +206,46 @@ class HpcSystemBusServiceImplTest {
 
         assertEquals(55L, item.getTask().getBytesTransferred());
         assertEquals(6, item.getTask().getPercentComplete());
+    }
+
+    @Test
+    void testProcessExternalDownloadTaskCreatesDownloadItemsForReturnedFiles() throws Exception {
+        HpcCollectionDownloadTask downloadTask = collectionDownloadTask("external-task-id", "/external/collection");
+        downloadTask.setExternalArchiveFlag(true);
+        HpcBulkDataObjectRegistrationResponseDTO registrationResponse = new HpcBulkDataObjectRegistrationResponseDTO();
+        registrationResponse.getDataObjectRegistrationItems().add(registrationItem("/external/file-one"));
+        registrationResponse.getDataObjectRegistrationItems().add(registrationItem("/external/file-two"));
+        when(dataManagementBusService.getFilesFromExternalSource(downloadTask)).thenReturn(registrationResponse);
+
+        HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
+        downloadResponse.setTaskId("download-task-id");
+        when(dataManagementBusService.downloadDataObject(anyString(), any(), isNull(), eq(downloadTask.getUserId()),
+            isNull(), eq(false), eq(downloadTask.getId()), eq(true))).thenReturn(downloadResponse);
+
+        List<HpcCollectionDownloadTaskItem> items = invokeProcessExternalDownloadTask(downloadTask);
+
+        assertEquals(2, items.size());
+        assertEquals("/external/file-one", items.get(0).getPath());
+        assertEquals("/external/file-two", items.get(1).getPath());
+        assertEquals("download-task-id", items.get(0).getDataObjectDownloadTaskId());
+        verify(dataManagementBusService, times(2)).downloadDataObject(anyString(), any(), isNull(),
+            eq(downloadTask.getUserId()), isNull(), eq(false), eq(downloadTask.getId()), eq(true));
+    }
+
+    @Test
+    void testProcessExternalDownloadTaskCompletesFailedWhenListingFilesFails() throws Exception {
+        HpcCollectionDownloadTask downloadTask = collectionDownloadTask("external-task-id", "/external/collection");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION);
+        when(dataManagementBusService.getFilesFromExternalSource(downloadTask))
+            .thenThrow(new HpcException("External source unavailable", HpcErrorType.DATA_TRANSFER_ERROR));
+
+        List<HpcCollectionDownloadTaskItem> items = invokeProcessExternalDownloadTask(downloadTask);
+
+        assertTrue(items.isEmpty());
+        verify(dataTransferService).completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED),
+            eq("External source unavailable"), any());
+        verify(dataManagementBusService, never()).downloadDataObject(anyString(), any(), any(), any(), any(),
+            anyBoolean(), any(), anyBoolean());
     }
 
     /*
@@ -381,6 +428,21 @@ class HpcSystemBusServiceImplTest {
         downloadTask.setPath(path);
         downloadTask.setType(HpcDownloadTaskType.COLLECTION_LIST);
         return downloadTask;
+    }
+
+    private HpcDataObjectRegistrationItemDTO registrationItem(String path) {
+        HpcDataObjectRegistrationItemDTO item = new HpcDataObjectRegistrationItemDTO();
+        item.setPath(path);
+        return item;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<HpcCollectionDownloadTaskItem> invokeProcessExternalDownloadTask(HpcCollectionDownloadTask task)
+            throws Exception {
+        Method method = HpcSystemBusServiceImpl.class.getDeclaredMethod("processExternalDownloadTask",
+                HpcCollectionDownloadTask.class);
+        method.setAccessible(true);
+        return (List<HpcCollectionDownloadTaskItem>) method.invoke(service, task);
     }
 
     /**
