@@ -2122,15 +2122,17 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 	@Override
 	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException {
-		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
-
 		// Cancel any data object that got started, as the collection download will get
-		// re-processed.
+		// re-processed. This is done before clearing the in-process indicator, so the
+		// collection download task is not retried while its data object downloads are
+		// still active. If a cancellation fails, the task stays in-process.
 		for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataDownloadDAO
 				.getDataObjectDownloadTaskByCollectionDownloadTaskId(taskId)) {
 			completeDataObjectDownloadTask(dataObjectDownloadTask, HpcDownloadResult.CANCELED,
 					"Collection download restarted", Calendar.getInstance(), 0);
 		}
+
+		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
 	}
 
 	@Override
