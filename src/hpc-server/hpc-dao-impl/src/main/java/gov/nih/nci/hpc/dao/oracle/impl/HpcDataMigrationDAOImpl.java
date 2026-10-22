@@ -116,6 +116,8 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 	private static final String GET_UNASSIGNED_DATA_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK where STATUS in ('RECEIVED', 'AUTO_TIERING_RECEIVED') and SERVER_ID is null";
 
+	private static final String GET_ACTIVE_DATA_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK where TYPE = ? and CONFIGURATION_ID = ? and STATUS in ('RECEIVED', 'IN_PROGRESS')";
+
 	private static final String GET_DATA_OBJECT_MIGRATION_TASKS_SQL = "select * from HPC_DATA_MIGRATION_TASK  where PARENT_ID = ?";
 
 	private static final String GET_DATA_OBJECT_MIGRATION_TASK_BY_PARENT_AND_PATH_SQL = "select * from HPC_DATA_MIGRATION_TASK where PARENT_ID = ? and PATH = ?";
@@ -376,6 +378,19 @@ public class HpcDataMigrationDAOImpl implements HpcDataMigrationDAO {
 
 		} catch (DataAccessException e) {
 			throw new HpcException("Failed to get unassigned data migration tasks: " + e.getMessage(),
+					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
+		}
+	}
+
+	@Override
+	public List<HpcDataMigrationTask> getActiveDataMigrationTasks(HpcDataMigrationType type, String configurationId)
+			throws HpcException {
+		try {
+			return jdbcTemplate.query(GET_ACTIVE_DATA_MIGRATION_TASKS_SQL, dataMigrationTaskRowMapper, type.value(),
+					configurationId);
+
+		} catch (DataAccessException e) {
+			throw new HpcException("Failed to get active data migration tasks: " + e.getMessage(),
 					HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.ORACLE, e);
 		}
 	}

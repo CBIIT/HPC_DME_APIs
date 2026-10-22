@@ -619,6 +619,16 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
         // create a task for each.
         dataManagementService.getAutoTieringDataManagementConfigurations().forEach(dataManagementConfiguration -> {
             try {
+                HpcDataMigrationTask activeBulkAutoTieringTask = dataMigrationService
+                        .getActiveBulkAutoTieringTask(dataManagementConfiguration.getId());
+                if (activeBulkAutoTieringTask != null) {
+                    logger.info(
+                            "Skipping bulk auto-tiering for data management configuration: {}. Task {} is still active [{}]",
+                            dataManagementConfiguration.getId(), activeBulkAutoTieringTask.getId(),
+                            activeBulkAutoTieringTask.getStatus());
+                    return;
+                }
+
                 logger.info("Create bulk auto-tiering task for data management configuration: {}",
                         dataManagementConfiguration.getId());
                 dataMigrationService.createBulkAutoTieringTask(dataManagementConfiguration.getId(),
@@ -656,6 +666,15 @@ public class HpcDataMigrationBusServiceImpl implements HpcDataMigrationBusServic
         if (dataManagementConfiguration == null) {
             throw new HpcException("Data management configuration not found for ID: " + configurationId,
                     HpcErrorType.UNEXPECTED_ERROR);
+        }
+
+        // Validate there is no active bulk auto-tiering task for this configuration.
+        HpcDataMigrationTask activeBulkAutoTieringTask = dataMigrationService
+                .getActiveBulkAutoTieringTask(configurationId);
+        if (activeBulkAutoTieringTask != null) {
+            throw new HpcException("Bulk auto-tiering task " + activeBulkAutoTieringTask.getId()
+                    + " is still active for configuration ID " + configurationId,
+                    HpcErrorType.INVALID_REQUEST_INPUT);
         }
 
         // Process auto-tiering for the specific configuration
