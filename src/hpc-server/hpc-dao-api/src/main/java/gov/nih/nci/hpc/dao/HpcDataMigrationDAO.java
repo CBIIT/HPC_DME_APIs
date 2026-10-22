@@ -58,6 +58,18 @@ public interface HpcDataMigrationDAO {
 	public List<HpcDataMigrationTask> getUnassignedDataMigrationTasks() throws HpcException;
 
 	/**
+	 * Get a list of active (received or in-progress) data migration tasks of a
+	 * specific type for a data management configuration, across all servers.
+	 *
+	 * @param type            The data migration type to query for.
+	 * @param configurationId The data management configuration ID.
+	 * @return A List of active data migration tasks
+	 * @throws HpcException on service failure.
+	 */
+	public List<HpcDataMigrationTask> getActiveDataMigrationTasks(HpcDataMigrationType type, String configurationId)
+			throws HpcException;
+
+	/**
 	 * Get a list of data object migration tasks that associated with specific a
 	 * collection migration task
 	 *

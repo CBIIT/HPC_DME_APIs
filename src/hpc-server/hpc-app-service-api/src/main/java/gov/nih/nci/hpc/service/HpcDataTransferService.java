@@ -930,7 +930,9 @@ public interface HpcDataTransferService {
 	public void setCollectionDownloadTaskInProgress(String taskId, boolean inProcess) throws HpcException;
 
 	/**
-	 * Reset collection download task in-progress
+	 * Reset collection download task in-progress. Data object downloads that got
+	 * started for it are canceled first, and only then the in-process indicator is
+	 * cleared, so the task is not retried while those downloads are still active.
 	 *
 	 * @param taskId The collection download task ID..
 	 * @throws HpcException on database error.
