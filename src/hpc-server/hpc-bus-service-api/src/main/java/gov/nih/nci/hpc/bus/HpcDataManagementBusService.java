@@ -52,6 +52,7 @@ import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDataObjectRegistrationRequestDTO
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcDownloadRequestDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcListObjectsResponseDTO;
 import gov.nih.nci.hpc.dto.datamanagement.v2.HpcRegistrationSummaryDTO;
+import gov.nih.nci.hpc.domain.datatransfer.HpcCollectionDownloadTask;
 import gov.nih.nci.hpc.exception.HpcException;
 
 /**
@@ -154,6 +155,27 @@ public interface HpcDataManagementBusService {
 			throws HpcException;
 
 	/**
+	 * Download a collection tree stored in external source(S3)
+	 *
+	 * @param path            The collection path.
+	 * @param downloadRequest The download request DTO.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcCollectionDownloadResponseDTO downloadCollectionFromExternalSource(String path, HpcDownloadRequestDTO downloadRequest)
+			throws HpcException;
+
+	/**
+	 * Get all files in a collection that reside in an external file system (S3) and are associated with the download task.
+	 *
+	 * @param downloadTask The collection download task.
+	 * @return Registration Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectRegistrationResponseDTO getFilesFromExternalSource(HpcCollectionDownloadTask downloadTask)
+			throws HpcException;
+
+			/**
 	 * Download data objects or collections. Note: API doesn't support mixed, so
 	 * user expected to provide a list of data objects or a list of collections, not
 	 * both.
@@ -396,6 +418,17 @@ public interface HpcDataManagementBusService {
 	 */
 	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
 			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest) throws HpcException;
+
+	/**
+	 * Bulk Data object registration.
+	 *
+	 * @param bulkDataObjectRegistrationRequest The bulk registration request.
+	 * @param userId                   The user ID of the request invoker.
+	 * @return A registration response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectRegistrationResponseDTO registerDataObjects(
+			HpcBulkDataObjectRegistrationRequestDTO bulkDataObjectRegistrationRequest, String userId) throws HpcException;
 
 	/**
 	 * Get data objects registration task status.
