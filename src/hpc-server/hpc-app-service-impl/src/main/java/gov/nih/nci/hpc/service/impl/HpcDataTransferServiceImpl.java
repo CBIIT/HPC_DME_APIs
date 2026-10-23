@@ -2496,11 +2496,16 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 			//If the number of slots used by requester <= total number of slots/number of users, then proceed.
 			if(totalUsersForGlobusTransfers > 0 &&
 				numberOfSlotsAllocatedForUser > transferAccountCount/totalUsersForGlobusTransfers) {
-				logger.info("User {} already allocated {} slots, exceeded globus slot limit since {} users are in queue",
+				logger.info("User {} ineligible for more globus slots: Already allocated {}, reached slot limit since {} users are in queue",
 					userId, numberOfSlotsAllocatedForUser, totalUsersForGlobusTransfers);
 				return false;
 			}
-		};
+			logger.debug("User {} eligible for more globus slots: Presently {} slots allocated, {} users are in queue, total slots = {}",
+					userId, numberOfSlotsAllocatedForUser, totalUsersForGlobusTransfers, transferAccountCount);
+
+		} else {
+			logger.debug("User {} eligible for globus slots since no slots allocated presently", userId);
+		}
 
 		return true;
 	}
