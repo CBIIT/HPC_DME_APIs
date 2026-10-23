@@ -268,7 +268,12 @@ tfoot input {
 
 									<!-- Use always exactly ONE <td> for Path to keep DataTables columns aligned -->
 									  <td class="pathWidth">
-									    <th:block th:switch="${result.type}">
+									    <span th:if="${result.externalArchiveFlag}"
+											style="width: 200px; display:inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+											th:text="${result.displayPath}">
+									    </span>
+
+									    <th:block th:unless="${result.externalArchiveFlag}" th:switch="${result.type}">
 										  <th:block th:case="'COLLECTION'">
 											<a th:href="@{/collection(path=${result.path}, action=displayOnly)}" target="_blank">
 											  <span

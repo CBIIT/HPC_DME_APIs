@@ -37,6 +37,8 @@ public class HpcTask {
     protected String dataSize;
     @JsonView(Views.Public.class)
     protected String humanReadableSize;
+    @JsonView(Views.Public.class)
+    protected Boolean externalArchiveFlag;
 
 	public String getUserId() {
 		return userId;
@@ -139,5 +141,11 @@ public class HpcTask {
 	}
 	public void setHumanReadableSize(String humanReadableSize) {
 		this.humanReadableSize = humanReadableSize;
+	}
+	public Boolean getExternalArchiveFlag() {
+		return externalArchiveFlag;
+	}
+	public void setExternalArchiveFlag(Boolean externalArchiveFlag) {
+		this.externalArchiveFlag = externalArchiveFlag;
 	}
 }
