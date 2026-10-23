@@ -13,6 +13,8 @@ public class HpcDomainValidatorTest {
 	@Test
 	public void testIsValidAsperaAccount() {
 		assertTrue(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "aspera.example.com")).getValid());
+		assertTrue(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "aspera.example.com.")).getValid());
+		assertTrue(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "localhost.")).getValid());
 		assertTrue(HpcDomainValidator.isValidAsperaAccount(asperaAccount("first.last@nih.gov", "10.0.0.1")).getValid());
 		assertTrue(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user_1-a", "[2001:db8::1]")).getValid());
 
@@ -26,6 +28,8 @@ public class HpcDomainValidatorTest {
 		assertFalse(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "host:/dir")).getValid());
 		assertFalse(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "host name")).getValid());
 		assertFalse(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "host$(id)")).getValid());
+		assertFalse(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "host..")).getValid());
+		assertFalse(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", ".")).getValid());
 	}
 
 	@Test
