@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
@@ -28,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
@@ -105,7 +107,8 @@ public class HpcUtil {
 	 */
 	public static String exec(List<String> command, String sudoPassword, Map<String, String> environment,
 			File workingDirectory) throws HpcException {
-		if (command == null || command.isEmpty() || command.stream().anyMatch(StringUtils::isEmpty)) {
+		if (CollectionUtils.isEmpty(command) || StringUtils.isEmpty(command.get(0))
+				|| command.stream().anyMatch(Objects::isNull)) {
 			throw new HpcException("Null / empty command", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
