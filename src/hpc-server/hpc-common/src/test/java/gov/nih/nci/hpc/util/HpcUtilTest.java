@@ -91,6 +91,11 @@ public class HpcUtilTest {
 	}
 
 	@Test
+	public void testExecEmptyArgument() throws HpcException {
+		assertEquals("[]", exec(Arrays.asList("printf", "[%s]", ""), null, null, null));
+	}
+
+	@Test
 	public void testExecInvalidCommand() {
 		assertThrows(HpcException.class, () -> exec(null, null, null, null));
 		assertThrows(HpcException.class, () -> exec(Collections.emptyList(), null, null, null));

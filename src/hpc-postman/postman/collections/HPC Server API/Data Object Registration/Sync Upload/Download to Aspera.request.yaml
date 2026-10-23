@@ -23,6 +23,20 @@ scripts:
       const ss = String(now.getSeconds()).padStart(2, '0');
       const timestamp = `${mm}-${dd}-${yyyy}-${hh}-${min}-${ss}`;
       pm.variables.set('fileId', `file-download-${timestamp}`);
+      const asperaPassword = await pm.vault.get('aspera-password');
+      pm.variables.set('asperaDownloadBody', JSON.stringify({
+        asperaDownloadDestination: {
+          destinationLocation: {
+            fileContainerId: pm.variables.get('aspera-folder'),
+            fileId: pm.variables.get('fileId')
+          },
+          account: {
+            user: pm.variables.get('aspera-user'),
+            host: pm.variables.get('aspera-host'),
+            password: asperaPassword
+          }
+        }
+      }, null, 2));
     language: text/javascript
 order: 3863696254383543
 headers:
@@ -30,17 +44,4 @@ headers:
   Accept: application/json
 body:
   type: json
-  content: |-
-    {
-      "asperaDownloadDestination": {
-        "destinationLocation": {
-          "fileContainerId": "{{aspera-folder}}",
-          "fileId": "{{fileId}}"
-        },
-        "account": {
-          "user": "{{aspera-user}}",
-          "host": "{{aspera-host}}",
-          "password": "{{vault:aspera-password}}"
-        }
-      }
-    }
+  content: "{{asperaDownloadBody}}"

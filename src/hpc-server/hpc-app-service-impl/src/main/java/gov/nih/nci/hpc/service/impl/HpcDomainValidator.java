@@ -61,9 +61,10 @@ public class HpcDomainValidator {
 	// '-'.
 	private static final Pattern ASPERA_USER_PATTERN = Pattern.compile("^[A-Za-z0-9_.@+][A-Za-z0-9_.@+-]*$");
 
-	// Aspera host: a host name, an IPv4 address or an IPv6 address in brackets.
+	// Aspera host: a host name (optionally fully qualified w/ a trailing dot), an
+	// IPv4 address or an IPv6 address in brackets.
 	private static final Pattern ASPERA_HOST_PATTERN = Pattern
-			.compile("^([A-Za-z0-9]([A-Za-z0-9_.-]*[A-Za-z0-9])?|\\[[0-9A-Fa-f:.]+\\])$");
+			.compile("^([A-Za-z0-9]([A-Za-z0-9_.-]*[A-Za-z0-9])?\\.?|\\[[0-9A-Fa-f:.]+\\])$");
 
 	private static final Pattern CONTROL_CHARACTERS_PATTERN = Pattern.compile("\\p{Cntrl}");
 
