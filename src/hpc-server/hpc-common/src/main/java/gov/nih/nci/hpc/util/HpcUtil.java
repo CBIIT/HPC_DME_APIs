@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -17,12 +18,18 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathAttributes;
 import gov.nih.nci.hpc.domain.datamanagement.HpcPathPermissions;
@@ -83,61 +90,88 @@ public class HpcUtil {
 	}
 
 	/**
-	 * Execute a (shell) command.
+	 * Execute an external command. The command is executed directly (not through a
+	 * shell), so each argument is passed to the program as is.
 	 *
-	 * @param command          The command to execute.
+	 * @param command          The command to execute - the program followed by its
+	 *                         arguments.
 	 * @param sudoPassword     (Optional) if provided, the command will be executed
-	 *                         w/ 'sudo' using the provided password.
-	 * @param envp             (Optional) array of environment variables
-	 * @param workingDirectory The working directory to execute the command.
+	 *                         w/ 'sudo' using the provided password (written to
+	 *                         sudo's standard input).
+	 * @param environment      (Optional) environment variables. If provided, the
+	 *                         command is executed with only these variables set.
+	 * @param workingDirectory (Optional) The working directory to execute the
+	 *                         command.
 	 * @return The command's output
 	 * @throws HpcException If exec failed.
 	 */
-	public static String exec(String command, String sudoPassword, String[] envp, File workingDirectory)
-			throws HpcException {
-		if (StringUtils.isEmpty(command)) {
+	public static String exec(List<String> command, String sudoPassword, Map<String, String> environment,
+			File workingDirectory) throws HpcException {
+		if (CollectionUtils.isEmpty(command) || StringUtils.isEmpty(command.get(0))
+				|| command.stream().anyMatch(Objects::isNull)) {
 			throw new HpcException("Null / empty command", HpcErrorType.INVALID_REQUEST_INPUT);
 		}
 
-		// Determine if need to exec w/ sudo.
-		String[] execCommand = null;
-		if (!StringUtils.isEmpty(sudoPassword)) {
-			execCommand = new String[] { "/bin/sh", "-c", "echo '" + sudoPassword + "'|sudo -S " + command };
-		} else {
-			execCommand = new String[] { "/bin/sh", "-c", command };
+		String commandString = String.join(" ", command);
+		boolean sudo = !StringUtils.isEmpty(sudoPassword);
+
+		List<String> execCommand = new ArrayList<>();
+		if (sudo) {
+			execCommand.addAll(Arrays.asList("sudo", "-S", "-p", "", "--"));
+		}
+		execCommand.addAll(command);
+
+		ProcessBuilder processBuilder = new ProcessBuilder(execCommand);
+		if (environment != null) {
+			processBuilder.environment().clear();
+			processBuilder.environment().putAll(environment);
+		}
+		if (workingDirectory != null) {
+			processBuilder.directory(workingDirectory);
 		}
 
-		Process process = null;
 		try {
-			process = Runtime.getRuntime().exec(execCommand, envp, workingDirectory);
+			Process process = processBuilder.start();
 
-			if (process.waitFor() != 0) {
-				String message = null;
-				if (process.getErrorStream() != null) {
-					message = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
-					if (StringUtils.isEmpty(message) && process.getInputStream() != null) {
-						message = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
-					}
+			// Read the error output concurrently, so the command doesn't block on a full
+			// pipe buffer.
+			FutureTask<String> errorOutputTask = new FutureTask<>(
+					() -> IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8));
+			Thread errorOutputReader = new Thread(errorOutputTask, "hpc-exec-stderr");
+			errorOutputReader.setDaemon(true);
+			errorOutputReader.start();
 
-					logger.error("command [" + command + "] exec error: " + message);
-					throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
+			try (OutputStream processInput = process.getOutputStream()) {
+				if (sudo) {
+					processInput.write((sudoPassword + "\n").getBytes(StandardCharsets.UTF_8));
 				}
-
-			} else if (process.getInputStream() != null) {
-				return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
+			} catch (IOException e) {
+				// The process may exit before reading its input. The exit code and error
+				// output determine the result.
+				logger.debug("command [{}] - failed to write process input: {}", commandString, e.getMessage());
 			}
+
+			String output = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
+			int exitCode = process.waitFor();
+			String errorOutput = errorOutputTask.get();
+
+			if (exitCode != 0) {
+				String message = StringUtils.isEmpty(errorOutput) ? output : errorOutput;
+				logger.error("command [{}] exec error: {}", commandString, message);
+				throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
+			}
+
+			return output;
 
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new HpcException("command [" + command + "] exec failed: " + e.getMessage(),
+			throw new HpcException("command [" + commandString + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
 
-		} catch (IOException e) {
-			throw new HpcException("command [" + command + "] exec failed: " + e.getMessage(),
+		} catch (IOException | ExecutionException e) {
+			throw new HpcException("command [" + commandString + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
 		}
-
-		return null;
 	}
 
 	/**
