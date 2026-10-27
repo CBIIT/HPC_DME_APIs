@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-		 features="src/test/java/Download/Features/DownloadBulk.feature"
+		 features="src/test/java/Download/Features"
 		, glue="gov.nih.nci.hpc.test.Download.Steps"
 		, dryRun = false
 		, monochrome=true
