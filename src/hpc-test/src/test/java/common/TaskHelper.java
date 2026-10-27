@@ -134,7 +134,8 @@ public class TaskHelper {
 		} else {
 			JsonPath jsonPath = response.jsonPath();
 			System.out.println(jsonPath);
-			logger.error("This test was a failure. ErrorType: " + jsonPath.get("errorType") + ", Error Message: " +
+			System.out.println(token);
+			System.out.println("This test was a failure. ErrorType: " + jsonPath.get("errorType") + ", Error Message: " +
 				jsonPath.getString("message") + " , Error Status Code: " + response.getStatusCode());
 			return false;
 		}
@@ -163,6 +164,30 @@ public class TaskHelper {
 			return false;
 		}
 	}
+
+	public boolean submitExternalRequest(String requestType, String requestBody, String requestUrl) {
+	Gson gson = new Gson();
+	ConfigFileReader configFileReader = new ConfigFileReader();
+	String token = configFileReader.getToken();
+	RestAssured.baseURI = configFileReader.getApplicationUrl();
+	RestAssured.port = 7738;
+	RequestSpecification request = RestAssured.given().log().all().relaxedHTTPSValidation()
+			.header("Accept", "application/json").header("Authorization", "Bearer " + token)
+			.header("Content-Type", "application/json").body(requestBody);
+	Response response = executeRequest(requestType, request, requestUrl);
+	int statusCode = response.getStatusCode();
+	System.out.println("The response status code is: " + statusCode);
+	JsonPath jsonPath = response.jsonPath();
+	System.out.println("JSONPath =" + gson.toJson(jsonPath));
+	//System.out.println("taskId =" + gson.toJson(response.getBody()).get());
+	System.out.println("The response is: " + response.getBody().asString());
+	if (statusCode == 200 || statusCode == 201) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 
 	public ErrorMessage submitRequest(String requestType, String requestBody, String requestUrl, String role) {
 		Gson gson = new Gson();
@@ -202,6 +227,7 @@ public class TaskHelper {
 		return errorMessage;
 	}
 
+	
 	private Response executeRequest(String requestType, RequestSpecification request, String requestUrl) {
 		Response response;
 		if (requestType.equals("POST")) {
