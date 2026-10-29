@@ -252,6 +252,26 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
             dataObjectMigrationTask.setFromS3ArchiveConfigurationId(fromS3ArchiveDataTransferConfiguration.getId());
         }
 
+        // Get the System generated metadata of the data object in migration.
+        HpcSystemGeneratedMetadata metadata = metadataService
+                .getDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath());
+        dataObjectMigrationTask.setDataObjectId(metadata.getObjectId());
+        dataObjectMigrationTask.setRegistrarId(metadata.getRegistrarId());
+        dataObjectMigrationTask.setFromS3ArchiveLocation(metadata.getArchiveLocation());
+
+        // Ignore the task if the data object is no longer in the source S3 archive (e.g. already migrated
+        // by another task, or the task was created from stale auto-tiering search results).
+        if (!StringUtils.isEmpty(metadata.getS3ArchiveConfigurationId()) && !metadata.getS3ArchiveConfigurationId()
+                .equals(dataObjectMigrationTask.getFromS3ArchiveConfigurationId())) {
+            String message = "Data object is in S3 archive configuration " + metadata.getS3ArchiveConfigurationId()
+                    + ", not in the migration source S3 archive configuration "
+                    + dataObjectMigrationTask.getFromS3ArchiveConfigurationId();
+            logger.info("Data migration: task - {} ignored. {}", dataObjectMigrationTask.getId(), message);
+            completeDataObjectMigrationTask(dataObjectMigrationTask, HpcDataMigrationResult.IGNORED, message, null,
+                    null);
+            return;
+        }
+
         HpcDataTransferConfiguration toS3ArchiveDataTransferConfiguration = !dataObjectMigrationTask
                 .getAlignArchivePath()
                 ? dataManagementConfigurationLocator.getDataTransferConfiguration(
@@ -277,13 +297,6 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
                 toS3ArchiveDataTransferSystemAccount, toS3ArchiveDataTransferConfiguration.getUrlOrRegion(),
                 toS3ArchiveDataTransferConfiguration.getEncryptionAlgorithm(),
                 toS3ArchiveDataTransferConfiguration.getEncryptionKey()) : fromS3ArchiveAuthToken;
-
-        // Get the System generated metadata of the data object in migration.
-        HpcSystemGeneratedMetadata metadata = metadataService
-                .getDataObjectSystemGeneratedMetadata(dataObjectMigrationTask.getPath());
-        dataObjectMigrationTask.setDataObjectId(metadata.getObjectId());
-        dataObjectMigrationTask.setRegistrarId(metadata.getRegistrarId());
-        dataObjectMigrationTask.setFromS3ArchiveLocation(metadata.getArchiveLocation());
 
         // Generate a URL to the data object in archive we are migrating from.
         String sourceURL = s3DataTransferProxy.generateDownloadRequestURL(fromS3ArchiveAuthToken,
@@ -690,6 +703,12 @@ public class HpcDataMigrationServiceImpl implements HpcDataMigrationService {
         // Persist the task.
         dataMigrationDAO.upsertDataMigrationTask(migrationTask);
         return migrationTask;
+    }
+
+    @Override
+    public HpcDataMigrationTask getActiveBulkAutoTieringTask(String configurationId) throws HpcException {
+        return dataMigrationDAO.getActiveDataMigrationTasks(HpcDataMigrationType.BULK_AUTO_TIERING, configurationId)
+                .stream().findFirst().orElse(null);
     }
 
     @Override
