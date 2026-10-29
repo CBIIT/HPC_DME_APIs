@@ -7,6 +7,8 @@ variables:
   presignedUploadUrl: ""
   lastGlobusDownloadFileId: ""
   lastGlobusDownloadTaskId: ""
+  lastAsperaDownloadFileId: ""
+  lastAsperaDownloadTaskId: ""
 auth:
   - id: 236c22c3-dd78-4b41-8176-a23ea4721e7b
     type: basic

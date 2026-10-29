@@ -137,6 +137,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 					task.setResult(getResultDisplayText(download.getResult()));
 					task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 					task.setDisplayPath(download.getPath()); // For display purpose only. The above path gets modified to a link
+					task.setExternalArchiveFlag(download.getExternalArchiveFlag());
 
 					if(download.getStatus() != null) {
 						task.setStatus(download.getStatus());
@@ -178,6 +179,7 @@ public class HpcDownloadTaskBoardController extends AbstractHpcController {
 						download.getCompleted() != null ? sortFormat.format(download.getCompleted().getTime()) : "");task.setResult(getResultDisplayText(download.getResult()));
 				task.setRetryUserId(download.getRetryUserId() != null ? download.getRetryUserId() : "");
 				task.setDisplayPath(download.getPath());// For display purpose only. The above path gets modified to a link in the display
+				task.setExternalArchiveFlag(download.getExternalArchiveFlag());
 
 				task.setStatus(getResultDisplayText(download.getResult()));
 				String dataSize = download.getDataSize() != null ? String.valueOf(download.getDataSize()) : "0";
