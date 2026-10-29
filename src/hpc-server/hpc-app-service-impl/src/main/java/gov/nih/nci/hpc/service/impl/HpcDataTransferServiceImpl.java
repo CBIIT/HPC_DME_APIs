@@ -1202,15 +1202,20 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 				 * If multiple download tasks are active for the same path, deletion is deferred
 				 * until the final task completes to prevent data corruption.
 				 */
-				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path);
+				int numberOfActiveExternalDownloadTasksForPath = getDownloadTasksCountForExternalArchiveByPath(path.replaceFirst(downloadArchiveLinkBasePath, ""));
+
 				logger.info("external download number of other active external archive download tasks [count={}] downloading for the same [path={}]", numberOfActiveExternalDownloadTasksForPath, path);
 
 				if (numberOfActiveExternalDownloadTasksForPath == 0) {
 					try {
 						logger.info("Temporary Archive Link: {} being deleted", path);
 						HpcFileLocation archiveLinkLocation = getArchiveLocation(path);
-						temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
-								configurationId, s3ConfigurationId);
+						if(isValidFileLocation(archiveLinkLocation)) {
+							temporaryArchiveLinkDeleted = deleteArchiveLink(path, archiveLinkLocation,
+									configurationId, s3ConfigurationId);
+						} else {
+							logger.warn("The Archive Link does not exist for path: {}. Delete operation for the Archive Link is skipped.", path);
+						}
 					} catch (HpcException e) {
 						logger.error("Failed to delete data object after download from external archive for path: "
 								+ path + ". Error: " + e.getMessage(), e);
@@ -1741,7 +1746,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException {
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException {
 
 		// Validate the download destination.
 		validateDownloadDestination(globusDownloadDestination, s3DownloadDestination, googleDriveDownloadDestination,
@@ -1769,6 +1774,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 		downloadTask.setDoc(dataManagementService.getDataManagementConfiguration(configurationId).getDoc());
 		downloadTask.setAppendPathToDownloadDestination(appendPathToDownloadDestination);
 		downloadTask.setAppendCollectionNameToDownloadDestination(appendCollectionNameToDownloadDestination);
+		downloadTask.setExternalArchiveFlag(externalArchiveFlag);
 		Long collectionSize = metadataService.getCollectionSizeForPath(dataManagementProxy.getAbsolutePath(path));
 		downloadTask.setDataSize(collectionSize != null ? collectionSize : 0L);
 		// Persist the request.
@@ -2116,15 +2122,17 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 	@Override
 	public void resetCollectionDownloadTaskInProgress(String taskId) throws HpcException {
-		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
-
 		// Cancel any data object that got started, as the collection download will get
-		// re-processed.
+		// re-processed. This is done before clearing the in-process indicator, so the
+		// collection download task is not retried while its data object downloads are
+		// still active. If a cancellation fails, the task stays in-process.
 		for (HpcDataObjectDownloadTask dataObjectDownloadTask : dataDownloadDAO
 				.getDataObjectDownloadTaskByCollectionDownloadTaskId(taskId)) {
 			completeDataObjectDownloadTask(dataObjectDownloadTask, HpcDownloadResult.CANCELED,
 					"Collection download restarted", Calendar.getInstance(), 0);
 		}
+
+		dataDownloadDAO.resetCollectionDownloadTaskInProcess(taskId);
 	}
 
 	@Override
@@ -2185,6 +2193,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 		taskResult.setRetryUserId(downloadTask.getRetryUserId());
 		taskResult.setDataTransferRequestId(downloadTask.getDataTransferRequestId());
 		taskResult.setDoc(downloadTask.getDoc());
+		taskResult.setExternalArchiveFlag(downloadTask.getExternalArchiveFlag());
 
 		// Calculate the effective transfer speed (Bytes per second). This is done by
 		// averaging the effective transfer speed
@@ -2417,10 +2426,22 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 	}
 	
 	@Override
-	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation) throws HpcException {
-	  
-	    List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
-      
+	public List<HpcListObjectsEntry> listDirectory(HpcFileLocation fileLocation, HpcDataTransferType dataTransferType,
+			String configurationId, String s3ArchiveConfigurationId) throws HpcException {
+
+		if (dataTransferType != null && !HpcDataTransferType.S_3.equals(dataTransferType)) {
+			throw new HpcException("Unsupported data transfer type for directory listing",
+					HpcErrorType.INVALID_REQUEST_INPUT);
+		}
+
+		List<HpcListObjectsEntry> directoryListing = new ArrayList<>();
+
+		if (HpcDataTransferType.S_3.equals(dataTransferType)) {
+			return dataTransferProxies.get(dataTransferType).listDirectory(
+					getAuthenticatedToken(dataTransferType, configurationId, s3ArchiveConfigurationId),
+					fileLocation);
+		}
+
 		// Input validation.
 	    if (!getPathAttributes(fileLocation).getExists()) {
 	        return directoryListing;
