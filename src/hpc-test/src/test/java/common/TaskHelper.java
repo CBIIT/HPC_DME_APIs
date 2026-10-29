@@ -134,7 +134,6 @@ public class TaskHelper {
 		} else {
 			JsonPath jsonPath = response.jsonPath();
 			System.out.println(jsonPath);
-			System.out.println(token);
 			System.out.println("This test was a failure. ErrorType: " + jsonPath.get("errorType") + ", Error Message: " +
 				jsonPath.getString("message") + " , Error Status Code: " + response.getStatusCode());
 			return false;
@@ -171,7 +170,7 @@ public class TaskHelper {
 	String token = configFileReader.getToken();
 	RestAssured.baseURI = configFileReader.getApplicationUrl();
 	RestAssured.port = 7738;
-	RequestSpecification request = RestAssured.given().log().all().relaxedHTTPSValidation()
+	RequestSpecification request = RestAssured.given().relaxedHTTPSValidation()
 			.header("Accept", "application/json").header("Authorization", "Bearer " + token)
 			.header("Content-Type", "application/json").body(requestBody);
 	Response response = executeRequest(requestType, request, requestUrl);
