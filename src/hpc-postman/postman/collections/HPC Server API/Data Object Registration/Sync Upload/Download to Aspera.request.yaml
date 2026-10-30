@@ -1,0 +1,47 @@
+$kind: http-request
+name: Download to Aspera
+method: POST
+url: "{{baseUrl}}{{basePath}}/v2/dataObject/{{path}}/download"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.collectionVariables.set('lastAsperaDownloadFileId', pm.variables.get('fileId'));
+      const res = pm.response.json();
+      if (res.taskId) {
+        pm.collectionVariables.set('lastAsperaDownloadTaskId', res.taskId);
+      }
+    language: text/javascript
+  - type: beforeRequest
+    code: |-
+      pm.variables.set('path', pm.collectionVariables.get('lastSyncUploadPath'));
+      const now = new Date();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      const timestamp = `${mm}-${dd}-${yyyy}-${hh}-${min}-${ss}`;
+      pm.variables.set('fileId', `file-download-${timestamp}`);
+      const asperaPassword = await pm.vault.get('aspera-password');
+      pm.variables.set('asperaDownloadBody', JSON.stringify({
+        asperaDownloadDestination: {
+          destinationLocation: {
+            fileContainerId: pm.variables.get('aspera-folder'),
+            fileId: pm.variables.get('fileId')
+          },
+          account: {
+            user: pm.variables.get('aspera-user'),
+            host: pm.variables.get('aspera-host'),
+            password: asperaPassword
+          }
+        }
+      }, null, 2));
+    language: text/javascript
+order: 3863696254383543
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: "{{asperaDownloadBody}}"
