@@ -130,10 +130,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_RESULTS_BY_COLLECTION_DOWNLOAD_TASK_ID_SQL = "select * from HPC_DOWNLOAD_TASK_RESULT where COLLECTION_DOWNLOAD_TASK_ID = ? and TYPE = 'DATA_OBJECT'";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? "
-			+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
+			+ "and (IN_PROCESS is null or IN_PROCESS = '0') "
+				+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
-			+ "DATA_TRANSFER_STATUS = ? and DATA_TRANSFER_TYPE = ? and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, "
+			+ "DATA_TRANSFER_STATUS = ? and DATA_TRANSFER_TYPE = ? and (IN_PROCESS is null or IN_PROCESS = '0') and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, "
 			+ "CREATED fetch next 1 rows only";
 
 	private static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "merge into HPC_DOWNLOAD_TASK_RESULT using dual on (ID = ?) "
