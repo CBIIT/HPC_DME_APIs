@@ -2868,24 +2868,36 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	 */
 	private List<HpcCollectionDownloadTaskItem> processExternalDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException {
 		try {
-			logger.info("Process External collection download task: [taskId={}] - started processing [{}]",
+			logger.info("External collection download task: [taskId={}] - started processing [{}]",
 					downloadTask.getId(), downloadTask.getType());
-
-			// Obtain the list of files from S3 that need to be registered and downloaded in the collection
-			HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
-					.getFilesFromExternalSource(downloadTask);
 
 			List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 			// Initiate a download task for each data object in the collection.
 			// The download task for a single data object in an external archive will first register
 			// an archive link before initiating the download.
-			for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
-				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
-						downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
-						downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
-						downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
-						downloadTask.getId(), downloadTask.getExternalArchiveFlag());
-				downloadItems.add(downloadItem);
+			if (HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())
+					|| HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
+				// Obtain the list of files from S3 that need to be registered and downloaded in the collection
+				HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
+						.getFilesFromExternalSource(downloadTask);
+
+				for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
+					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
+							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
+							downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
+							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
+							downloadTask.getId(), downloadTask.getExternalArchiveFlag());
+					downloadItems.add(downloadItem);
+				}
+			} else if (HpcDownloadTaskType.DATA_OBJECT_LIST.equals(downloadTask.getType())) {
+				for (String item : downloadTask.getDataObjectPaths()) {
+					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item,
+							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
+							downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
+							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
+							downloadTask.getId(), downloadTask.getExternalArchiveFlag());
+					downloadItems.add(downloadItem);
+				}
 			}
 			return downloadItems;
 		} catch (HpcException e) {
@@ -2900,6 +2912,7 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			return Collections.emptyList();
 		}
 	}
+
 
 	/**
 	 * Set the file container name.

@@ -188,6 +188,16 @@ public interface HpcDataManagementBusService {
 			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
 
 	/**
+	 * Download a list of data objects or a list of collections from an external source.
+	 *
+	 * @param downloadRequest The download request DTO.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
+			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
+
+	/**
 	 * Get collection download task status.
 	 *
 	 * @param taskId The collection download task ID.
