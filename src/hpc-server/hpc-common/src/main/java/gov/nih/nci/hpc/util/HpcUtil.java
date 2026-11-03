@@ -10,6 +10,7 @@ package gov.nih.nci.hpc.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
@@ -130,16 +131,14 @@ public class HpcUtil {
 			processBuilder.directory(workingDirectory);
 		}
 
+		Process process = null;
 		try {
-			Process process = processBuilder.start();
+			process = processBuilder.start();
 
-			// Read the error output concurrently, so the command doesn't block on a full
-			// pipe buffer.
-			FutureTask<String> errorOutputTask = new FutureTask<>(
-					() -> IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8));
-			Thread errorOutputReader = new Thread(errorOutputTask, "hpc-exec-stderr");
-			errorOutputReader.setDaemon(true);
-			errorOutputReader.start();
+			// Read the output streams concurrently, so the command doesn't block on a full
+			// pipe buffer, and the calling thread waits in interruptible calls only.
+			FutureTask<String> outputTask = readStream(process.getInputStream(), "hpc-exec-stdout");
+			FutureTask<String> errorOutputTask = readStream(process.getErrorStream(), "hpc-exec-stderr");
 
 			try (OutputStream processInput = process.getOutputStream()) {
 				if (sudo) {
@@ -151,8 +150,8 @@ public class HpcUtil {
 				logger.debug("command [{}] - failed to write process input: {}", commandString, e.getMessage());
 			}
 
-			String output = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
 			int exitCode = process.waitFor();
+			String output = outputTask.get();
 			String errorOutput = errorOutputTask.get();
 
 			if (exitCode != 0) {
@@ -165,13 +164,34 @@ public class HpcUtil {
 
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
+			// Terminate the command, so it doesn't outlive the interrupted caller. SIGTERM
+			// (rather than SIGKILL) is used since sudo relays it to the command.
+			process.destroy();
 			throw new HpcException("command [" + commandString + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
 
 		} catch (IOException | ExecutionException e) {
+			if (process != null) {
+				process.destroy();
+			}
 			throw new HpcException("command [" + commandString + "] exec failed: " + e.getMessage(),
 					HpcErrorType.UNEXPECTED_ERROR, e);
 		}
+	}
+
+	/**
+	 * Read a process stream to a string on a daemon thread.
+	 *
+	 * @param stream     The stream to read.
+	 * @param threadName The reader thread name.
+	 * @return A task that completes with the stream content.
+	 */
+	private static FutureTask<String> readStream(InputStream stream, String threadName) {
+		FutureTask<String> readTask = new FutureTask<>(() -> IOUtils.toString(stream, StandardCharsets.UTF_8));
+		Thread reader = new Thread(readTask, threadName);
+		reader.setDaemon(true);
+		reader.start();
+		return readTask;
 	}
 
 	/**

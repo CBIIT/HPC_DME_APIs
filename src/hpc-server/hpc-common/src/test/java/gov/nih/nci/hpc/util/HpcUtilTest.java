@@ -23,6 +23,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -101,5 +104,38 @@ public class HpcUtilTest {
 		assertThrows(HpcException.class, () -> exec(Collections.emptyList(), null, null, null));
 		assertThrows(HpcException.class, () -> exec(Arrays.asList("echo", null), null, null, null));
 		assertThrows(HpcException.class, () -> exec(Arrays.asList(""), null, null, null));
+	}
+
+	@Test
+	public void testExecInterruptTerminatesCommand() throws Exception {
+		Path pidFile = tempDir.resolve("pid");
+		AtomicReference<Throwable> thrown = new AtomicReference<>();
+		AtomicBoolean interruptStatus = new AtomicBoolean();
+		Thread caller = new Thread(() -> {
+			try {
+				exec(Arrays.asList("sh", "-c", "echo $$ > \"$0\"; exec sleep 60", pidFile.toString()), null, null,
+						null);
+			} catch (Throwable t) {
+				thrown.set(t);
+			}
+			interruptStatus.set(Thread.currentThread().isInterrupted());
+		});
+		caller.start();
+
+		long deadline = System.currentTimeMillis() + 10000;
+		while (!Files.exists(pidFile) || Files.readString(pidFile).isBlank()) {
+			assertTrue(System.currentTimeMillis() < deadline, "command did not start");
+			Thread.sleep(50);
+		}
+		ProcessHandle command = ProcessHandle.of(Long.parseLong(Files.readString(pidFile).trim())).orElseThrow();
+
+		caller.interrupt();
+		caller.join(5000);
+
+		assertFalse(caller.isAlive(), "exec() did not return after interrupt");
+		assertTrue(thrown.get() instanceof HpcException);
+		assertTrue(interruptStatus.get());
+		command.onExit().get(5, TimeUnit.SECONDS);
+		assertFalse(command.isAlive());
 	}
 }
