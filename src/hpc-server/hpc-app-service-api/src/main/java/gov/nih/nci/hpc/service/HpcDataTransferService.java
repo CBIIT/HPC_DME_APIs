@@ -201,6 +201,7 @@ public interface HpcDataTransferService {
 	 *                                              data object
 	 * @param deepArchiveStatus                     The deep archive status of the
 	 *                                              data object
+	 * @param externalArchiveFlag 					If set to true, the file is in an external archive
 	 * @return A data object download response.
 	 * @throws HpcException on service failure.
 	 */
@@ -676,6 +677,7 @@ public interface HpcDataTransferService {
 	 *                                              used in the destination path,
 	 *                                              otherwise just the object name
 	 *                                              will be used.
+	 * @param externalArchiveFlag					If set to true, 
 	 * @return The submitted collection download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -685,7 +687,8 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException;
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException;
+
 
 	/**
 	 * Submit a request to download collections.
@@ -927,7 +930,9 @@ public interface HpcDataTransferService {
 	public void setCollectionDownloadTaskInProgress(String taskId, boolean inProcess) throws HpcException;
 
 	/**
-	 * Reset collection download task in-progress
+	 * Reset collection download task in-progress. Data object downloads that got
+	 * started for it are canceled first, and only then the in-process indicator is
+	 * cleared, so the task is not retried while those downloads are still active.
 	 *
 	 * @param taskId The collection download task ID..
 	 * @throws HpcException on database error.
