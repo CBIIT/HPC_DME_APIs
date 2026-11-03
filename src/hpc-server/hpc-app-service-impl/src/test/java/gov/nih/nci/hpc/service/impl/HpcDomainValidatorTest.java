@@ -30,6 +30,10 @@ public class HpcDomainValidatorTest {
 		assertFalse(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "host$(id)")).getValid());
 		assertFalse(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", "host..")).getValid());
 		assertFalse(HpcDomainValidator.isValidAsperaAccount(asperaAccount("user", ".")).getValid());
+
+		HpcAsperaAccount nulPasswordAccount = asperaAccount("user", "host");
+		nulPasswordAccount.setPassword("pass\0word");
+		assertFalse(HpcDomainValidator.isValidAsperaAccount(nulPasswordAccount).getValid());
 	}
 
 	@Test

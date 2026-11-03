@@ -221,6 +221,13 @@ public class HpcDomainValidator {
 			return validationResult;
 		}
 
+		if (asperaAccount.getPassword().indexOf('\0') >= 0) {
+			// The password is passed to ascp in an environment variable, which can't
+			// contain a NUL character.
+			validationResult.setMessage("Invalid Aspera password: NUL character is not allowed");
+			return validationResult;
+		}
+
 		if (StringUtils.isEmpty(asperaAccount.getHost())) {
 			validationResult.setMessage("No Aspera host provided");
 			return validationResult;

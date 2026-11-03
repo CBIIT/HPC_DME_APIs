@@ -125,7 +125,14 @@ public class HpcUtil {
 		ProcessBuilder processBuilder = new ProcessBuilder(execCommand);
 		if (environment != null) {
 			processBuilder.environment().clear();
-			processBuilder.environment().putAll(environment);
+			try {
+				processBuilder.environment().putAll(environment);
+			} catch (IllegalArgumentException | NullPointerException e) {
+				// Not including the exception message/cause - it contains the variable value
+				// which may be a secret.
+				throw new HpcException("command [" + commandString + "] - invalid environment variable",
+						HpcErrorType.INVALID_REQUEST_INPUT);
+			}
 		}
 		if (workingDirectory != null) {
 			processBuilder.directory(workingDirectory);

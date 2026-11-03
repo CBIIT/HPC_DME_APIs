@@ -107,6 +107,14 @@ public class HpcUtilTest {
 	}
 
 	@Test
+	public void testExecInvalidEnvironmentDoesNotExposeValue() {
+		HpcException e = assertThrows(HpcException.class,
+				() -> exec(Arrays.asList("/usr/bin/env"), null, Map.of("SECRET", "top\0secret"), null));
+		assertEquals(HpcErrorType.INVALID_REQUEST_INPUT, e.getErrorType());
+		assertFalse(e.getMessage().contains("secret"));
+	}
+
+	@Test
 	public void testExecInterruptTerminatesCommand() throws Exception {
 		Path pidFile = tempDir.resolve("pid");
 		AtomicReference<Throwable> thrown = new AtomicReference<>();

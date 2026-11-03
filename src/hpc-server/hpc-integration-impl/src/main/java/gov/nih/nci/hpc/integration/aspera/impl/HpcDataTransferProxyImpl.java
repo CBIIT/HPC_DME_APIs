@@ -128,7 +128,8 @@ public class HpcDataTransferProxyImpl implements HpcDataTransferProxy {
 
 				progressListener.transferCompleted(downloadRequest.getSize());
 
-			} catch (HpcException | IOException e) {
+			} catch (HpcException | IOException | RuntimeException e) {
+				// Any failure must be reported, otherwise the download task stays in progress.
 				String message = "[Aspera] Failed to download object: " + e.getMessage();
 				logger.error(message, HpcErrorType.DATA_TRANSFER_ERROR, e);
 				progressListener.transferFailed(message);

@@ -17,8 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -127,6 +129,37 @@ public class HpcDataTransferProxyImplTest {
 		globusProxy.deleteDataObject(null, fileLocation(FILE_ID), baseArchive);
 
 		assertFalse(Files.exists(archiveFile));
+	}
+
+	@Test
+	public void testCreateArchiveDirectoriesSetsPermissionsOnCreatedDirectoriesOnly() throws Exception {
+		Path existingDirectory = Files.createDirectory(tempDir.resolve("existing"));
+		Files.setPosixFilePermissions(existingDirectory, PosixFilePermissions.fromString("rwx------"));
+		Path directory = existingDirectory.resolve("a/b/c");
+
+		createArchiveDirectories(directory);
+
+		assertEquals("rwx------", PosixFilePermissions.toString(Files.getPosixFilePermissions(existingDirectory)));
+		for (Path path : new Path[] { existingDirectory.resolve("a"), existingDirectory.resolve("a/b"), directory }) {
+			assertTrue(Files.isDirectory(path));
+			assertEquals("rwxr-xr-x", PosixFilePermissions.toString(Files.getPosixFilePermissions(path)));
+		}
+	}
+
+	@Test
+	public void testCreateArchiveDirectoriesExistingDirectoryUnchanged() throws Exception {
+		Path directory = Files.createDirectory(tempDir.resolve("existing"));
+		Files.setPosixFilePermissions(directory, PosixFilePermissions.fromString("rwxrwx---"));
+
+		createArchiveDirectories(directory);
+
+		assertEquals("rwxrwx---", PosixFilePermissions.toString(Files.getPosixFilePermissions(directory)));
+	}
+
+	private void createArchiveDirectories(Path directory) throws Exception {
+		Method method = HpcDataTransferProxyImpl.class.getDeclaredMethod("createArchiveDirectories", Path.class);
+		method.setAccessible(true);
+		method.invoke(globusProxy, directory);
 	}
 
 	private HpcFileLocation fileLocation(String fileId) {

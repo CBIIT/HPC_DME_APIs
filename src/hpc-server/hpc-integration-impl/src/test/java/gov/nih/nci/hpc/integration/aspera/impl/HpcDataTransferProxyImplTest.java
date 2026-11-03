@@ -12,6 +12,7 @@ package gov.nih.nci.hpc.integration.aspera.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -125,6 +126,35 @@ public class HpcDataTransferProxyImplTest {
 
 		assertNull(completed.get());
 		assertTrue(failed.get().contains("ascp failed"));
+		assertStagingDirectoryRemoved();
+	}
+
+	@Test
+	public void testDownloadInvalidPasswordReportsFailure() throws Exception {
+		setAscp("touch '" + ascpOutput + "'\n");
+		HpcDataObjectDownloadRequest downloadRequest = downloadRequest("/remote", "file.txt");
+		downloadRequest.getAsperaDestination().getAccount().setPassword("sec\0ret");
+
+		asperaProxy.downloadDataObject(null, downloadRequest, null, progressListener, false);
+
+		assertFalse(Files.exists(ascpOutput));
+		assertNull(completed.get());
+		assertNotNull(failed.get());
+		assertFalse(failed.get().contains("sec"));
+		assertStagingDirectoryRemoved();
+	}
+
+	@Test
+	public void testDownloadUnexpectedErrorReportsFailure() throws Exception {
+		setAscp("touch '" + ascpOutput + "'\n");
+
+		// A NUL character in the staged file path causes an unchecked exception.
+		asperaProxy.downloadDataObject(null, downloadRequest("/remote", "file\0.txt"), null, progressListener,
+				false);
+
+		assertFalse(Files.exists(ascpOutput));
+		assertNull(completed.get());
+		assertNotNull(failed.get());
 		assertStagingDirectoryRemoved();
 	}
 
