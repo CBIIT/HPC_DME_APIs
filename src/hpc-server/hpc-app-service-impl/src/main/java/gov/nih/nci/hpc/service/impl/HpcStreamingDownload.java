@@ -264,6 +264,9 @@ public class HpcStreamingDownload implements HpcDataTransferProgressListener {
 		this.downloadTask.setFirstHopRetried(downloadTask.getFirstHopRetried());
 		this.downloadTask.setRetryTaskId(downloadTask.getRetryTaskId());
 		this.downloadTask.setRetryUserId(downloadTask.getRetryUserId());
+		// Preserve the server that claimed this task, so the DB update below doesn't
+		// wipe S3_DOWNLOAD_TASK_SERVER_ID (restart logic relies on it).
+		this.downloadTask.setS3DownloadTaskServerId(downloadTask.getS3DownloadTaskServerId());
 
 		if (this.downloadTask.getS3DownloadDestination() != null) {
 			this.downloadTask.setDataTransferType(HpcDataTransferType.S_3);
