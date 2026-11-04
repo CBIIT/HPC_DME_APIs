@@ -757,7 +757,7 @@ public interface HpcDataManagementRestService {
 	 *         entity.
 	 */
 	@POST
-	@Path("/v2/download/external")
+	@Path("/ext/download")
 	@Consumes("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	@Produces("application/json; charset=UTF-8, application/xml; charset=UTF-8")
 	public Response downloadDataObjectsOrCollectionsFromExternalSource(
