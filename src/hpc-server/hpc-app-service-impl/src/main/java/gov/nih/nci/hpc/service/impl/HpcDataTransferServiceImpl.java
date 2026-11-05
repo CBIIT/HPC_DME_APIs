@@ -1668,18 +1668,23 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 		logger.debug(
 				"download task: [taskId={}] - markProcessedDataObjectDownloadTask called attempting to update to in-process={} [transfer-type={}, server-id={}, transfer-status={}]",
 				downloadTask.getId(), inProcess, downloadTask.getDataTransferType(), serverId, downloadTask.getDataTransferStatus());
+		
+		//in-process can be set to false at any time, but can only be set to true if the task is in RECEIVED status and not already in-process.
 		if (!inProcess || (!downloadTask.getInProcess()
 				&& downloadTask.getDataTransferStatus().equals(HpcDataTransferDownloadStatus.RECEIVED))) {
 			
 			updated = dataDownloadDAO.setDataObjectDownloadTaskInProcess(downloadTask.getId(), inProcess, serverId);
-			if (updated)
+			if (updated) {
+				downloadTask.setInProcess(inProcess);
 				logger.debug(
 						"download task: [taskId={}] - markProcessedDataObjectDownloadTask updated to in-process={} - [transfer-type={}, server-id={}]",
 						downloadTask.getId(), inProcess, downloadTask.getDataTransferType(),
 						HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
-			downloadTask.setS3DownloadTaskServerId(serverId);
+						downloadTask.setS3DownloadTaskServerId(serverId);
+			}
 		}
 
+		// If the in-process was updated, or it is not in the RECEIVED status, set the processed timestamp.
 		if (updated) {
 			Calendar processed = Calendar.getInstance();
 			dataDownloadDAO.setDataObjectDownloadTaskProcessed(downloadTask.getId(), processed);
@@ -1688,7 +1693,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 					downloadTask.getId(), downloadTask.getDataTransferType(),
 					HpcDataTransferType.S_3.equals(dataTransferType) ? s3DownloadTaskServerId : null);
 			downloadTask.setProcessed(processed);
-			downloadTask.setInProcess(inProcess);
+			
 		}
 
 		return updated;
@@ -2517,11 +2522,16 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 			//If the number of slots used by requester <= total number of slots/number of users, then proceed.
 			if(totalUsersForGlobusTransfers > 0 &&
 				numberOfSlotsAllocatedForUser > transferAccountCount/totalUsersForGlobusTransfers) {
-				logger.info("User {} already allocated {} slots, exceeded globus slot limit since {} users are in queue",
+				logger.info("User {} ineligible for more globus slots: Already allocated {}, reached slot limit since {} users are in queue",
 					userId, numberOfSlotsAllocatedForUser, totalUsersForGlobusTransfers);
 				return false;
 			}
-		};
+			logger.debug("User {} eligible for more globus slots: Presently {} slots allocated, {} users are in queue, total slots = {}",
+					userId, numberOfSlotsAllocatedForUser, totalUsersForGlobusTransfers, transferAccountCount);
+
+		} else {
+			logger.debug("User {} eligible for globus slots since no slots allocated presently", userId);
+		}
 
 		return true;
 	}
