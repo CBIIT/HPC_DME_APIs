@@ -113,7 +113,7 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set IN_PROCESS = ?, S3_DOWNLOAD_TASK_SERVER_ID = ? where ID = ? and IN_PROCESS != ?";
 
 	private static final String RESET_DATA_OBJECT_DOWNLOAD_TASK_IN_PROCESS_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set IN_PROCESS = '0', S3_DOWNLOAD_TASK_SERVER_ID = null where IN_PROCESS = '1' "
-			+ "and S3_DOWNLOAD_TASK_SERVER_ID is null or S3_DOWNLOAD_TASK_SERVER_ID = ?";
+			+ "and (S3_DOWNLOAD_TASK_SERVER_ID is null or S3_DOWNLOAD_TASK_SERVER_ID = ?)";
 
 	private static final String SET_DATA_OBJECT_DOWNLOAD_TASK_PROCESSED_SQL = "update HPC_DATA_OBJECT_DOWNLOAD_TASK set PROCESSED = ? where ID = ?";
 
@@ -130,10 +130,11 @@ public class HpcDataDownloadDAOImpl implements HpcDataDownloadDAO {
 	private static final String GET_ALL_DATA_OBJECT_DOWNLOAD_RESULTS_BY_COLLECTION_DOWNLOAD_TASK_ID_SQL = "select * from HPC_DOWNLOAD_TASK_RESULT where COLLECTION_DOWNLOAD_TASK_ID = ? and TYPE = 'DATA_OBJECT'";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where DATA_TRANSFER_STATUS = ? "
-			+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
+			+ "and (IN_PROCESS is null or IN_PROCESS = '0') "
+				+ "and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, CREATED fetch next 1 rows only";
 
 	private static final String GET_DATA_OBJECT_DOWNLOAD_TASK_BY_STATUS_AND_TYPE_SQL = "select * from HPC_DATA_OBJECT_DOWNLOAD_TASK where "
-			+ "DATA_TRANSFER_STATUS = ? and DATA_TRANSFER_TYPE = ? and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, "
+			+ "DATA_TRANSFER_STATUS = ? and DATA_TRANSFER_TYPE = ? and (IN_PROCESS is null or IN_PROCESS = '0') and (PROCESSED < ? or PROCESSED is null) order by PRIORITY, "
 			+ "CREATED fetch next 1 rows only";
 
 	private static final String UPSERT_DOWNLOAD_TASK_RESULT_SQL = "merge into HPC_DOWNLOAD_TASK_RESULT using dual on (ID = ?) "
