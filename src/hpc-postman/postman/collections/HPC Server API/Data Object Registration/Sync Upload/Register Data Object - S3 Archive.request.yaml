@@ -26,9 +26,9 @@ body:
   content:
     - type: file
       key: dataObjectRegistration
-      src: /Users/rosenbergea/Development/HPC-DM/hpc-dm-repo/src/hpc-postman/files/registration-sync-upload.json
+      src: registration-sync-upload.json
       contentType: application/json
     - type: file
       key: dataObject
-      src: /Users/rosenbergea/Development/HPC-DM/hpc-dm-repo/src/hpc-postman/files/data-object-binary.png
+      src: data-object-binary.png
       contentType: application/octet-stream
