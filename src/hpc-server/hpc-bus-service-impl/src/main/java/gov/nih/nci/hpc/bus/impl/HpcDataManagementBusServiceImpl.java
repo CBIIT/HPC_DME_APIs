@@ -1699,9 +1699,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 	public HpcBulkDataObjectRegistrationResponseDTO getFilesFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
 		logger.info("Getting the list of S3 file in the external Collection with download task id {}, path {} ", downloadTask.getId(), downloadTask.getPath());
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
-		String path = downloadTask.getPath();
+		String path = "";
+		if(HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
+			path = downloadTask.getCollectionPaths().get(0);
+		}  else if(HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())){
+			path = downloadTask.getPath();
+		} else {
+			throw new HpcException("Unsupported download task type: " + downloadTask.getType(), HpcErrorType.INVALID_REQUEST_INPUT);
+		}
 		String userId = downloadTask.getUserId();
-
 		// Find the matching S3 data transfer configuration for the external path
 		try {
 			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);
@@ -1719,15 +1725,28 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		String posixPath = s3ArchiveConfiguration.getPosixPath();
 		String bucket = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileContainerId();
 		String archiveObjectId = s3ArchiveConfiguration.getBaseArchiveDestination().getFileLocation().getFileId();
-		String relativePath = path.substring(posixPath.length());
-		if(StringUtils.isEmpty(relativePath)) {
-			logger.warn("Path after POSIX prefix is empty for path: " + path);
-			throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		String s3CollectionPath =  archiveObjectId + relativePath;
 		// Build the DirectoryScanRegistrationItem
 		HpcBulkDataObjectRegistrationRequestDTO registrationBulkRequestDTO = new HpcBulkDataObjectRegistrationRequestDTO();
-		registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
+		if(HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
+			logger.info("Registering collection list from external source for paths: " + downloadTask.getCollectionPaths());
+			for (String collectionPath : downloadTask.getCollectionPaths()) {
+				String relativePath = collectionPath.substring(posixPath.length());
+				if(StringUtils.isEmpty(relativePath)) {
+					logger.warn("Path after POSIX prefix is empty for path: " + collectionPath);
+				}
+				String s3CollectionListPath = archiveObjectId + relativePath;
+				registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionListPath, s3ArchiveConfiguration.getId(), basePath , bucket);
+			}
+		} else if(HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())){
+			String relativePath = path.substring(posixPath.length());
+			if(StringUtils.isEmpty(relativePath)) {
+				logger.warn("Path after POSIX prefix is empty for path: " + path);
+				throw new HpcException("Path after POSIX prefix is empty for path: " + path, HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			String s3CollectionPath =  archiveObjectId + relativePath;
+			registrationBulkRequestDTO = buildDirectoryScanRegistrationItem(registrationBulkRequestDTO, s3CollectionPath, s3ArchiveConfiguration.getId(), basePath , bucket);
+		}
+
 		// Set the registration request to dry run mode. We do not want to actually register the data objects at this stage.
 		// We only want the list of files in S3 for the external collection download.
 		registrationBulkRequestDTO.setDryRun(true);
