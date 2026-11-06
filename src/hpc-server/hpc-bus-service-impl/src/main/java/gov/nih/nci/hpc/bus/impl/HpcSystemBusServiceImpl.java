@@ -1509,7 +1509,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					// record. For tasks in RECEIVED status (which are processed concurrently in
 					// separate threads), we set their in-process indicator to true so they are
 					// not picked up by another thread.
-					boolean inProcess = Optional.ofNullable(downloadTask.getInProcess()).orElse(false);
 					boolean updated = dataTransferService.markProcessedDataObjectDownloadTask(downloadTask,
 							dataTransferType, true);
 
@@ -1524,14 +1523,6 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 							// This task is in-process by another server. Skip it.
 							logger.info(
 									"download task: [taskId={}] - in-process by another server [transfer-type={}, destination-type={}]",
-									downloadTask.getId(), downloadTask.getDataTransferType(),
-									downloadTask.getDestinationType());
-							break;
-						}
-						if (inProcess) {
-							// This task is in-process by another thread. Skip it.
-							logger.info(
-									"download task: [taskId={}] - in-process by another thread [transfer-type={}, destination-type={}]",
 									downloadTask.getId(), downloadTask.getDataTransferType(),
 									downloadTask.getDestinationType());
 							break;
