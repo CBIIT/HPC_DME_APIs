@@ -5,4 +5,6 @@ values:
   - key: basePath
     value: /hpc-server
   - key: dataObjectPath
-    value: FNL_SF_Archive/eran-pi-lab/eran-project/eran-flowcell/eran-sample/eran-data-object-sync-
+    value: FNL_SF_Archive/eran-pi-lab/eran-project/eran-flowcell/eran-sample/eran-data-object
+  - key: posixDataObjectPath
+    value: FS_ARCHIVE/eran-test/eran-data-object
