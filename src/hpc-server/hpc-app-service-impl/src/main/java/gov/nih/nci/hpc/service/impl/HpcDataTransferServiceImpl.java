@@ -1479,7 +1479,8 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 							"download task: [taskId={}] - transfer requests not accepted at this time for user {} [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getUserId(), downloadTask.getDataTransferType(),
 							downloadTask.getDestinationType());
-					return false;
+					// continue with the rest of the globus download tasks
+					return true;
 				}
 
 				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
@@ -1491,6 +1492,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 							"download task: [taskId={}] - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getDataTransferType(),
 							downloadTask.getDestinationType());
+					// abort processing the rest of globus download tasks and wait for the next scheduled run
 					return false;
 				}
 			}
@@ -1549,6 +1551,10 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 			// If data tranfer type is Globus, add to HPC_GLOBUS_TRANSFER_TASK
 			if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+				logger.info(
+						"download task: [taskId={}] - globus transfer started [transfer-type={}, destination-type={}]",
+						downloadTask.getId(), downloadTask.getDataTransferType(),
+						downloadTask.getDestinationType());
 				HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
 				globusRequest.setDataTransferRequestId(dataTransferRequestId);
 				globusRequest
