@@ -487,6 +487,7 @@ public class HpcDataTransferServiceImplTest {
 		setPrivateField(dataTransferServiceImpl, "metadataService", metadataServiceMock);
 		setPrivateField(dataTransferServiceImpl, "notificationService", notificationServiceMock);
 		setPrivateField(dataTransferServiceImpl, "downloadArchiveLinkBasePath", "/download/archive");
+		setPrivateField(dataTransferServiceImpl, "globusQueueSize", 1);
 
 		dataTransferService = dataTransferServiceImpl;
 	}
