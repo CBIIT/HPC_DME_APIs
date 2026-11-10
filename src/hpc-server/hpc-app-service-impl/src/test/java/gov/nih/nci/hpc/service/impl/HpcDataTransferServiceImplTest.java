@@ -636,8 +636,8 @@ public class HpcDataTransferServiceImplTest {
 	/**
 	 * Fair-access: requester IS in the Globus queue and has used more slots (2)
 	 * than their fair share (4 accounts / 4 users = 1).
-	 * Expected: user is ineligible; continueDataObjectDownloadTask returns false
-	 * immediately without reaching getAuthenticatedToken.
+	 * Expected: user is skipped as ineligible; continueDataObjectDownloadTask returns true
+	 * so the remaining Globus download tasks can be processed without acquiring an account.
 	 */
 	@Test
 	public void testFairAccess_UserExceedsFairShare_IsIneligible() throws HpcException {
@@ -653,8 +653,8 @@ public class HpcDataTransferServiceImplTest {
 		// Act
 		boolean result = dataTransferService.continueDataObjectDownloadTask(buildGlobusDownloadTask("userA", "config1"));
 
-		// Assert – user exceeds fair share (2 > 1); must be rejected early.
-		assertFalse(result);
+		// Assert – user exceeds fair share (2 > 1); skip this task and continue processing.
+		assertTrue(result);
 		verify(systemAccountLocatorMock, never()).getSystemAccount(any(HpcDataTransferType.class), any());
 	}
 
