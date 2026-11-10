@@ -255,7 +255,10 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 	@Value("${hpc.bus.downloadArchiveLinkBasePath}")
 	private String downloadArchiveLinkBasePath = null;
 
-
+	// The Globus active tasks queue size.
+	@Value("${hpc.integration.globus.queueSize}")
+	private int globusQueueSize = 0;
+		
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
 
@@ -2517,6 +2520,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 			//Get the configured number of system accounts
 			int transferAccountCount = systemAccountLocator.getSystemAccountCount(hpcDataMgmtConfigId);
+			transferAccountCount *= globusQueueSize; //Multiply by the queue size to get the total number of slots available for Globus transfers
 
 			//Get the number of slots allocated to this user
 			int numberOfSlotsAllocatedForUser = globusTransferDAO.getGlobusRequestCountByUser(userId, true);
