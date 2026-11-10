@@ -214,6 +214,7 @@ class HpcSystemBusServiceImplTest {
     @Test
     void testProcessExternalDownloadTaskCreatesDownloadItemsForReturnedFiles() throws Exception {
         HpcCollectionDownloadTask downloadTask = collectionDownloadTask("external-task-id", "/external/collection");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION);
         downloadTask.setExternalArchiveFlag(true);
         HpcBulkDataObjectRegistrationResponseDTO registrationResponse = new HpcBulkDataObjectRegistrationResponseDTO();
         registrationResponse.getDataObjectRegistrationItems().add(registrationItem("/external/file-one"));
