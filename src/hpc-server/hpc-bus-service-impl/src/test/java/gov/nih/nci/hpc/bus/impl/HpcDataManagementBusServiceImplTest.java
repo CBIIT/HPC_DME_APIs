@@ -906,7 +906,7 @@ class HpcDataManagementBusServiceImplTest {
                 buildScannedRegistrationResponse("archive-object/data/file.txt");
         doReturn(expectedResponse).when(service).registerDataObjects(any(), eq("download-user"));
 
-        HpcBulkDataObjectRegistrationResponseDTO response = service.getFilesFromExternalSource(downloadTask);
+        HpcBulkDataObjectRegistrationResponseDTO response = service.getCollectionFilesFromExternalSource(downloadTask.getPath(),downloadTask.getUserId());
 
         assertEquals(expectedResponse, response);
         verify(response.getDataObjectRegistrationItems().get(0)).setPath("/external/data/file.txt");
@@ -926,25 +926,13 @@ class HpcDataManagementBusServiceImplTest {
     }
 
     @Test
-    void testGetFilesFromExternalSource_RejectsUnsupportedDownloadType() {
-        HpcCollectionDownloadTask downloadTask = createCollectionDownloadTask(
-                HpcDownloadTaskType.DATA_OBJECT, "/external/data", Collections.emptyList());
-
-        HpcException exception = assertThrows(HpcException.class,
-                () -> service.getFilesFromExternalSource(downloadTask));
-
-        assertEquals("Unsupported download task type: DATA_OBJECT", exception.getMessage());
-        verifyNoInteractions(dataManagementService);
-    }
-
-    @Test
     void testGetFilesFromExternalSource_RejectsMissingS3Configuration() throws Exception {
         HpcCollectionDownloadTask downloadTask = createCollectionDownloadTask(
                 HpcDownloadTaskType.COLLECTION, "/external/data", Collections.emptyList());
         when(dataManagementService.getS3ArchiveConfigurationForExternalPath("/external/data")).thenReturn(null);
 
         HpcException exception = assertThrows(HpcException.class,
-                () -> service.getFilesFromExternalSource(downloadTask));
+                () -> service.getCollectionFilesFromExternalSource(downloadTask.getPath(), downloadTask.getUserId()));
 
         assertTrue(exception.getMessage().contains(
                 "No matching S3 archive configuration found for external download path: /external/data"));
@@ -962,7 +950,7 @@ class HpcDataManagementBusServiceImplTest {
                 .thenReturn(buildDataManagementConfiguration("/irods-root"));
 
         HpcException exception = assertThrows(HpcException.class,
-                () -> service.getFilesFromExternalSource(downloadTask));
+                () -> service.getCollectionFilesFromExternalSource(downloadTask.getPath(), downloadTask.getUserId()));
 
         assertTrue(exception.getMessage().contains("Path after POSIX prefix is empty for path: /external"));
         verify(service, never()).registerDataObjects(any(), anyString());

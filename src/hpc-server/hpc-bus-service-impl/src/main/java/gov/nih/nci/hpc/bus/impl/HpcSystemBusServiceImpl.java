@@ -2867,10 +2867,10 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 			// The download task for a single data object in an external archive will first register
 			// an archive link before initiating the download.
 			if (HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())) {
-				downloadItems = processExternalCollectionDownloadTask(downloadTask);
+				downloadItems = processExternalCollectionDownloadTask(downloadTask, downloadTask.getPath(), downloadTask.getUserId());
 			} else if (HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
 				for (String collectionPath : downloadTask.getCollectionPaths()) {
-					List<HpcCollectionDownloadTaskItem> items = processExternalCollectionDownloadTask(downloadTask);
+					List<HpcCollectionDownloadTaskItem> items = processExternalCollectionDownloadTask(downloadTask, collectionPath, downloadTask.getUserId());
 					// Update the collection path on the items.
 					items.forEach(item -> item.setCollectionPath(collectionPath));
 					downloadItems.addAll(items);
@@ -2899,11 +2899,11 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 		}
 	}
 
-	private List<HpcCollectionDownloadTaskItem> processExternalCollectionDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException {
+	private List<HpcCollectionDownloadTaskItem> processExternalCollectionDownloadTask(HpcCollectionDownloadTask downloadTask, String collectionPath, String userId) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
 		// Obtain the list of files from S3 that need to be registered and downloaded in the collection
 		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
-				.getFilesFromExternalSource(downloadTask);
+				.getCollectionFilesFromExternalSource(collectionPath, userId);
 
 				for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
 					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),

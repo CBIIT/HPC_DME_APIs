@@ -1696,16 +1696,9 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 		return responseDTO;
 	}
 
-	public HpcBulkDataObjectRegistrationResponseDTO getFilesFromExternalSource(HpcCollectionDownloadTask downloadTask) throws HpcException{
-		logger.info("Getting the list of S3 file in the external Collection with download task id {}, path {} ", downloadTask.getId(), downloadTask.getPath());
+	public HpcBulkDataObjectRegistrationResponseDTO getCollectionFilesFromExternalSource(String path, String userId) throws HpcException{
+		logger.info("Retrieving the list of S3 files at collection path {} in an external archive.", path);
 		HpcDataTransferConfiguration s3ArchiveConfiguration = null;
-		String path = "";
-		if(HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())){
-			path = downloadTask.getPath();
-		} else {
-			throw new HpcException("Unsupported download task type: " + downloadTask.getType(), HpcErrorType.INVALID_REQUEST_INPUT);
-		}
-		String userId = downloadTask.getUserId();
 		// Find the matching S3 data transfer configuration for the external path
 		try {
 			s3ArchiveConfiguration = dataManagementService.getS3ArchiveConfigurationForExternalPath(path);

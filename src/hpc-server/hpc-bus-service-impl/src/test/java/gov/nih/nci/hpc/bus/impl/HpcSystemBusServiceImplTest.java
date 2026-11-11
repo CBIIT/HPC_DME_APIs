@@ -219,7 +219,7 @@ class HpcSystemBusServiceImplTest {
         HpcBulkDataObjectRegistrationResponseDTO registrationResponse = new HpcBulkDataObjectRegistrationResponseDTO();
         registrationResponse.getDataObjectRegistrationItems().add(registrationItem("/external/file-one"));
         registrationResponse.getDataObjectRegistrationItems().add(registrationItem("/external/file-two"));
-        when(dataManagementBusService.getFilesFromExternalSource(downloadTask)).thenReturn(registrationResponse);
+        when(dataManagementBusService.getCollectionFilesFromExternalSource(downloadTask.getPath(), downloadTask.getUserId())).thenReturn(registrationResponse);
 
         HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
         downloadResponse.setTaskId("download-task-id");
@@ -240,7 +240,7 @@ class HpcSystemBusServiceImplTest {
     void testProcessExternalDownloadTaskCompletesFailedWhenListingFilesFails() throws Exception {
         HpcCollectionDownloadTask downloadTask = collectionDownloadTask("external-task-id", "/external/collection");
         downloadTask.setType(HpcDownloadTaskType.COLLECTION);
-        when(dataManagementBusService.getFilesFromExternalSource(downloadTask))
+        when(dataManagementBusService.getCollectionFilesFromExternalSource(downloadTask.getPath(), downloadTask.getUserId()))
             .thenThrow(new HpcException("External source unavailable", HpcErrorType.DATA_TRANSFER_ERROR));
 
         List<HpcCollectionDownloadTaskItem> items = invokeProcessExternalDownloadTask(downloadTask);
