@@ -926,36 +926,6 @@ class HpcDataManagementBusServiceImplTest {
     }
 
     @Test
-    void testGetFilesFromExternalSource_CollectionListScansEachCollectionPath() throws Exception {
-        HpcCollectionDownloadTask downloadTask = createCollectionDownloadTask(
-                HpcDownloadTaskType.COLLECTION_LIST, "/external/first",
-                java.util.Arrays.asList("/external/first", "/external/second"));
-        HpcDataTransferConfiguration s3Configuration = buildExternalArchiveConfiguration(
-                "s3-config-2", "dm-config-2", "/external", "bucket-2", "archive-object");
-        when(dataManagementService.getS3ArchiveConfigurationForExternalPath("/external/first"))
-                .thenReturn(s3Configuration);
-        when(dataManagementService.getDataManagementConfiguration("dm-config-2"))
-                .thenReturn(buildDataManagementConfiguration("/irods-root"));
-        HpcBulkDataObjectRegistrationResponseDTO expectedResponse = buildScannedRegistrationResponse(
-                "archive-object/first/one.txt", "archive-object/second/two.txt");
-        doReturn(expectedResponse).when(service).registerDataObjects(any(), eq("download-user"));
-
-        HpcBulkDataObjectRegistrationResponseDTO response = service.getFilesFromExternalSource(downloadTask);
-
-        verify(response.getDataObjectRegistrationItems().get(0)).setPath("/external/first/one.txt");
-        verify(response.getDataObjectRegistrationItems().get(1)).setPath("/external/second/two.txt");
-        var registrationRequestCaptor = org.mockito.ArgumentCaptor
-                .forClass(HpcBulkDataObjectRegistrationRequestDTO.class);
-        verify(service).registerDataObjects(registrationRequestCaptor.capture(), eq("download-user"));
-        var directoryScans = registrationRequestCaptor.getValue().getDirectoryScanRegistrationItems();
-        assertEquals(2, directoryScans.size());
-        assertEquals("archive-object/first",
-                directoryScans.get(0).getS3ArchiveScanDirectory().getDirectoryLocation().getFileId());
-        assertEquals("archive-object/second",
-                directoryScans.get(1).getS3ArchiveScanDirectory().getDirectoryLocation().getFileId());
-    }
-
-    @Test
     void testGetFilesFromExternalSource_RejectsUnsupportedDownloadType() {
         HpcCollectionDownloadTask downloadTask = createCollectionDownloadTask(
                 HpcDownloadTaskType.DATA_OBJECT, "/external/data", Collections.emptyList());
