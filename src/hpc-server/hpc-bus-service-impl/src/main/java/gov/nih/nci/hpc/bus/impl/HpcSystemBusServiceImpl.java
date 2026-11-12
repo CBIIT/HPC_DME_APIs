@@ -2853,67 +2853,82 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 	/**
 	 * Process an external collection download task.
 	 *
-	 * @param downloadTask The external collection download task to process.
-	 * @return A list of download task items for the data objects in the collection.
+	 * @param downloadTask The download task for a collection, collection list or dataObject list to process.
+	 * @return A list of download task items for the data objects in the collection/collection list.
 	 * @throws HpcException on service failure.
 	 */
-	private List<HpcCollectionDownloadTaskItem> processExternalDownloadTask(HpcCollectionDownloadTask downloadTask) throws HpcException {
-		try {
-			logger.info("Process External collection download task: [taskId={}] - started processing [{}]",
-					downloadTask.getId(), downloadTask.getType());
+	private List<HpcCollectionDownloadTaskItem> processExternalDownloadTask(HpcCollectionDownloadTask downloadTask)
+			throws HpcException {
+		logger.info("Process External collection/list download task: [taskId={}] - started processing [{}]",
+				downloadTask.getId(), downloadTask.getType());
 
-			List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
-			// Initiate a download task for each data object in the collection.
-			// The download task for a single data object in an external archive will first register
-			// an archive link before initiating the download.
-			if (HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())) {
-				downloadItems = processExternalCollectionDownloadTask(downloadTask, downloadTask.getPath(), downloadTask.getUserId());
-			} else if (HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
-				for (String collectionPath : downloadTask.getCollectionPaths()) {
-					List<HpcCollectionDownloadTaskItem> items = processExternalCollectionDownloadTask(downloadTask, collectionPath, downloadTask.getUserId());
-					// Update the collection path on the items.
-					items.forEach(item -> item.setCollectionPath(collectionPath));
-					downloadItems.addAll(items);
-				}
-			} else if (HpcDownloadTaskType.DATA_OBJECT_LIST.equals(downloadTask.getType())) {
-				for (String item : downloadTask.getDataObjectPaths()) {
-					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item,
-							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
-							downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
-							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
-							downloadTask.getId(), downloadTask.getExternalArchiveFlag());
-					downloadItems.add(downloadItem);
-				}
-			}
-			return downloadItems;
-		} catch (HpcException e) {
-			logger.error("Failed to process external collection download task: " + downloadTask.getId() + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-			try {
-				completeCollectionDownloadTask(downloadTask, HpcDownloadResult.FAILED, e.getMessage());
-
-			} catch (HpcException ex) {
-				logger.error("Failed to complete collection download as failed {}",
-						downloadTask.getId(), ex);
-			}
-			return Collections.emptyList();
-		}
-	}
-
-	private List<HpcCollectionDownloadTaskItem> processExternalCollectionDownloadTask(HpcCollectionDownloadTask downloadTask, String collectionPath, String userId) throws HpcException {
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
-		// Obtain the list of files from S3 that need to be registered and downloaded in the collection
-		HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = dataManagementBusService
-				.getCollectionFilesFromExternalSource(collectionPath, userId);
-
+		// Initiate a download task for each data object in the collection.
+		// The download task for a single data object in an external archive will first
+		// register
+		// an archive link before initiating the download.
+		if (HpcDownloadTaskType.COLLECTION.equals(downloadTask.getType())) {
+			HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
+			try {
+				registrationResponseDTO = dataManagementBusService
+						.getCollectionFilesFromExternalSource(downloadTask.getPath(), downloadTask.getUserId());
+			} catch (Exception e) {
+				throw new HpcException("Failed to retrieve files from external collection with path: "
+						+ downloadTask.getPath() + ". error: " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+			for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
+				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
+						downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
+						downloadTask.getGoogleDriveDownloadDestination(),
+						downloadTask.getGoogleCloudStorageDownloadDestination(),
+						downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
+						downloadTask.getAppendPathToDownloadDestination(),
+						downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
+						downloadTask.getId(), downloadTask.getExternalArchiveFlag());
+				downloadItems.add(downloadItem);
+			}
+		} else if (HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
+			for (String collectionPath : downloadTask.getCollectionPaths()) {
+				HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
+				// Process each collection path separately.
+				try {
+					registrationResponseDTO = dataManagementBusService
+							.getCollectionFilesFromExternalSource(collectionPath, downloadTask.getUserId());
+				} catch (Exception e) {
+					throw new HpcException("Failed to retrieve files from external collection with path: "
+							+ downloadTask.getPath() + ". error: " + e.getMessage(),
+							HpcErrorType.INVALID_REQUEST_INPUT);
+				}
+				List<HpcCollectionDownloadTaskItem> items = new ArrayList<>();
 				for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
 					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
-							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(), downloadTask.getGoogleDriveDownloadDestination(),
-							downloadTask.getGoogleCloudStorageDownloadDestination(), downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
-							downloadTask.getAppendPathToDownloadDestination(), downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
+							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
+							downloadTask.getGoogleDriveDownloadDestination(),
+							downloadTask.getGoogleCloudStorageDownloadDestination(),
+							downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
+							downloadTask.getAppendPathToDownloadDestination(),
+							downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
 							downloadTask.getId(), downloadTask.getExternalArchiveFlag());
-					downloadItems.add(downloadItem);
+					items.add(downloadItem);
 				}
-				return downloadItems;
+				// Update the collection path on the items.
+				items.forEach(item -> item.setCollectionPath(collectionPath));
+				downloadItems.addAll(items);
+			}
+		} else if (HpcDownloadTaskType.DATA_OBJECT_LIST.equals(downloadTask.getType())) {
+			for (String item : downloadTask.getDataObjectPaths()) {
+				HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item,
+						downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
+						downloadTask.getGoogleDriveDownloadDestination(),
+						downloadTask.getGoogleCloudStorageDownloadDestination(),
+						downloadTask.getAsperaDownloadDestination(), downloadTask.getBoxDownloadDestination(),
+						downloadTask.getAppendPathToDownloadDestination(),
+						downloadTask.getAppendCollectionNameToDownloadDestination(), downloadTask.getUserId(), null,
+						downloadTask.getId(), downloadTask.getExternalArchiveFlag());
+				downloadItems.add(downloadItem);
+			}
+		}
+		return downloadItems;
 	}
 
 	/**
