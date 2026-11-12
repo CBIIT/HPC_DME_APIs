@@ -255,7 +255,10 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 	@Value("${hpc.bus.downloadArchiveLinkBasePath}")
 	private String downloadArchiveLinkBasePath = null;
 
-
+	// The Globus active tasks queue size.
+	@Value("${hpc.integration.globus.queueSize}")
+	private int globusQueueSize = 0;
+		
 	// List of authenticated tokens
 	private List<HpcDataTransferAuthenticatedToken> dataTransferAuthenticatedTokens = new ArrayList<>();
 
@@ -1479,7 +1482,8 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 							"download task: [taskId={}] - transfer requests not accepted at this time for user {} [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getUserId(), downloadTask.getDataTransferType(),
 							downloadTask.getDestinationType());
-					return false;
+					// continue with the rest of the globus download tasks
+					return true;
 				}
 
 				authenticatedToken = getAuthenticatedToken(downloadRequest.getDataTransferType(),
@@ -1491,6 +1495,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 							"download task: [taskId={}] - transfer requests not accepted at this time [transfer-type={}, destination-type={}]",
 							downloadTask.getId(), downloadTask.getDataTransferType(),
 							downloadTask.getDestinationType());
+					// abort processing the rest of globus download tasks and wait for the next scheduled run
 					return false;
 				}
 			}
@@ -1549,6 +1554,10 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 			// If data tranfer type is Globus, add to HPC_GLOBUS_TRANSFER_TASK
 			if (downloadTask.getDataTransferType().equals(HpcDataTransferType.GLOBUS)) {
+				logger.info(
+						"download task: [taskId={}] - globus transfer started [transfer-type={}, destination-type={}]",
+						downloadTask.getId(), downloadTask.getDataTransferType(),
+						downloadTask.getDestinationType());
 				HpcGlobusTransferTask globusRequest = new HpcGlobusTransferTask();
 				globusRequest.setDataTransferRequestId(dataTransferRequestId);
 				globusRequest
@@ -2511,6 +2520,7 @@ private Map<String, Long> dataObjectUploadBytesTransferred = new java.util.concu
 
 			//Get the configured number of system accounts
 			int transferAccountCount = systemAccountLocator.getSystemAccountCount(hpcDataMgmtConfigId);
+			transferAccountCount *= globusQueueSize; //Multiply by the queue size to get the total number of slots available for Globus transfers
 
 			//Get the number of slots allocated to this user
 			int numberOfSlotsAllocatedForUser = globusTransferDAO.getGlobusRequestCountByUser(userId, true);
