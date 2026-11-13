@@ -2771,22 +2771,61 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 					downloadTask.getId(), downloadTask.getType());
 
 		List<HpcCollectionDownloadTaskItem> downloadItems = new ArrayList<>();
-		try {
-			// Implement the logic to process the internal download task here.
-			if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+
+		// Implement the logic to process the internal download task here.
+		if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION)) {
+			// Get the System generated metadata.
+			HpcSystemGeneratedMetadata metadata = metadataService
+					.getCollectionSystemGeneratedMetadata(downloadTask.getPath());
+
+			// Get the collection to be downloaded.
+			HpcCollection collection = dataManagementService
+					.getFullCollection(downloadTask.getPath(), metadata.getLinkSourcePath());
+			if (collection == null) {
+				throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+			}
+
+			// Download all files under this collection.
+			downloadItems = downloadCollection(collection,
+					downloadTask.getGlobusDownloadDestination(),
+					downloadTask.getS3DownloadDestination(),
+					downloadTask.getGoogleDriveDownloadDestination(),
+					downloadTask.getGoogleCloudStorageDownloadDestination(),
+					downloadTask.getAsperaDownloadDestination(),
+					downloadTask.getBoxDownloadDestination(),
+					downloadTask.getAppendPathToDownloadDestination(),
+					downloadTask.getAppendCollectionNameToDownloadDestination(),
+					downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
+					excludedPaths);
+
+		} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
+			downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
+					downloadTask.getGlobusDownloadDestination(),
+					downloadTask.getS3DownloadDestination(),
+					downloadTask.getGoogleDriveDownloadDestination(),
+					downloadTask.getGoogleCloudStorageDownloadDestination(),
+					downloadTask.getAsperaDownloadDestination(),
+					downloadTask.getBoxDownloadDestination(),
+					downloadTask.getAppendPathToDownloadDestination(),
+					downloadTask.getAppendCollectionNameToDownloadDestination(),
+					downloadTask.getUserId(), downloadTask.getId());
+
+		} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
+			downloadItems = new ArrayList<>();
+			for (String path : downloadTask.getCollectionPaths()) {
 				// Get the System generated metadata.
 				HpcSystemGeneratedMetadata metadata = metadataService
-						.getCollectionSystemGeneratedMetadata(downloadTask.getPath());
+						.getCollectionSystemGeneratedMetadata(path);
 
-				// Get the collection to be downloaded.
-				HpcCollection collection = dataManagementService
-						.getFullCollection(downloadTask.getPath(), metadata.getLinkSourcePath());
+				HpcCollection collection = dataManagementService.getFullCollection(path,
+						metadata.getLinkSourcePath());
 				if (collection == null) {
-					throw new HpcException("Collection not found", HpcErrorType.INVALID_REQUEST_INPUT);
+					throw new HpcException("Collection not found",
+							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
 
-				// Download all files under this collection.
-				downloadItems = downloadCollection(collection,
+				// Get a list of download items for this collection
+				List<HpcCollectionDownloadTaskItem> items = downloadCollection(collection,
 						downloadTask.getGlobusDownloadDestination(),
 						downloadTask.getS3DownloadDestination(),
 						downloadTask.getGoogleDriveDownloadDestination(),
@@ -2798,56 +2837,13 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 						downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
 						excludedPaths);
 
-			} else if (downloadTask.getType().equals(HpcDownloadTaskType.DATA_OBJECT_LIST)) {
-				downloadItems = downloadDataObjects(downloadTask.getDataObjectPaths(),
-						downloadTask.getGlobusDownloadDestination(),
-						downloadTask.getS3DownloadDestination(),
-						downloadTask.getGoogleDriveDownloadDestination(),
-						downloadTask.getGoogleCloudStorageDownloadDestination(),
-						downloadTask.getAsperaDownloadDestination(),
-						downloadTask.getBoxDownloadDestination(),
-						downloadTask.getAppendPathToDownloadDestination(),
-						downloadTask.getAppendCollectionNameToDownloadDestination(),
-						downloadTask.getUserId(), downloadTask.getId());
+				// Update the collection path on the items.
+				items.forEach(item -> item.setCollectionPath(path));
 
-			} else if (downloadTask.getType().equals(HpcDownloadTaskType.COLLECTION_LIST)) {
-				downloadItems = new ArrayList<>();
-				for (String path : downloadTask.getCollectionPaths()) {
-					// Get the System generated metadata.
-					HpcSystemGeneratedMetadata metadata = metadataService
-							.getCollectionSystemGeneratedMetadata(path);
-
-					HpcCollection collection = dataManagementService.getFullCollection(path,
-							metadata.getLinkSourcePath());
-					if (collection == null) {
-						throw new HpcException("Collection not found",
-								HpcErrorType.INVALID_REQUEST_INPUT);
-					}
-
-					// Get a list of download items for this collection
-					List<HpcCollectionDownloadTaskItem> items = downloadCollection(collection,
-							downloadTask.getGlobusDownloadDestination(),
-							downloadTask.getS3DownloadDestination(),
-							downloadTask.getGoogleDriveDownloadDestination(),
-							downloadTask.getGoogleCloudStorageDownloadDestination(),
-							downloadTask.getAsperaDownloadDestination(),
-							downloadTask.getBoxDownloadDestination(),
-							downloadTask.getAppendPathToDownloadDestination(),
-							downloadTask.getAppendCollectionNameToDownloadDestination(),
-							downloadTask.getUserId(), collectionDownloadBreaker, downloadTask.getId(),
-							excludedPaths);
-
-					// Update the collection path on the items.
-					items.forEach(item -> item.setCollectionPath(path));
-
-					downloadItems.addAll(items);
-				}
+				downloadItems.addAll(items);
 			}
-			return downloadItems;
-		} catch (Exception e) {
-				logger.error("Failed to process internal collection download task: " + downloadTask.getId() + ". " + e.getMessage(), HpcErrorType.INVALID_REQUEST_INPUT);
-				return Collections.emptyList();
 		}
+		return downloadItems;
 	}
 
 	/**
