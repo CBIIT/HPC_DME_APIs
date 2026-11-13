@@ -168,11 +168,12 @@ public interface HpcDataManagementBusService {
 	/**
 	 * Get all files in a collection that reside in an external file system (S3) and are associated with the download task.
 	 *
-	 * @param downloadTask The collection download task.
+	 * @param collectionPath The collection path.
+	 * @param userId The user ID.
 	 * @return Registration Response DTO.
 	 * @throws HpcException on service failure.
 	 */
-	public HpcBulkDataObjectRegistrationResponseDTO getFilesFromExternalSource(HpcCollectionDownloadTask downloadTask)
+	public HpcBulkDataObjectRegistrationResponseDTO getCollectionFilesFromExternalSource(String collectionPath, String userId)
 			throws HpcException;
 
 			/**
@@ -185,6 +186,16 @@ public interface HpcDataManagementBusService {
 	 * @throws HpcException on service failure.
 	 */
 	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollections(
+			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
+
+	/**
+	 * Download a list of data objects or a list of collections from an external source.
+	 *
+	 * @param downloadRequest The download request DTO.
+	 * @return Download Response DTO.
+	 * @throws HpcException on service failure.
+	 */
+	public HpcBulkDataObjectDownloadResponseDTO downloadDataObjectsOrCollectionsFromExternalSource(
 			HpcBulkDataObjectDownloadRequestDTO downloadRequest) throws HpcException;
 
 	/**

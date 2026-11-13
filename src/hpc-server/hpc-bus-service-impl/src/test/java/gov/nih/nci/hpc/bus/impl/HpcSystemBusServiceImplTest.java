@@ -214,11 +214,12 @@ class HpcSystemBusServiceImplTest {
     @Test
     void testProcessExternalDownloadTaskCreatesDownloadItemsForReturnedFiles() throws Exception {
         HpcCollectionDownloadTask downloadTask = collectionDownloadTask("external-task-id", "/external/collection");
+        downloadTask.setType(HpcDownloadTaskType.COLLECTION);
         downloadTask.setExternalArchiveFlag(true);
         HpcBulkDataObjectRegistrationResponseDTO registrationResponse = new HpcBulkDataObjectRegistrationResponseDTO();
         registrationResponse.getDataObjectRegistrationItems().add(registrationItem("/external/file-one"));
         registrationResponse.getDataObjectRegistrationItems().add(registrationItem("/external/file-two"));
-        when(dataManagementBusService.getFilesFromExternalSource(downloadTask)).thenReturn(registrationResponse);
+        when(dataManagementBusService.getCollectionFilesFromExternalSource(downloadTask.getPath(), downloadTask.getUserId())).thenReturn(registrationResponse);
 
         HpcDataObjectDownloadResponseDTO downloadResponse = new HpcDataObjectDownloadResponseDTO();
         downloadResponse.setTaskId("download-task-id");
@@ -236,18 +237,24 @@ class HpcSystemBusServiceImplTest {
     }
 
     @Test
-    void testProcessExternalDownloadTaskCompletesFailedWhenListingFilesFails() throws Exception {
+    void testProcessCollectionDownloadTaskCompletesFailedWhenExternalListingFails() throws HpcException {
         HpcCollectionDownloadTask downloadTask = collectionDownloadTask("external-task-id", "/external/collection");
         downloadTask.setType(HpcDownloadTaskType.COLLECTION);
-        when(dataManagementBusService.getFilesFromExternalSource(downloadTask))
+        downloadTask.setExternalArchiveFlag(true);
+        when(dataTransferService.getCollectionDownloadTasks(HpcCollectionDownloadTaskStatus.RECEIVED, false))
+            .thenReturn(List.of(downloadTask));
+        when(dataManagementBusService.getCollectionFilesFromExternalSource(downloadTask.getPath(), downloadTask.getUserId()))
             .thenThrow(new HpcException("External source unavailable", HpcErrorType.DATA_TRANSFER_ERROR));
+        service.collectionDownloadTaskExecutor = Runnable::run;
+        executeAsSystemAccount();
 
-        List<HpcCollectionDownloadTaskItem> items = invokeProcessExternalDownloadTask(downloadTask);
+        service.processCollectionDownloadTasks();
 
-        assertTrue(items.isEmpty());
         verify(dataTransferService).completeCollectionDownloadTask(eq(downloadTask), eq(HpcDownloadResult.FAILED),
-            eq("External source unavailable"), any());
-        verify(dataManagementBusService, never()).downloadDataObject(anyString(), any(), any(), any(), any(),
+            eq("Failed to retrieve files from external collection with path: /external/collection. "
+                + "error: External source unavailable"), any());
+        verify(dataTransferService, never()).updateCollectionDownloadTask(any());
+        verify(dataManagementBusService, never()).downloadDataObject(any(), any(), any(), any(), any(),
             anyBoolean(), any(), anyBoolean());
     }
 
