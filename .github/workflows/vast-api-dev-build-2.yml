@@ -1,0 +1,97 @@
+name: VAST API DEV MANUAL BUILD USING EPHEMERAL RUNNER
+permissions:
+  contents: write
+  id-token: write
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: env to build war file
+        type: choice
+        default: build-dev
+        options:
+          - build-dev
+      code_branch:
+        description: branch to build
+        required: true
+        default: master
+run-name: "Build for VAST API (branch: ${{ github.event.inputs.code_branch }})"
+
+# TODO: adjust these values (or move them to repository/environment variables)
+env:
+  AWS_REGION: us-east-1
+  S3_BUCKET: git-hub-actions-artifacts-dev
+  S3_FOLDER: DME/VAST            # folder (prefix) inside the bucket
+
+jobs:
+  build:
+    name: Build war file
+    runs-on:
+      labels: [ec2-al2023-s-nonprod]
+    environment: ${{ inputs.environment }}
+    env:
+      CODE_BRANCH: "${{ github.event.inputs.code_branch }}"
+      HPC_DRIVE_CLIENTID: ${{ secrets.HPC_DRIVE_CLIENTID }}
+      HPC_DRIVE_CLIENTSECRET: ${{ secrets.HPC_DRIVE_CLIENTSECRET }}
+      HPC_BOX_CLIENTID: ${{ secrets.HPC_BOX_CLIENTID }}
+      HPC_BOX_CLIENTSECRET: ${{ secrets.HPC_BOX_CLIENTSECRET }}
+    steps:
+      - name: check git installation
+        run: git --version
+
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CODE_BRANCH }}
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+          cache: 'maven'
+      - name: set up maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: '3.9.4'
+
+      - name: build the war file
+        run: |
+          cd $GITHUB_WORKSPACE/src
+          sed -i "s|^gov.nih.nci.hpc.drive.clientid=.*|gov.nih.nci.hpc.drive.clientid=${{ env.HPC_DRIVE_CLIENTID }}|" hpc-web/src/main/resources/appconfigs/dev-env.conf
+          sed -i "s|^gov.nih.nci.hpc.drive.clientsecret=.*|gov.nih.nci.hpc.drive.clientsecret=${{ env.HPC_DRIVE_CLIENTSECRET }}|" hpc-web/src/main/resources/appconfigs/dev-env.conf
+          sed -i "s|^gov.nih.nci.hpc.box.clientid=.*|gov.nih.nci.hpc.box.clientid=${{ env.HPC_BOX_CLIENTID }}|" hpc-web/src/main/resources/appconfigs/dev-env.conf
+          sed -i "s|^gov.nih.nci.hpc.box.clientsecret=.*|gov.nih.nci.hpc.box.clientsecret=${{ env.HPC_BOX_CLIENTSECRET }}|" hpc-web/src/main/resources/appconfigs/dev-env.conf
+          mvn clean install -Ddev
+
+      - name: Collect artifacts for upload (keeps the src/... folder layout the deploy job expects)
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$RUNNER_TEMP/artifact-upload"
+          mkdir -p "$RUNNER_TEMP/artifact-upload"
+          cp --parents \
+            src/hpc-server/hpc-ws-rs-impl/target/*.war \
+            src/hpc-server/hpc-scheduler/target/*.war \
+            src/hpc-server/hpc-scheduler-migration/target/*.war \
+            "$RUNNER_TEMP/artifact-upload/"
+          find "$RUNNER_TEMP/artifact-upload" -type f | sort
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload artifacts to S3
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_prefix="s3://${S3_BUCKET}/${S3_FOLDER}/builds/${{ github.run_number }}"
+          latest_prefix="s3://${S3_BUCKET}/${S3_FOLDER}/latest"
+
+          aws s3 sync "$RUNNER_TEMP/artifact-upload" "${run_prefix}/" --sse AES256 --only-show-errors
+          # keep a "latest" copy so the deploy job can default to the most recent successful build
+          aws s3 sync "${run_prefix}/" "${latest_prefix}/" --delete --sse AES256 --only-show-errors
+
+          echo "Uploaded to ${run_prefix}/ and ${latest_prefix}/"
+          aws s3 ls "${run_prefix}/" --recursive
