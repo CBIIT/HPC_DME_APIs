@@ -22,12 +22,12 @@
 	<context:annotation-config />
 	
 	<!-- HPC Oracle DB data source -->
-	<bean id="hpcOracleDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	<bean id="hpcOracleDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
         <property name="url" value="${hpc.dao.oracle.url}" />
         <property name="username" value="${hpc.dao.oracle.username}" />
         <property name="password" value="${hpc.dao.oracle.password}" />
-        <property name="maxActive" value="${hpc.dao.oracle.maxActive}" />
+        <property name="maxTotal" value="${hpc.dao.oracle.maxActive}" />
     </bean>
     
     <!-- HPC Oracle Encryptor -->
@@ -41,12 +41,12 @@
 	</bean>
 
 	<!-- HPC Trino DB data source -->
-	<bean id="hpcTrinoDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	<bean id="hpcTrinoDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="io.trino.jdbc.TrinoDriver" />
 		<property name="url" value="${hpc.dao.trino.url}" />
 		<property name="username" value="${hpc.dao.trino.username}" />
 		<property name="password" value="${hpc.dao.trino.password}" />
-		<property name="maxActive" value="${hpc.dao.trino.maxActive}" />
+		<property name="maxTotal" value="${hpc.dao.trino.maxActive}" />
 	</bean>
 
 	<!-- Spring Trino JDBC Template -->
