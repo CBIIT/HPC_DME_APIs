@@ -31,6 +31,7 @@
 		<commons-compress.version>1.26.2</commons-compress.version>
 		<commons-pool2.version>2.13.1</commons-pool2.version>
 		<commons-dbcp2.version>2.14.0</commons-dbcp2.version>
+		<commons-logging.version>1.4.0</commons-logging.version>
 		<cxf.version>4.1.7</cxf.version>
 		<cxf-xjc.version>4.1.0</cxf-xjc.version>
 		<oracle.version>19.7.0.0</oracle.version>
@@ -195,6 +196,11 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-dbcp2</artifactId>
 				<version>${commons-dbcp2.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+				<version>${commons-logging.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
