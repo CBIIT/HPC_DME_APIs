@@ -353,14 +353,18 @@ public class HpcSystemAccountLocator {
 		logger.info("Trino credentials read successfully from AWS Secrets Manager secret: {}", TRINO_SECRET_NAME);
 
 		// Restart the Trino connection pool with the credentials from the AWS Secrets Manager.
-		trinoDataSource.setUsername(trinoUsername);
-		trinoDataSource.setPassword(trinoPassword);
-		try {
-			trinoDataSource.restart();
-		} catch (SQLException e) {
-			String message = "Failed to restart Trino connection pool with credentials from AWS Secrets Manager";
-			logger.error(message, e);
-			throw new HpcException(message, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.VAST, e);
+		// Synchronized on the data source (same monitor as BasicDataSource.restart()) so
+		// concurrent reloads can't interleave and restart the pool with a mismatched pair.
+		synchronized (trinoDataSource) {
+			trinoDataSource.setUsername(trinoUsername);
+			trinoDataSource.setPassword(trinoPassword);
+			try {
+				trinoDataSource.restart();
+			} catch (SQLException e) {
+				String message = "Failed to restart Trino connection pool with credentials from AWS Secrets Manager";
+				logger.error(message, e);
+				throw new HpcException(message, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.VAST, e);
+			}
 		}
 		logger.info("Trino connection pool restarted with credentials from AWS Secrets Manager");
 	}
