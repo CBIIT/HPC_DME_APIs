@@ -17,7 +17,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -102,27 +101,14 @@ public class HpcSystemAccountLocatorTest {
 	}
 
 	@Test
-	void testReloadRefreshesTrinoCredentialsAndRestartsPool() throws Exception {
+	void testReloadSetsTrinoCredentialsAndRestartsPool() throws Exception {
 		stubSecret("trino", TRINO_SECRET);
-		when(trinoDataSource.getUsername()).thenReturn("old-user");
 
 		systemAccountLocator.reload();
 
 		verify(trinoDataSource).setUsername("trino-user");
 		verify(trinoDataSource).setPassword("trino-pass");
 		verify(trinoDataSource).restart();
-	}
-
-	@Test
-	void testReloadDoesNotRestartPoolWhenTrinoCredentialsUnchanged() throws Exception {
-		stubSecret("trino", TRINO_SECRET);
-		when(trinoDataSource.getUsername()).thenReturn("trino-user");
-		when(trinoDataSource.getPassword()).thenReturn("trino-pass");
-
-		systemAccountLocator.reload();
-
-		verify(trinoDataSource, never()).setPassword(any());
-		verify(trinoDataSource, never()).restart();
 	}
 
 	@Test
