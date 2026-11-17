@@ -2904,6 +2904,9 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				}
 			}
 			for (String collectionPath : downloadTask.getCollectionPaths()) {
+				if (!collectionPathToItemsMap.containsKey(collectionPath)) {
+					continue;
+				}
 				List<HpcCollectionDownloadTaskItem> items = new ArrayList<>();
 				for (HpcDataObjectRegistrationItemDTO item : collectionPathToItemsMap.get(collectionPath)) {
 					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
