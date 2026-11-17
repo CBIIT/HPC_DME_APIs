@@ -2896,12 +2896,12 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				try {
 					registrationResponseDTO = dataManagementBusService
 							.getCollectionFilesFromExternalSource(collectionPath, downloadTask.getUserId());
+					collectionPathToItemsMap.put(collectionPath, registrationResponseDTO.getDataObjectRegistrationItems());
 				} catch (Exception e) {
-					throw new HpcException("Failed to retrieve files from external collection with path: "
+					logger.error("Failed to retrieve files from external collection with path: "
 							+ collectionPath + ". error: " + e.getMessage(),
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
-				collectionPathToItemsMap.put(collectionPath, registrationResponseDTO.getDataObjectRegistrationItems());
 			}
 			for (String collectionPath : downloadTask.getCollectionPaths()) {
 				List<HpcCollectionDownloadTaskItem> items = new ArrayList<>();
