@@ -206,44 +206,7 @@ jobs:
             "sudo /sbin/service '${REMOTE_TOMCAT}' stop"
           echo "Tomcat stopped on ${target_host}."
 
-      - name: Remove applications directory
-        shell: bash
-        run: |
-          set -euo pipefail
-          target_host="${{ matrix.host }}"
-
-          for application in "${APP}" "${APP1}" "${APP2}"; do
-            echo "Checking exploded directory: ${application}"
-            ssh "${SSH_USER}@${target_host}" \
-              "cd '${DIST}' && if [ -d '${application}' ]; then rm -rf -- '${application}' && echo 'Removed directory ${application}'; else echo 'No exploded directory found for ${application}'; fi"
-          done
-
-      - name: Clean up old WAR backups
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          target_host="${{ matrix.host }}"
-
-          ssh "${SSH_USER}@${target_host}" \
-            "set -e; cd '${DIST}'; \
-            rm -f hpc-server-[0-9]*.war_backup* hpc-server-[0-9]*.war.backup*; \
-            rm -f hpc-scheduler-[0-9]*.war_backup* hpc-scheduler-[0-9]*.war.backup*; \
-            rm -f hpc-scheduler-migration-[0-9]*.war_backup* hpc-scheduler-migration-[0-9]*.war.backup*;"
-
-      - name: Remove existing WAR symlinks
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          target_host="${{ matrix.host }}"
-          for unit in "${UNIT}" "${UNIT1}" "${UNIT2}"; do
-            echo "Checking symlink: ${unit}"
-            ssh "${SSH_USER}@${target_host}" \
-              "cd '${DIST}' && if [ -L '${unit}' ]; then rm -f -- '${unit}' && echo 'Removed symlink ${unit}'; else echo 'No symlink found for ${unit}'; fi"
-          done
-
-      - name: Back up current WAR files
+      - name: Prepare application directory (remove exploded apps, old backups and symlinks, back up current WARs)
         shell: bash
         run: |
           set -euo pipefail
@@ -251,18 +214,53 @@ jobs:
           target_host="${{ matrix.host }}"
           timestamp=$(date +%Y%m%d.%H%M)
 
-          declare -A patterns=(
-            [hpc-server]="${APP}-*.war"
-            [hpc-scheduler]="${APP1}-[0-9]*.war"
-            [hpc-scheduler-migration]="${APP2}-*.war"
-          )
+          # One SSH connection runs all four clean-up/backup stages, in order.
+          ssh "${SSH_USER}@${target_host}" \
+            bash -s -- "${DIST}" "${SSH_USER}" "${timestamp}" \
+              "${APP}" "${APP1}" "${APP2}" \
+              "${UNIT}" "${UNIT1}" "${UNIT2}" <<'REMOTE'
+          set -euo pipefail
 
-          for key in "${APP}" "${APP1}" "${APP2}"; do
-            pattern="${patterns[$key]}"
-            echo "Backing up existing WARs for ${key} (pattern: ${pattern})"
-            ssh "${SSH_USER}@${target_host}" \
-              "cd '${DIST}' && find . -maxdepth 1 -type f -name '${pattern}' -exec mv {} {}_backup_${timestamp} \; && find . -maxdepth 1 -type f -name '${pattern}_backup_${timestamp}' -exec chown '${SSH_USER}:${SSH_USER}' {} +"
+          DIST="$1"; SSH_USER="$2"; timestamp="$3"
+          APP="$4"; APP1="$5"; APP2="$6"
+          UNIT="$7"; UNIT1="$8"; UNIT2="$9"
+
+          cd "$DIST"
+
+          echo "=== Remove applications directory ==="
+          for application in "$APP" "$APP1" "$APP2"; do
+            echo "Checking exploded directory: ${application}"
+            if [ -d "$application" ]; then
+              rm -rf -- "$application"
+              echo "Removed directory ${application}"
+            else
+              echo "No exploded directory found for ${application}"
+            fi
           done
+
+          echo "=== Clean up old WAR backups ==="
+          rm -f hpc-server-[0-9]*.war_backup* hpc-server-[0-9]*.war.backup*
+          rm -f hpc-scheduler-[0-9]*.war_backup* hpc-scheduler-[0-9]*.war.backup*
+          rm -f hpc-scheduler-migration-[0-9]*.war_backup* hpc-scheduler-migration-[0-9]*.war.backup*
+
+          echo "=== Remove existing WAR symlinks ==="
+          for unit in "$UNIT" "$UNIT1" "$UNIT2"; do
+            echo "Checking symlink: ${unit}"
+            if [ -L "$unit" ]; then
+              rm -f -- "$unit"
+              echo "Removed symlink ${unit}"
+            else
+              echo "No symlink found for ${unit}"
+            fi
+          done
+
+          echo "=== Back up current WAR files ==="
+          for pattern in "${APP}-*.war" "${APP1}-[0-9]*.war" "${APP2}-*.war"; do
+            echo "Backing up existing WARs (pattern: ${pattern})"
+            find . -maxdepth 1 -type f -name "$pattern" -exec mv {} {}_backup_${timestamp} \;
+            find . -maxdepth 1 -type f -name "${pattern}_backup_${timestamp}" -exec chown "${SSH_USER}:${SSH_USER}" {} +
+          done
+          REMOTE
 
       - name: Copy new WARs to deployment directory
         shell: bash
