@@ -3,7 +3,9 @@ package gov.nih.nci.hpc.bus.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -308,16 +310,17 @@ class HpcSystemBusServiceImplTest {
         }
 
         @Test
-        void testProcessInternalDownloadTaskReturnsEmptyWhenCollectionIsMissing() throws Exception {
+        void testProcessInternalDownloadTaskThrowsWhenCollectionIsMissing() throws Exception {
         HpcCollectionDownloadTask downloadTask = collectionDownloadTask("missing-collection-task-id", "/missing");
         downloadTask.setType(HpcDownloadTaskType.COLLECTION);
         when(metadataService.getCollectionSystemGeneratedMetadata("/missing"))
             .thenReturn(new HpcSystemGeneratedMetadata());
         when(dataManagementService.getFullCollection("/missing", null)).thenReturn(null);
 
-        List<HpcCollectionDownloadTaskItem> items = invokeProcessInternalDownloadTask(downloadTask);
-
-        assertTrue(items.isEmpty());
+        InvocationTargetException exception = assertThrows(InvocationTargetException.class,
+            () -> invokeProcessInternalDownloadTask(downloadTask));
+        assertEquals(HpcException.class, exception.getCause().getClass());
+        assertEquals("Collection not found", exception.getCause().getMessage());
         verify(dataManagementBusService, never()).downloadDataObject(anyString(), any(), any(), any(), any(),
             anyBoolean(), any(), anyBoolean());
         }
