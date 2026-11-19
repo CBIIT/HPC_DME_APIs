@@ -9,3 +9,12 @@ values:
   - key: aws-folder
     value: ''
     enabled: true
+  - key: aspera-host
+    value: ''
+    enabled: true
+  - key: aspera-user
+    value: ''
+    enabled: true
+  - key: aspera-folder
+    value: ''
+    enabled: true
