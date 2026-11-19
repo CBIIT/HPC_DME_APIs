@@ -2884,27 +2884,18 @@ public class HpcSystemBusServiceImpl implements HpcSystemBusService {
 				downloadItems.add(downloadItem);
 			}
 		} else if (HpcDownloadTaskType.COLLECTION_LIST.equals(downloadTask.getType())) {
-			Map<String, List<HpcDataObjectRegistrationItemDTO>> collectionPathToItemsMap = new HashMap<>();
-			// Pre-fetch all collection items from the external source. This helps identify collections path that are non-existent, empty or invalid before attempting download.
 			for (String collectionPath : downloadTask.getCollectionPaths()) {
 				HpcBulkDataObjectRegistrationResponseDTO registrationResponseDTO = null;
-				// Process each collection path separately.
 				try {
 					registrationResponseDTO = dataManagementBusService
 							.getCollectionFilesFromExternalSource(collectionPath, downloadTask.getUserId());
-					collectionPathToItemsMap.put(collectionPath, registrationResponseDTO.getDataObjectRegistrationItems());
 				} catch (Exception e) {
 					logger.error("Failed to retrieve files from external collection with path: "
 							+ collectionPath + ". error: " + e.getMessage(),
 							HpcErrorType.INVALID_REQUEST_INPUT);
 				}
-			}
-			for (String collectionPath : downloadTask.getCollectionPaths()) {
-				if (!collectionPathToItemsMap.containsKey(collectionPath)) {
-					continue;
-				}
 				List<HpcCollectionDownloadTaskItem> items = new ArrayList<>();
-				for (HpcDataObjectRegistrationItemDTO item : collectionPathToItemsMap.get(collectionPath)) {
+				for (HpcDataObjectRegistrationItemDTO item : registrationResponseDTO.getDataObjectRegistrationItems()) {
 					HpcCollectionDownloadTaskItem downloadItem = downloadDataObject(item.getPath(),
 							downloadTask.getGlobusDownloadDestination(), downloadTask.getS3DownloadDestination(),
 							downloadTask.getGoogleDriveDownloadDestination(),

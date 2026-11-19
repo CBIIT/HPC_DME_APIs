@@ -1072,6 +1072,15 @@ public class HpcDataManagementBusServiceImpl implements HpcDataManagementBusServ
 
 		HpcDataManagementConfiguration dataManagementConfiguration = dataManagementService.getDataManagementConfiguration(s3ArchiveConfiguration.getDataManagementConfigurationId());
 
+		//Temp Code Begin
+		logger.info("2174: Processing bulk download request from external source.");
+		HpcPathAttributes pathAttributes = null;
+		for (String collectionPath : downloadRequest.getCollectionPaths()) {
+			pathAttributes = getExternalPathAttributes(collectionPath, s3ArchiveConfiguration, true);
+			logger.info("2174: Path attributes for external path {}: exists={}, isDirectory={}", collectionPath, pathAttributes.getExists(), pathAttributes.getIsDirectory());
+		}
+		//Temp Code End
+
 		// Download Step
 		try {
 			// Submit a collection download task.
