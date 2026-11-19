@@ -8,6 +8,7 @@
  */
 package gov.nih.nci.hpc.service.impl;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -15,11 +16,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -71,6 +75,11 @@ public class HpcSystemAccountLocator {
 	private static final String DOC_CLASSIFIER_DEFAULT = "DEFAULT";
 	private static final String PROPERTY_NAME_CLASSIFIER = "classifier";
 
+	// The Trino credentials secret in the AWS Secrets Manager, and its keys.
+	private static final String TRINO_SECRET_NAME = "trino";
+	private static final String TRINO_USERNAME_KEY = "hpc.dao.trino.username";
+	private static final String TRINO_PASSWORD_KEY = "hpc.dao.trino.password";
+
 	// ---------------------------------------------------------------------//
 	// Instance members
 	// ---------------------------------------------------------------------//
@@ -115,6 +124,14 @@ public class HpcSystemAccountLocator {
 
 	@Value("${hpc.service.systemAccount.aws.useSecretsManager}")
 	private boolean useSecretsManager = false;
+
+	// The Trino data source, its credentials are refreshed from the AWS Secrets Manager.
+	@Autowired
+	@Qualifier("hpcTrinoDataSource")
+	private BasicDataSource trinoDataSource = null;
+
+	@Value("${hpc.dao.trino.available:true}")
+	private Boolean trinoAvailable = null;
 
 	// ---------------------------------------------------------------------//
 	// Constructors
@@ -309,6 +326,47 @@ public class HpcSystemAccountLocator {
 			account.setIntegratedSystem(HpcIntegratedSystem.AWS);
 			systemAccountDAO.update(account, null, null);
 		}
+
+		// Refresh the Trino username/password from the AWS Secrets Manager.
+		if (Boolean.FALSE.equals(trinoAvailable)) {
+			return;
+		}
+
+		String trinoUsername = null;
+		String trinoPassword = null;
+		try {
+			GetSecretValueResult trinoSecretValueResult = client
+					.getSecretValue(new GetSecretValueRequest().withSecretId(TRINO_SECRET_NAME));
+			JSONObject trinoSecret = (JSONObject) new JSONParser().parse(trinoSecretValueResult.getSecretString());
+			trinoUsername = (String) trinoSecret.get(TRINO_USERNAME_KEY);
+			trinoPassword = (String) trinoSecret.get(TRINO_PASSWORD_KEY);
+		} catch (Exception e) {
+			String message = "Error retrieving Trino credentials from AWS Secrets Manager secret: " + TRINO_SECRET_NAME;
+			logger.error(message, e);
+			throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
+		}
+		if (StringUtils.isEmpty(trinoUsername) || StringUtils.isEmpty(trinoPassword)) {
+			String message = "Trino username/password not found in AWS Secrets Manager secret: " + TRINO_SECRET_NAME;
+			logger.error(message);
+			throw new HpcException(message, HpcErrorType.UNEXPECTED_ERROR);
+		}
+		logger.info("Trino credentials read successfully from AWS Secrets Manager secret: {}", TRINO_SECRET_NAME);
+
+		// Restart the Trino connection pool with the credentials from the AWS Secrets Manager.
+		// Synchronized on the data source (same monitor as BasicDataSource.restart()) so
+		// concurrent reloads can't interleave and restart the pool with a mismatched pair.
+		synchronized (trinoDataSource) {
+			trinoDataSource.setUsername(trinoUsername);
+			trinoDataSource.setPassword(trinoPassword);
+			try {
+				trinoDataSource.restart();
+			} catch (SQLException e) {
+				String message = "Failed to restart Trino connection pool with credentials from AWS Secrets Manager";
+				logger.error(message, e);
+				throw new HpcException(message, HpcErrorType.DATABASE_ERROR, HpcIntegratedSystem.VAST, e);
+			}
+		}
+		logger.info("Trino connection pool restarted with credentials from AWS Secrets Manager");
 	}
 
 	// Logic for selecting which "pool" of Globus app accounts to utilize based on
