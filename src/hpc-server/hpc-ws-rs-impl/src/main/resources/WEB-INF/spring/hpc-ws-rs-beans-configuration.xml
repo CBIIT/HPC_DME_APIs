@@ -239,6 +239,12 @@
 					value="${hpc.ws.rs.auth.data-management.set-archive-permissions}" />
 				<entry key="downloadDataObjects"
 					value="${hpc.ws.rs.auth.data-management.download-data-objects}" />
+				<entry key="downloadDataObjectFromExternalSource"
+					value="${hpc.ws.rs.auth.data-management.download-data-object-from-external-source}" />
+				<entry key="downloadCollectionFromExternalSource"
+					value="${hpc.ws.rs.auth.data-management.download-collection-from-external-source}" />
+				<entry key="downloadDataObjectsOrCollectionsFromExternalSource"
+					value="${hpc.ws.rs.auth.data-management.download-data-objects-or-collections-from-external-source}" />
 				<entry key="getDataObjectsDownloadStatus"
 					value="${hpc.ws.rs.auth.data-management.get-data-objects-download-status}" />
 				<entry key="getDataManagementModel"

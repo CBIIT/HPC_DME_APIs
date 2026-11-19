@@ -727,6 +727,7 @@ public interface HpcDataTransferService {
 	 *                                                  destination path, otherwise
 	 *                                                  just the object name will be
 	 *                                                  used.
+	 * @param externalArchiveFlag                    If true, indicates that the download is from an external archive.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -736,7 +737,7 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException;
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException;
 
 	/**
 	 * Submit a request to download data objects.
@@ -766,11 +767,12 @@ public interface HpcDataTransferService {
 	 *                                              will be used in the destination
 	 *                                              path, otherwise just the object
 	 *                                              name will be used.
-	 * @param appendPathToDownloadDestination       If true, the collection name
+	 * @param appendCollectionNameToDownloadDestination       If true, the collection name
 	 *                                              (containing the object) will be
 	 *                                              used in the destination path,
 	 *                                              otherwise just the object name
 	 *                                              will be used.
+	 * @param externalArchiveFlag                    If true, indicates that the download is from an external archive.
 	 * @return The submitted request download task.
 	 * @throws HpcException on service failure.
 	 */
@@ -780,7 +782,7 @@ public interface HpcDataTransferService {
 			HpcGoogleDownloadDestination googleCloudStorageDownloadDestination,
 			HpcAsperaDownloadDestination asperaDownloadDestination, HpcBoxDownloadDestination boxDownloadDestination,
 			String userId, String configurationId, boolean appendPathToDownloadDestination,
-			boolean appendCollectionNameToDownloadDestination) throws HpcException;
+			boolean appendCollectionNameToDownloadDestination, boolean externalArchiveFlag) throws HpcException;
 
 	/**
 	 * Update a collection download task.
